@@ -1,0 +1,51 @@
+// Import the functions you need from the SDKs you need
+import { getAnalytics } from "firebase/analytics";
+import { initializeApp } from "firebase/app";
+import {
+  getAuth,
+  GoogleAuthProvider,
+  onAuthStateChanged,
+  signOut,
+} from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
+import { getDatabase } from "firebase/database";
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyBNvGq5IMX1RzU090-YaM3S-FVmUs8g25w",
+  authDomain: "aarath-72ec4.firebaseapp.com",
+  projectId: "aarath-72ec4",
+  storageBucket: "aarath-72ec4.firebasestorage.app",
+  messagingSenderId: "750871633058",
+  appId: "1:750871633058:web:59371c533c7a2348954bfb",
+  measurementId: "G-VEFWY4H3BV",
+  // Realtime Database URL - This is required for Realtime Database
+  databaseURL: "https://aarath-72ec4-default-rtdb.firebaseio.com/",
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+
+// Initialize Firebase services
+export const auth = getAuth(app);
+export const db = getFirestore(app);
+export const storage = getStorage(app);
+export const realtimeDb = getDatabase(app);
+
+// Auth providers
+export const googleProvider = new GoogleAuthProvider();
+
+// Auth functions
+export { onAuthStateChanged, signOut };
+
+// Analytics (optional for mobile)
+let analytics = null;
+try {
+  analytics = getAnalytics(app);
+} catch (error) {
+  console.log("Analytics not available in this environment");
+}
+
+export { analytics };
+export default app;
