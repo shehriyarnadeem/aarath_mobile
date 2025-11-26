@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -7,47 +7,18 @@ import {
   FlatList,
   StyleSheet,
   TextInput,
-} from 'react-native';
-import { useTheme } from '../constants/Theme';
+} from "react-native";
+import { useTheme } from "../constants/Theme";
 
 const COUNTRY_CODES = [
-  { code: '+1', country: 'United States', flag: '🇺🇸' },
-  { code: '+1', country: 'Canada', flag: '🇨🇦' },
-  { code: '+44', country: 'United Kingdom', flag: '🇬🇧' },
-  { code: '+91', country: 'India', flag: '🇮🇳' },
-  { code: '+92', country: 'Pakistan', flag: '🇵🇰' },
-  { code: '+93', country: 'Afghanistan', flag: '🇦🇫' },
-  { code: '+86', country: 'China', flag: '🇨🇳' },
-  { code: '+81', country: 'Japan', flag: '🇯🇵' },
-  { code: '+82', country: 'South Korea', flag: '🇰🇷' },
-  { code: '+49', country: 'Germany', flag: '🇩🇪' },
-  { code: '+33', country: 'France', flag: '🇫🇷' },
-  { code: '+39', country: 'Italy', flag: '🇮🇹' },
-  { code: '+34', country: 'Spain', flag: '🇪🇸' },
-  { code: '+31', country: 'Netherlands', flag: '🇳🇱' },
-  { code: '+7', country: 'Russia', flag: '🇷🇺' },
-  { code: '+55', country: 'Brazil', flag: '🇧🇷' },
-  { code: '+52', country: 'Mexico', flag: '🇲🇽' },
-  { code: '+61', country: 'Australia', flag: '🇦🇺' },
-  { code: '+64', country: 'New Zealand', flag: '🇳🇿' },
-  { code: '+27', country: 'South Africa', flag: '🇿🇦' },
-  { code: '+234', country: 'Nigeria', flag: '🇳🇬' },
-  { code: '+254', country: 'Kenya', flag: '🇰🇪' },
-  { code: '+20', country: 'Egypt', flag: '🇪🇬' },
-  { code: '+971', country: 'UAE', flag: '🇦🇪' },
-  { code: '+966', country: 'Saudi Arabia', flag: '🇸🇦' },
-  { code: '+65', country: 'Singapore', flag: '🇸🇬' },
-  { code: '+60', country: 'Malaysia', flag: '🇲🇾' },
-  { code: '+66', country: 'Thailand', flag: '🇹🇭' },
-  { code: '+84', country: 'Vietnam', flag: '🇻🇳' },
-  { code: '+62', country: 'Indonesia', flag: '🇮🇩' },
-  { code: '+63', country: 'Philippines', flag: '🇵🇭' },
+  { code: "+44", country: "United Kingdom", flag: "🇬🇧" },
+  { code: "+92", country: "Pakistan", flag: "🇵🇰" },
 ];
 
 const CountryCodePicker = ({ selectedCode, onSelectCode, style }) => {
   const { COLORS } = useTheme();
   const [modalVisible, setModalVisible] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
 
   const filteredCountries = COUNTRY_CODES.filter(
     (country) =>
@@ -58,10 +29,11 @@ const CountryCodePicker = ({ selectedCode, onSelectCode, style }) => {
   const handleSelectCountry = (country) => {
     onSelectCode(country);
     setModalVisible(false);
-    setSearchQuery('');
+    setSearchQuery("");
   };
 
-  const selectedCountry = COUNTRY_CODES.find(c => c.code === selectedCode) || COUNTRY_CODES[4]; // Default to Pakistan
+  const selectedCountry =
+    COUNTRY_CODES.find((c) => c.code === selectedCode) || COUNTRY_CODES[4]; // Default to Pakistan
 
   const renderCountryItem = ({ item }) => (
     <TouchableOpacity
@@ -96,9 +68,7 @@ const CountryCodePicker = ({ selectedCode, onSelectCode, style }) => {
         <Text style={[styles.selectedCode, { color: COLORS.dark }]}>
           {selectedCountry.code}
         </Text>
-        <Text style={[styles.dropdownArrow, { color: COLORS.gray400 }]}>
-          ▼
-        </Text>
+        <Text style={[styles.dropdownArrow, { color: COLORS.gray400 }]}>▼</Text>
       </TouchableOpacity>
 
       <Modal
@@ -106,9 +76,13 @@ const CountryCodePicker = ({ selectedCode, onSelectCode, style }) => {
         animationType="slide"
         onRequestClose={() => setModalVisible(false)}
       >
-        <View style={[styles.modalContainer, { backgroundColor: COLORS.white }]}>
+        <View
+          style={[styles.modalContainer, { backgroundColor: COLORS.white }]}
+        >
           {/* Header */}
-          <View style={[styles.modalHeader, { backgroundColor: COLORS.primary }]}>
+          <View
+            style={[styles.modalHeader, { backgroundColor: COLORS.primary }]}
+          >
             <Text style={[styles.modalTitle, { color: COLORS.white }]}>
               Select Country
             </Text>
@@ -123,7 +97,9 @@ const CountryCodePicker = ({ selectedCode, onSelectCode, style }) => {
           </View>
 
           {/* Search */}
-          <View style={[styles.searchContainer, { backgroundColor: COLORS.gray50 }]}>
+          <View
+            style={[styles.searchContainer, { backgroundColor: COLORS.gray50 }]}
+          >
             <TextInput
               style={[
                 styles.searchInput,
@@ -143,7 +119,9 @@ const CountryCodePicker = ({ selectedCode, onSelectCode, style }) => {
           {/* Country List */}
           <FlatList
             data={filteredCountries}
-            keyExtractor={(item, index) => `${item.code}-${item.country}-${index}`}
+            keyExtractor={(item, index) =>
+              `${item.code}-${item.country}-${index}`
+            }
             renderItem={renderCountryItem}
             style={styles.countryList}
             showsVerticalScrollIndicator={false}
@@ -156,8 +134,8 @@ const CountryCodePicker = ({ selectedCode, onSelectCode, style }) => {
 
 const styles = StyleSheet.create({
   pickerButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 12,
     paddingVertical: 16,
     borderWidth: 1,
@@ -165,12 +143,12 @@ const styles = StyleSheet.create({
     minWidth: 100,
   },
   flag: {
-    fontSize: 20,
-    marginRight: 8,
+    fontSize: 12,
+    marginRight: 2,
   },
   selectedCode: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
     flex: 1,
   },
   dropdownArrow: {
@@ -181,23 +159,23 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingVertical: 16,
     paddingTop: 50, // Account for status bar
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   closeButton: {
     padding: 4,
   },
   closeButtonText: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   searchContainer: {
     paddingHorizontal: 20,
@@ -214,8 +192,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   countryItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
@@ -225,11 +203,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   countryName: {
-    fontSize: 16,
-    fontWeight: '500',
+    fontSize: 12,
+    fontWeight: "500",
   },
   countryCode: {
-    fontSize: 14,
+    fontSize: 10,
     marginTop: 2,
   },
 });

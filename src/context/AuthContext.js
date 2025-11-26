@@ -32,6 +32,7 @@ export const AuthProvider = ({ children }) => {
           setUserProfile(profile);
           // Save to AsyncStorage
           await AsyncStorage.setItem("userProfile", JSON.stringify(profile));
+          setLoading(false);
         } else {
           setUser(null);
           setUserProfile(null);
@@ -92,10 +93,11 @@ export const AuthProvider = ({ children }) => {
       if (storedUserProfile) {
         setUserProfile(storedUserProfile && JSON.parse(storedUserProfile));
       }
-
+      setLoading(false);
       // Firebase auth state is handled by onAuthStateChanged listener
       // No need for separate token validation
     } catch (error) {
+      setLoading(false);
       console.error("Auth check error:", error);
     }
   };
@@ -105,24 +107,20 @@ export const AuthProvider = ({ children }) => {
       // This function can be used to manually refresh user profile data
       if (user && isAuthenticated) {
         await fetchUserProfile(user);
-        console.log("Auth state synced successfully");
+        setLoading(false);
       }
     } catch (error) {
+      setLoading(false);
       console.error("Auth sync error:", error);
     }
   };
 
   const updateUserProfile = (updatedProfile) => {
     setUserProfile(updatedProfile);
-    // Save to AsyncStorage
-    if (updatedProfile) {
-      AsyncStorage.setItem("userProfile", JSON.stringify(updatedProfile));
-    }
   };
 
   const completeOnboarding = async () => {
     try {
-      await AsyncStorage.setItem("onboardingCompleted", "true");
       setHasCompletedOnboarding(true);
       return { success: true };
     } catch (error) {

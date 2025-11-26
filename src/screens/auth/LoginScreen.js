@@ -18,6 +18,7 @@ import apiClient from "../../utils/apiClient";
 import CountryCodePicker from "../../components/CountryCodePicker";
 
 import { getAuth, signInWithCustomToken } from "firebase/auth";
+import Toast from "react-native-toast-message";
 
 const LoginScreen = ({ navigation }) => {
   const { COLORS, SIZES } = useTheme();
@@ -36,70 +37,73 @@ const LoginScreen = ({ navigation }) => {
 
   // Send OTP using backend
   const handleSendOtp = async () => {
+    console.log("Sending OTP to phone number:", phoneNumber);
     if (!phoneNumber.trim()) {
       setError("Please enter your phone number");
       return;
     }
-
+    console.log("Preparing to send OTP", phoneNumber);
     const fullPhoneNumber = `${countryCode}${phoneNumber}`;
     console.log("Sending OTP to:", fullPhoneNumber);
     setIsLoading(true);
     setError("");
     try {
-      const result = await apiClient.auth.sendOtp(fullPhoneNumber);
-      console.log("OTP send response:", result.success);
+      const result = await apiClient.auth.sendOtp(fullPhoneNumber, "login");
+      console.log("OTP send response:", result);
       if (result.success) {
+        setStep("otp");
         setIsLoading(false);
         setError("");
-        Alert.alert(
-          "Success",
-          result.message || "OTP sent to your phone number!"
-        );
-        setStep("otp");
+        Toast.show({
+          type: "success",
+          text1: result.message || "OTP sent to your phone number!",
+          text1Style: {
+            fontSize: 14,
+            display: "flex",
+          },
+        });
+        return;
       } else {
         setIsLoading(false);
         setError(result.error || "Failed to send OTP. Please try again.");
+        return;
       }
     } catch (err) {
+      console.log("Error during OTP send:", err);
       setIsLoading(false);
-      setError("Network error. Please try again.", err);
+      setError(err.error || "Network error. Please try again.");
+      return;
     }
   };
 
   const handleVerifyOtp = async () => {
-    if (!otp.trim()) {
-      setError("Please enter the OTP");
-      return;
-    }
-
-    const fullPhoneNumber = `${countryCode}${phoneNumber}`;
     setIsLoading(true);
     setError("");
-    
     try {
-      console.log("Verifying OTP:", otp, "for phone:", fullPhoneNumber);
-      const response = await apiClient.auth.verifyOtp(fullPhoneNumber, otp);
-      console.log("Verify OTP response:", response);
-      
-      // Handle successful verification
-      Alert.alert(
-        "Success", 
-        "Login successful!",
-        [
-          {
-            text: "Continue",
-            onPress: () => {
-              // Navigate to main app
-              navigation.replace("Marketplace");
-            },
-          },
-        ]
-      );
-      Alert.alert("Success", "Successfully logged in!");
-      navigation.navigate("Marketplace");
+      const fullPhoneNumber = `${countryCode}${phoneNumber}`;
+      const verifyResult = await apiClient.auth.verifyOtp(fullPhoneNumber, otp);
+      if (!verifyResult.success) {
+        setError(
+          verifyResult.error ||
+            "Invalid WhatsApp number or OTP. Please try again."
+        );
+        return;
+      }
+
+      const loginResult = await apiClient.auth.login(fullPhoneNumber);
+      if (!loginResult.token) {
+        setError("Failed to retrieve authentication token.");
+        return;
+      }
+
+      await signInWithCustomToken(getAuth(), loginResult.token);
+      Toast.show({
+        type: "success",
+        text1: "Successfully logged in!",
+      });
+      setIsLoading(false);
     } catch (err) {
-      console.log("Error during OTP verification/login:", err);
-      setError(err?.message || "Network error. Please try again.");
+      setError(err?.error || "Network error. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -171,9 +175,7 @@ const LoginScreen = ({ navigation }) => {
       </TouchableOpacity>
 
       <View style={styles.header}>
-        <Text style={[styles.title, { color: COLORS.dark }]}>
-          Enter Phone Number
-        </Text>
+        <Text style={[styles.title, { color: COLORS.dark }]}>Sign In</Text>
         <Text style={[styles.subtitle, { color: COLORS.gray600 }]}>
           We'll send you a verification code
         </Text>
@@ -196,6 +198,7 @@ const LoginScreen = ({ navigation }) => {
                 {
                   borderColor: error ? COLORS.error : COLORS.gray300,
                   color: COLORS.dark,
+                  letterSpacing: 3,
                 },
               ]}
               placeholder="Enter phone number"
@@ -203,12 +206,12 @@ const LoginScreen = ({ navigation }) => {
               value={phoneNumber}
               onChangeText={(text) => {
                 // Remove any non-numeric characters except for leading zeros
-                const cleanedText = text.replace(/[^0-9]/g, '');
+                const cleanedText = text.replace(/[^0-9]/g, "");
                 setPhoneNumber(cleanedText);
                 setError("");
               }}
               keyboardType="phone-pad"
-              maxLength={15}
+              maxLength={10}
             />
           </View>
         </View>
@@ -227,7 +230,7 @@ const LoginScreen = ({ navigation }) => {
               opacity: isLoading ? 0.7 : 1,
             },
           ]}
-          onPress={handleSendOtp}
+          onPress={() => handleSendOtp()}
           disabled={isLoading}
         >
           {isLoading ? (
@@ -253,7 +256,8 @@ const LoginScreen = ({ navigation }) => {
           Enter Verification Code
         </Text>
         <Text style={[styles.subtitle, { color: COLORS.gray600 }]}>
-          Enter the 6-digit code sent to {countryCode}{phoneNumber}
+          Enter the 6-digit code sent to {countryCode}
+          {phoneNumber}
         </Text>
       </View>
 
@@ -415,24 +419,24 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 8,
   },
   phoneInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: 12,
   },
   countryPicker: {
-    flex: 0,
+    fontSize: 12,
   },
   phoneInput: {
-    flex: 1,
     borderWidth: 1,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 16,
-    fontSize: 16,
+    fontSize: 17,
   },
   input: {
     borderWidth: 1,
@@ -459,6 +463,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: "center",
+    justifyContent: "center",
+    display: "flex",
     marginTop: 8,
   },
   primaryButtonText: {

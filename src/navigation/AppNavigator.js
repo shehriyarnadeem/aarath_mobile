@@ -5,6 +5,7 @@ import LoginScreen from "../screens/auth/LoginScreen";
 import RegisterScreen from "../screens/auth/RegisterScreen";
 import MarketplaceScreen from "../screens/main/MarketplaceScreen";
 import OnboardingFlow from "../screens/onboarding/OnboardingFlow";
+import DashboardNavigator from "./DashboardNavigator";
 import { useAuth } from "../context/AuthContext";
 
 const Stack = createStackNavigator();
@@ -16,23 +17,25 @@ const AppNavigator = () => {
   const getInitialRoute = () => {
     if (loading) return "Splash";
     if (!isAuthenticated) return "Login";
-    return "Marketplace";
+    return "Dashboard";
   };
 
+  // Use a key on the navigator to force remount when auth state changes
   return (
     <Stack.Navigator
+      key={isAuthenticated ? "auth" : "guest"}
       screenOptions={{ headerShown: false }}
       initialRouteName={getInitialRoute()}
     >
-      <Stack.Screen name="Splash" component={SplashScreen} />
       {isAuthenticated ? (
-        // Main app routes for completed users
+        // Main app routes for authenticated users
         <>
-          <Stack.Screen name="Marketplace" component={MarketplaceScreen} />
+          <Stack.Screen name="Dashboard" component={DashboardNavigator} />
         </>
       ) : (
         // Authentication routes
         <>
+          <Stack.Screen name="Splash" component={SplashScreen} />
           <Stack.Screen name="Onboarding" component={OnboardingFlow} />
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Signup" component={RegisterScreen} />

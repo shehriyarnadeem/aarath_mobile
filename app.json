@@ -17,6 +17,12 @@
         "backgroundColor": "#ffffff"
       }
     },
-    "web": {}
+    "web": {},
+    "extra": {
+      "eas": {
+        "projectId": "fb8ae90d-3bcc-43db-adf4-bcfe47f8488e"
+      }
+    },
+    "owner": "sherryvohra"
   }
 }

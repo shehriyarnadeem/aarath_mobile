@@ -9,6 +9,10 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useTheme } from "../../../constants/Theme";
+import CountryCodePicker from "../../../components/CountryCodePicker";
+import apiClient from "../../../utils/apiClient";
+import { set } from "firebase/database";
+import Toast from "react-native-toast-message";
 
 const WhatsappVerification = ({ formData, setFormData }) => {
   const { COLORS, SIZES } = useTheme();
@@ -16,124 +20,129 @@ const WhatsappVerification = ({ formData, setFormData }) => {
   const [isOtpSent, setIsOtpSent] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [countryCode, setCountryCode] = useState("+92");
 
   const handleSendOtp = async () => {
-    if (!formData.whatsapp || formData.whatsapp.length < 10) {
-      setError("Please enter a valid WhatsApp number");
+    if (!formData.phoneNumber.trim()) {
+      setError("Please enter your phone number");
       return;
     }
-
+    const fullPhoneNumber = formData.phoneNumber.includes("+")
+      ? formData.phoneNumber
+      : `${countryCode}${formData.phoneNumber}`;
     setIsLoading(true);
     setError("");
-
     try {
-      // TODO: Replace with actual API call
-      // const response = await apiClient.post('/auth/whatsapp/send-otp', {
-      //   whatsapp: formData.whatsapp
-      // });
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      setIsOtpSent(true);
-      Alert.alert("Success", "OTP sent to your WhatsApp number!");
-    } catch (error) {
-      setError("Failed to send OTP. Please try again.");
-    } finally {
+      const result = await apiClient.auth.sendOtp(
+        fullPhoneNumber,
+        "registration"
+      );
+      console.log("OTP send response:", result.success);
+      if (result.success) {
+        setIsLoading(false);
+        setError("");
+        setIsOtpSent(true);
+        setFormData({ ...formData, phoneNumber: fullPhoneNumber });
+        Alert.alert(
+          "Success",
+          result.message || "OTP sent to your phone number!"
+        );
+      } else {
+        setIsLoading(false);
+        setError(result.error || "Failed to send OTP. Please try again.");
+      }
+    } catch (err) {
+      console.log("Error during OTP send:", err);
       setIsLoading(false);
+      setError(err.error || "Network error. Please try again.");
     }
   };
-
   const handleVerifyOtp = async () => {
-    if (!otp || otp.length < 4) {
+    setIsLoading(false);
+    setError("");
+    console.log("Verifying OTP for:", formData.phoneNumber, "OTPs:", otp);
+    if (!otp) {
+      console.log("Please enter the OTP");
       setError("Please enter the OTP");
       return;
     }
-
-    setIsLoading(true);
-    setError("");
-
+    console.log("Verifying OTP for:", formData.phoneNumber, "OTP2:", otp);
     try {
-      // TODO: Replace with actual API call
-      // const response = await apiClient.post('/auth/whatsapp/verify-otp', {
-      //   whatsapp: formData.whatsapp,
-      //   otp: otp
-      // });
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      setFormData({
-        ...formData,
-        whatsappVerified: true,
-      });
-
-      Alert.alert("Success", "WhatsApp number verified successfully!");
-    } catch (error) {
-      setError("Invalid OTP. Please try again.");
+      console.log("came here2 ");
+      const response = await apiClient.auth.verifyOtp(
+        formData.phoneNumber,
+        otp
+      );
+      console.log("OTP verify response:", response);
+      if (response.success) {
+        setFormData({ ...formData, whatsappVerified: true });
+        Toast.show({
+          text1: response.message || "Phone number verified successfully!",
+          type: "success",
+        });
+      } else {
+        setError(
+          response.error || "OTP verification failed. Please try again."
+        );
+      }
+      setIsLoading(false);
+    } catch (err) {
+      setError(err?.message || "Network error. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
-
   const handleResendOtp = () => {
     setOtp("");
-    setIsOtpSent(false);
     handleSendOtp();
   };
 
-  if (formData.whatsappVerified) {
-    return (
-      <View style={styles.container}>
-        <View
-          style={[
-            styles.verifiedContainer,
-            { backgroundColor: COLORS.primary50 },
-          ]}
-        >
-          <Text style={styles.verifiedIcon}>✅</Text>
-          <Text style={[styles.verifiedTitle, { color: COLORS.primary700 }]}>
-            WhatsApp Verified
-          </Text>
-          <Text style={[styles.verifiedSubtitle, { color: COLORS.primary600 }]}>
-            {formData.whatsapp}
-          </Text>
-        </View>
-      </View>
-    );
-  }
+  const handleChangeNumber = () => {
+    // Fix: Properly handle the state updates without causing render issues
+    setIsOtpSent(false);
+    setOtp("");
+    setError("");
+    setFormData({
+      ...formData,
+      phoneNumber: "",
+      whatsappVerified: false,
+    });
+  };
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.subtitle, { color: COLORS.gray600 }]}>
-        Verify your WhatsApp number for important notifications and updates
-      </Text>
-
       <View style={styles.formContainer}>
         {!isOtpSent ? (
           // Phone Number Input
           <View>
             <Text style={[styles.label, { color: COLORS.dark }]}>
-              WhatsApp Number *
+              Phone Number *
             </Text>
-            <TextInput
-              style={[
-                styles.input,
-                {
-                  borderColor: error ? COLORS.error : COLORS.gray300,
-                  color: COLORS.dark,
-                },
-              ]}
-              placeholder="Enter your WhatsApp number"
-              placeholderTextColor={COLORS.gray400}
-              value={formData.whatsapp}
-              onChangeText={(text) => {
-                setFormData({ ...formData, whatsapp: text });
-                setError("");
-              }}
-              keyboardType="phone-pad"
-              maxLength={15}
-            />
+            <View style={styles.phoneInputContainer}>
+              <CountryCodePicker
+                selectedCode={countryCode}
+                onSelectCode={(country) => setCountryCode(country.code)}
+                style={styles.countryPicker}
+              />
+              <TextInput
+                style={[
+                  styles.phoneInput,
+                  {
+                    borderColor: error ? COLORS.error : COLORS.gray300,
+                    color: COLORS.dark,
+                  },
+                ]}
+                placeholder="Enter your Phone number"
+                placeholderTextColor={COLORS.gray400}
+                value={formData.phoneNumber}
+                onChangeText={(text) => {
+                  setFormData({ ...formData, phoneNumber: text });
+                  setError("");
+                }}
+                keyboardType="phone-pad"
+                maxLength={15}
+              />
+            </View>
 
             {error ? (
               <Text style={[styles.errorText, { color: COLORS.error }]}>
@@ -166,11 +175,22 @@ const WhatsappVerification = ({ formData, setFormData }) => {
         ) : (
           // OTP Input
           <View>
-            <Text style={[styles.label, { color: COLORS.dark }]}>
-              Enter OTP
-            </Text>
+            <View style={{ flexDirection: "row", gap: 10 }}>
+              <Text style={[styles.label, { color: COLORS.dark }]}>
+                Enter OTP{" "}
+              </Text>
+              <TouchableOpacity
+                style={{ ...styles.resendButton }}
+                onPress={handleChangeNumber}
+              >
+                <Text style={[styles.resendText, { color: COLORS.primary }]}>
+                  Change number
+                </Text>
+              </TouchableOpacity>
+            </View>
             <Text style={[styles.otpSubtitle, { color: COLORS.gray600 }]}>
-              We sent a verification code to {formData.whatsapp}
+              We sent a verification code to
+              {formData.phoneNumber}
             </Text>
 
             <TextInput
@@ -244,104 +264,5 @@ const WhatsappVerification = ({ formData, setFormData }) => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  subtitle: {
-    fontSize: 16,
-    marginBottom: 32,
-    textAlign: "center",
-    lineHeight: 22,
-  },
-  formContainer: {
-    marginBottom: 32,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 8,
-  },
-  input: {
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    fontSize: 16,
-    marginBottom: 16,
-  },
-  otpSubtitle: {
-    fontSize: 14,
-    marginBottom: 16,
-    textAlign: "center",
-  },
-  otpInput: {
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 20,
-    fontSize: 24,
-    fontWeight: "600",
-    letterSpacing: 8,
-    marginBottom: 16,
-  },
-  errorText: {
-    fontSize: 14,
-    marginBottom: 16,
-    textAlign: "center",
-  },
-  primaryButton: {
-    borderRadius: 12,
-    paddingVertical: 16,
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  primaryButtonText: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  resendButton: {
-    alignItems: "center",
-  },
-  resendText: {
-    fontSize: 14,
-    fontWeight: "500",
-  },
-  verifiedContainer: {
-    alignItems: "center",
-    padding: 32,
-    borderRadius: 16,
-    marginBottom: 32,
-  },
-  verifiedIcon: {
-    fontSize: 48,
-    marginBottom: 16,
-  },
-  verifiedTitle: {
-    fontSize: 20,
-    fontWeight: "600",
-    marginBottom: 8,
-  },
-  verifiedSubtitle: {
-    fontSize: 16,
-  },
-  infoContainer: {
-    flexDirection: "row",
-    padding: 16,
-    borderRadius: 12,
-    alignItems: "flex-start",
-  },
-  infoIcon: {
-    fontSize: 20,
-    marginRight: 12,
-    marginTop: 2,
-  },
-  infoText: {
-    fontSize: 14,
-    lineHeight: 20,
-    flex: 1,
-  },
-});
 
 export default WhatsappVerification;

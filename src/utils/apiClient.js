@@ -6,7 +6,7 @@ import { auth } from "../firebase/firebaseConfig";
 const getBaseURL = () => {
   if (__DEV__) {
     // Your machine's IP address for mobile device to connect
-    return "http://192.168.18.38:5000";
+    return "http://localhost:5000";
   }
   return "https://your-production-api.com"; // Your production API URL
 };
@@ -61,9 +61,14 @@ export const apiClient = {
     login: (mobile) => api.post("/api/auth/otp/login-whatsapp", { mobile }),
     verifyOtp: (mobile, otp) =>
       api.post("/api/auth/otp/verify-otp", { mobile, code: otp }),
-    sendOtp: (phone) => {
+    sendOtp: (phone, usecase = null) => {
       console.log("API: Sending OTP to phone:", phone);
-      return api.post("/api/auth/otp/send-otp", { phone });
+      return api.post("/api/auth/otp/send-otp", { phone, usecase });
+    },
+  },
+  user: {
+    onboardingComplete: (data) => {
+      return api.post("/api/users/onboarding-complete", data);
     },
   },
 };

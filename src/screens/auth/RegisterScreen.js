@@ -15,6 +15,7 @@ import {
 import { useTheme } from "../../constants/Theme";
 import { useAuth } from "../../context/AuthContext";
 import CountryCodePicker from "../../components/CountryCodePicker";
+import apiClient from "../../utils/apiClient";
 
 const RegisterScreen = ({ navigation }) => {
   const { COLORS, SIZES } = useTheme();
@@ -28,12 +29,43 @@ const RegisterScreen = ({ navigation }) => {
   const [error, setError] = useState("");
 
   const handleChoosePhone = () => {
-    setStep("phone");
+    navigation.navigate("Onboarding");
+  };
+  const handleSendOtp = async () => {
+    if (!phoneNumber.trim()) {
+      setError("Please enter your phone number");
+      return;
+    }
+
+    const fullPhoneNumber = `${countryCode}${phoneNumber}`;
+    console.log("Sending OTP to:", fullPhoneNumber);
+    setIsLoading(true);
+    setError("");
+    try {
+      const result = await apiClient.auth.sendOtp(fullPhoneNumber);
+      console.log("OTP send response:", result.success);
+      if (result.success) {
+        setIsLoading(false);
+        setError("");
+        Alert.alert(
+          "Success",
+          result.message || "OTP sent to your phone number!"
+        );
+        setStep("otp");
+      } else {
+        setIsLoading(false);
+        setError(result.error || "Failed to send OTP. Please try again.");
+      }
+    } catch (err) {
+      console.log("Error during OTP send:", err);
+      setIsLoading(false);
+      setError(err.error || "Network error. Please try again.");
+    }
   };
 
-  const handleSendOtp = async () => {
-    if (!phoneNumber || phoneNumber.length < 7) {
-      setError("Please enter a valid phone number");
+  const handleVerifyOtp = async () => {
+    if (!otp.trim()) {
+      setError("Please enter the OTP");
       return;
     }
 
@@ -42,49 +74,26 @@ const RegisterScreen = ({ navigation }) => {
     setError("");
 
     try {
-      const result = await sendOtp(fullPhoneNumber, true); // true for signup
-      if (result.success) {
-        setStep("otp");
-        Alert.alert("Success", "OTP sent to your phone number!");
-      } else {
-        setError(result.error || "Failed to send OTP");
-      }
-    } catch (error) {
-      setError("Network error. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+      const response = await apiClient.auth.verifyOtp(fullPhoneNumber, otp);
 
-  const handleVerifyOtp = async () => {
-    if (!otp || otp.length < 4) {
-      setError("Please enter the OTP");
-      return;
-    }
-
-    setIsLoading(true);
-    setError("");
-
-    try {
-      // For registration, we'll verify OTP and then navigate to onboarding
-      const result = await register({
-        phoneNumber,
-        otp,
-        // Additional registration data can be added here
-      });
-
-      if (result.success) {
-        Alert.alert("Success", "Phone verified! Let's complete your profile.", [
+      if (response.success) {
+        // Handle successful verification
+        Alert.alert("Success", "Login successful!", [
           {
             text: "Continue",
-            onPress: () => navigation.navigate("OnboardingFlow"),
+            onPress: () => {
+              // Navigate to main app
+              navigation.navigate("Onboarding");
+            },
           },
         ]);
       } else {
-        setError(result.error || "Invalid OTP");
+        setError(
+          response.error || "OTP verification failed. Please try again."
+        );
       }
-    } catch (error) {
-      setError("Registration failed. Please try again.");
+    } catch (err) {
+      setError(err?.message || "Network error. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -186,7 +195,7 @@ const RegisterScreen = ({ navigation }) => {
               value={phoneNumber}
               onChangeText={(text) => {
                 // Remove any non-numeric characters except for leading zeros
-                const cleanedText = text.replace(/[^0-9]/g, '');
+                const cleanedText = text.replace(/[^0-9]/g, "");
                 setPhoneNumber(cleanedText);
                 setError("");
               }}
@@ -360,6 +369,23 @@ const styles = StyleSheet.create({
   },
   optionsContainer: {
     marginTop: 20,
+  },
+  phoneInputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    display: "flex",
+  },
+  phoneInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    fontSize: 16,
+    height: 60,
+  },
+  countryPicker: {
+    marginRight: 8,
   },
   optionButton: {
     borderWidth: 2,

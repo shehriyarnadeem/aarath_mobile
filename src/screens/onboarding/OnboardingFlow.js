@@ -10,7 +10,6 @@ import {
   SafeAreaView,
 } from "react-native";
 import { useTheme } from "../../constants/Theme";
-import { useAuth } from "../../context/AuthContext";
 
 // Import onboarding components
 import RoleSelection from "../onboarding/components/RoleSelection";
@@ -18,10 +17,15 @@ import LocationSelection from "../onboarding/components/LocationSelection";
 import WhatsappVerification from "../onboarding/components/WhatsappVerification";
 import ProfileCompletionForm from "../onboarding/components/ProfileCompletionForm";
 import CategorySelection from "../onboarding/components/CategorySelection";
-
+import apiClient from "../../utils/apiClient";
+import { signInWithCustomToken } from "firebase/auth";
+import { auth } from "../../firebase/firebaseConfig";
+import Toast from "react-native-toast-message";
+import { useAuth } from "../../context/AuthContext";
+import { set } from "firebase/database";
 const OnboardingFlow = ({ navigation }) => {
   const { COLORS, SIZES } = useTheme();
-  const { updateProfile, completeOnboarding, user } = useAuth();
+  const { updateUserProfile, user } = useAuth();
 
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -44,7 +48,7 @@ const OnboardingFlow = ({ navigation }) => {
   const progressPercentage = (currentStep / totalSteps) * 100;
 
   const stepTitles = {
-    1: "WhatsApp Verification",
+    1: "Phone Verification",
     2: "Select Your Role",
     3: "Choose Location",
     4: "Business Categories",
@@ -86,46 +90,53 @@ const OnboardingFlow = ({ navigation }) => {
 
   const handleBack = () => {
     if (currentStep > 1) {
+      const countStep = currentStep - 1;
       setCurrentStep(currentStep - 1);
+      if (countStep === 1) {
+        setFormData({
+          whatsapp: "",
+          whatsappVerified: false,
+        });
+      }
     }
   };
 
   const handleSubmit = async () => {
-    setIsSubmitting(true);
     try {
-      // Prepare the final data for submission
-      const profileData = {
-        whatsapp: formData.whatsapp,
-        role: formData.role,
+      // Prepare data for backend
+      const payload = {
+        whatsapp: formData.phoneNumber,
         state: formData.state,
         city: formData.city,
-        businessCategories: formData.businessCategories,
+        role: formData.role,
         businessName: formData.profileCompletion.businessName,
         email: formData.profileCompletion.email,
-        onboardingCompleted: true,
+        businessCategories: formData.businessCategories,
+        profileCompleted: true,
       };
 
-      const result = await updateProfile(profileData);
-
-      if (result.success) {
-        // Mark onboarding as completed
-        await completeOnboarding();
-
-        Alert.alert(
-          "Welcome to Aarath!",
-          "Your profile has been completed successfully.",
-          [
-            {
-              text: "Continue",
-              onPress: () => navigation.replace("Marketplace"),
-            },
-          ]
-        );
-      } else {
-        Alert.alert("Error", result.error || "Failed to complete profile");
+      const response = await apiClient.user.onboardingComplete(payload);
+      console.log("Onboarding response:", response);
+      if (response && response.token) {
+        await signInWithCustomToken(auth, response.token); // Refresh session
+        updateUserProfile(response.user);
+        navigation.navigate("/Marketplace");
+      } else if (response?.error) {
+        console.log("Onboarding error response:", response);
+        Toast.show({
+          text1: response.error?.message,
+          type: "error",
+        });
       }
-    } catch (error) {
-      Alert.alert("Error", "Failed to submit profile. Please try again.");
+    } catch (err) {
+      console.log("Onboarding error responseq:", err);
+      Toast.show({
+        text1:
+          err?.error?.message ||
+          err?.message ||
+          "Failed to complete profile setup. Please try again.",
+        type: "error",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -184,17 +195,22 @@ const OnboardingFlow = ({ navigation }) => {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerTop}>
-          {currentStep > 1 && (
-            <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-              <Text style={[styles.backText, { color: COLORS.primary }]}>
-                ← Back
-              </Text>
-            </TouchableOpacity>
-          )}
-
-          <Text style={[styles.stepCounter, { color: COLORS.gray500 }]}>
-            Step {currentStep} of {totalSteps}
-          </Text>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              marginTop: 10,
+            }}
+          >
+            <Text style={[styles.stepCounter, { color: COLORS.gray500 }]}>
+              Step {currentStep} of {totalSteps}
+              <TouchableOpacity style={styles.backButton} onPress={handleBack}>
+                <Text style={[styles.backText, { color: COLORS.primary }]}>
+                  ← Back
+                </Text>
+              </TouchableOpacity>
+            </Text>
+          </View>
         </View>
 
         {/* Progress Bar */}
@@ -277,13 +293,13 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
   headerTop: {
+    alignItems: "center",
+    paddingVertical: 20,
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
   },
   backButton: {
-    paddingVertical: 4,
+    marginTop: 10,
   },
   backText: {
     fontSize: 16,
