@@ -4,6 +4,7 @@ import AppNavigator from "./src/navigation/AppNavigator";
 import { ThemeProvider } from "./src/constants/Theme";
 import { AuthProvider } from "./src/context/AuthContext";
 import Toast from "react-native-toast-message";
+import AuthDebugger from "./src/components/AuthDebugger";
 export default function App() {
   return (
     <>

@@ -423,11 +423,7 @@ const SplashScreen = ({ navigation }) => {
     ).start();
 
     // Check auth status after animation
-    const timer = setTimeout(() => {
-      checkAuthStatus();
-    }, 2200); // Wait for initial animation
-
-    return () => clearTimeout(timer);
+    checkAuthStatus();
   }, []);
 
   const checkAuthStatus = async () => {

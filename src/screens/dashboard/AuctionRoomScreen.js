@@ -336,24 +336,6 @@ const AuctionRoomScreen = ({ navigation, route }) => {
               PKR {currentBid.toLocaleString()}
             </Text>
           </View>
-          <View style={styles.reserveInfo}>
-            <Text style={[styles.reserveLabel, { color: COLORS.gray600 }]}>
-              Reserve: PKR {auction.reservePrice.toLocaleString()}
-            </Text>
-            <Text
-              style={[
-                styles.reserveStatus,
-                {
-                  color:
-                    currentBid >= auction.reservePrice
-                      ? COLORS.success600
-                      : COLORS.warning600,
-                },
-              ]}
-            >
-              {currentBid >= auction.reservePrice ? "✅ Met" : "⏳ Not Met"}
-            </Text>
-          </View>
         </View>
 
         {myHighestBid > 0 && (
@@ -436,25 +418,6 @@ const AuctionRoomScreen = ({ navigation, route }) => {
                   onChangeText={setMyBidAmount}
                   keyboardType="numeric"
                 />
-              </View>
-
-              <View style={styles.quickBidButtons}>
-                {[500, 1000, 2500].map((increment) => (
-                  <TouchableOpacity
-                    key={increment}
-                    style={[
-                      styles.quickBidButton,
-                      { backgroundColor: COLORS.gray100 },
-                    ]}
-                    onPress={() =>
-                      setMyBidAmount((currentBid + increment).toString())
-                    }
-                  >
-                    <Text style={[styles.quickBidText, { color: COLORS.dark }]}>
-                      +PKR {increment}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
               </View>
             </View>
 
@@ -718,12 +681,14 @@ const styles = StyleSheet.create({
   // Tab Content
   tabContent: {
     flex: 1,
+    width: screenWidth - 20,
   },
 
   // Bidding Section
   biddingSection: {
     flex: 1,
     padding: 20,
+    alignItems: "center",
   },
   biddingTitle: {
     fontSize: 20,
@@ -746,6 +711,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 16,
     marginBottom: 16,
+    width: screenWidth - 80,
   },
   currencySymbol: {
     fontSize: 20,
@@ -758,6 +724,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     paddingVertical: 16,
     textAlign: "center",
+    width: screenWidth - 120,
   },
   quickBidButtons: {
     flexDirection: "row",
@@ -773,6 +740,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   bidButton: {
+    width: screenWidth - 80,
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: "center",

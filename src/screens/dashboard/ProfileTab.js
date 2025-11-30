@@ -15,7 +15,7 @@ import { useAuth } from "../../context/AuthContext";
 
 const ProfileTab = ({ navigation }) => {
   const { COLORS, SIZES } = useTheme();
-  const { user, signOut } = useAuth();
+  const { user, logout } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
   // Mock user data based on the schema - replace with actual user data
@@ -50,27 +50,19 @@ const ProfileTab = ({ navigation }) => {
   };
 
   const handleSignOut = async () => {
-    Alert.alert("Sign Out", "Are you sure you want to sign out?", [
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
-      {
-        text: "Sign Out",
-        style: "destructive",
-        onPress: async () => {
-          setIsLoading(true);
-          try {
-            await signOut();
-          } catch (error) {
-            console.error("Sign out error:", error);
-            Alert.alert("Error", "Failed to sign out. Please try again.");
-          } finally {
-            setIsLoading(false);
-          }
-        },
-      },
-    ]);
+    try {
+      console.log("triggered");
+      await logout();
+    } catch (error) {
+      console.error("Sign out error:", error);
+      Toast.show({
+        type: "error",
+        text1: "Sign Out Failed",
+        text2: "Failed to sign out. Please try again.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleEditProfile = () => {

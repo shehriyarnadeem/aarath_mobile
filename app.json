@@ -13,6 +13,7 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.mycompany.myapp",
       "adaptiveIcon": {
         "backgroundColor": "#ffffff"
       }

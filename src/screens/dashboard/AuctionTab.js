@@ -527,23 +527,153 @@ const AuctionTab = ({ navigation }) => {
       style={[styles.container, { backgroundColor: COLORS.gray50 }]}
     >
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.gray50} />
-
-      {/* Header */}
-      <View style={[styles.header, { backgroundColor: COLORS.white }]}>
-        <View style={styles.headerContent}>
-          <View style={styles.headerTitleRow}>
-            <MaterialIcons name="gavel" size={24} color={COLORS.primary600} />
-            <Text style={[styles.headerTitle, { color: COLORS.dark }]}>
-              Live Auctions
-            </Text>
-          </View>
-          <Text style={[styles.headerSubtitle, { color: COLORS.gray600 }]}>
-            Bid on premium agricultural products
+      {/* Modern Marketplace-style Header */}
+      <View
+        style={[
+          styles.header,
+          {
+            backgroundColor: "#17414F",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            paddingVertical: 22,
+            borderBottomWidth: 0,
+            borderBottomColor: "transparent",
+          },
+        ]}
+      >
+        <Text
+          style={{
+            color: "#fff",
+            fontSize: 26,
+            fontWeight: "bold",
+            marginBottom: 4,
+            letterSpacing: 0.5,
+          }}
+        >
+          Live Auction Marketplace
+        </Text>
+        <Text
+          style={{
+            color: "#B6F0E6",
+            fontSize: 15,
+            fontWeight: "bold",
+            marginBottom: 18,
+          }}
+        >
+          Connect directly with verified farmers across Pakistan. Bid on quality
+          agricultural products in real-time auctions with transparent pricing.
+        </Text>
+        {/* Search Bar */}
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            backgroundColor: "#F3F6FB",
+            borderRadius: 16,
+            paddingHorizontal: 14,
+            paddingVertical: 8,
+            width: "100%",
+            marginBottom: 18,
+          }}
+        >
+          <Ionicons
+            name="search"
+            size={20}
+            color="#A0AEC0"
+            style={{ marginRight: 8 }}
+          />
+          <Text style={{ color: "#A0AEC0", fontSize: 15, flex: 1 }}>
+            Search products, categories...
           </Text>
         </View>
+
+        {/* Filter Pills */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <View style={{ flexDirection: "row", gap: 8 }}>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                backgroundColor: "#7C3AED",
+                borderRadius: 20,
+                paddingHorizontal: 12,
+                paddingVertical: 5,
+                marginRight: 8,
+              }}
+            >
+              <MaterialIcons
+                name="star"
+                size={14}
+                color="#fff"
+                style={{ marginRight: 4 }}
+              />
+              <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 13 }}>
+                Sort: Featured
+              </Text>
+            </View>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                backgroundColor: "#D1FAE5",
+                borderRadius: 20,
+                paddingHorizontal: 12,
+                paddingVertical: 5,
+                marginRight: 8,
+              }}
+            >
+              <Ionicons
+                name="location"
+                size={14}
+                color="#059669"
+                style={{ marginRight: 4 }}
+              />
+              <Text
+                style={{ color: "#059669", fontWeight: "bold", fontSize: 13 }}
+              >
+                Location
+              </Text>
+            </View>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                backgroundColor: "#FDE68A",
+                borderRadius: 20,
+                paddingHorizontal: 12,
+                paddingVertical: 5,
+              }}
+            >
+              <MaterialIcons
+                name="attach-money"
+                size={14}
+                color="#F59E0B"
+                style={{ marginRight: 4 }}
+              />
+              <Text
+                style={{ color: "#F59E0B", fontWeight: "bold", fontSize: 13 }}
+              >
+                Price
+              </Text>
+            </View>
+          </View>
+        </ScrollView>
+      </View>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          backgroundColor: COLORS.gray50,
+          paddingHorizontal: 16,
+          paddingVertical: 10,
+          borderBottomWidth: 1,
+          borderBottomColor: COLORS.gray100,
+        }}
+      >
+        {/* You can add more filter buttons here if needed */}
       </View>
 
-      {/* Auctions List */}
       <FlatList
         data={filteredAuctions}
         renderItem={({ item }) => <AuctionCard auction={item} />}
@@ -594,11 +724,11 @@ const AuctionTab = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    width: screenWidth,
   },
   header: {
     paddingHorizontal: 20,
     paddingVertical: 25,
-    elevation: 2,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,

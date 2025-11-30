@@ -523,6 +523,9 @@ const MarketplaceTab = ({ navigation }) => {
           showsHorizontalScrollIndicator={false}
           style={styles.categoriesContainer}
           contentContainerStyle={styles.categoriesContent}
+          bounces={false}
+          overScrollMode="never"
+          nestedScrollEnabled={false}
         >
           {categories.map((category) => (
             <TouchableOpacity
@@ -572,6 +575,9 @@ const MarketplaceTab = ({ navigation }) => {
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.filterContent}
+            bounces={false}
+            overScrollMode="never"
+            nestedScrollEnabled={false}
           >
             <TouchableOpacity
               style={[
@@ -632,6 +638,9 @@ const MarketplaceTab = ({ navigation }) => {
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 style={styles.categoriesScroll}
+                bounces={false}
+                overScrollMode="never"
+                nestedScrollEnabled={false}
               >
                 {categories.map((category) => (
                   <TouchableOpacity
@@ -797,6 +806,8 @@ const styles = StyleSheet.create({
   modernContainer: {
     flex: 1,
     backgroundColor: "#f8fafc",
+    width: screenWidth,
+    maxWidth: screenWidth,
   },
 
   // Header Styles
@@ -812,6 +823,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 12,
     elevation: 4,
+    alignSelf: "center",
+    width: "100%",
   },
   headerTop: {
     flexDirection: "row",

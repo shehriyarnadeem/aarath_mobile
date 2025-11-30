@@ -1,9 +1,10 @@
+// Update: src/context/AuthContext.js
 import React, { createContext, useContext, useEffect, useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { onAuthStateChanged, getAuth } from "firebase/auth";
+import { signOut } from "../firebase/firebaseConfig";
 import apiClient from "../utils/apiClient";
-import { auth, onAuthStateChanged, signOut } from "../firebase/firebaseConfig";
 
-const AuthContext = createContext({});
+const AuthContext = createContext();
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -15,54 +16,67 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [userProfile, setUserProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const auth = getAuth();
+
+    // Listen to Firebase auth state changes
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       try {
         if (firebaseUser) {
-          setUser(firebaseUser);
+          // User is signed in
           setIsAuthenticated(true);
-          console.log("Firebase user detected:", firebaseUser);
-          // Fetch user profile from backend
-          const profile = await apiClient.users.getById(firebaseUser.uid);
-          setUserProfile(profile);
-          // Save to AsyncStorage
-          await AsyncStorage.setItem("userProfile", JSON.stringify(profile));
+
+          // Fetch user profile from your backend
+          const userProfile = await fetchUserProfile(firebaseUser.uid);
+
+          if (userProfile && typeof userProfile === "object") {
+            setUser(userProfile);
+            setHasCompletedOnboarding(userProfile.profileCompleted || false);
+          } else {
+            // If no profile found, user needs to complete onboarding
+            setUser({ uid: firebaseUser.uid });
+            setHasCompletedOnboarding(false);
+            console.log("⚠️ No user profile found, needs onboarding");
+          }
           setLoading(false);
         } else {
-          setUser(null);
-          setUserProfile(null);
+          // User is signed out
+          console.log("🚪 User signed out");
           setIsAuthenticated(false);
+          setUser(null);
+          setHasCompletedOnboarding(false);
           setLoading(false);
         }
-
-        setLoading(false);
       } catch (error) {
-        console.error("Error fetching user profile:", error);
+        console.error("❌ Error in auth state change:", error);
+        setIsAuthenticated(false);
+        setUser(null);
+        setHasCompletedOnboarding(false);
+      } finally {
         setLoading(false);
       }
     });
 
-    return unsubscribe;
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
   }, []);
+
   const logout = async () => {
     try {
       // Sign out from Firebase
+      setLoading(true);
+      const auth = getAuth();
       await signOut(auth);
 
       // Clear local state immediately
       setUser(null);
-      setUserProfile(null);
       setIsAuthenticated(false);
-      updateUserProfile(null);
 
       // Clear any local storage if needed
-
-      await AsyncStorage.multiRemove(["authToken", "userProfile"]);
       setLoading(false);
       // User successfully signed out
     } catch (error) {
@@ -70,76 +84,47 @@ export const AuthProvider = ({ children }) => {
 
       // Even if Firebase signout fails, clear local state
       setUser(null);
-      setUserProfile(null);
       setIsAuthenticated(false);
-      await AsyncStorage.multiRemove(["authToken", "userProfile"]);
 
       throw error; // Re-throw so AppLayout can handle it
     }
   };
-  const checkAuthStatus = async () => {
-    try {
-      const authToken = await AsyncStorage.getItem("authToken");
-      const storedUserProfile = await AsyncStorage.getItem("userProfile");
 
-      // Set onboarding status based on stored value
-      if (authToken && storedUserProfile) {
-        setHasCompletedOnboarding(authToken === "true");
+  const fetchUserProfile = async (uid) => {
+    try {
+      console.log("🔍 Fetching user profile for UID:", uid);
+
+      // Make sure to properly await the API call
+      const response = await apiClient.user.getById(uid);
+
+      console.log("📝 API Response:", response);
+
+      // Check if response exists and has user data
+      if (response.success) {
+        console.log("✅ User profile found:", response);
+        return response.user;
+      } else if (response && response.success === false) {
+        console.log("⚠️ API returned error:", response.error);
+        return null;
       } else {
-        setHasCompletedOnboarding(false);
-      }
-
-      // Load stored user profile if available
-      if (storedUserProfile) {
-        setUserProfile(storedUserProfile && JSON.parse(storedUserProfile));
-      }
-      setLoading(false);
-      // Firebase auth state is handled by onAuthStateChanged listener
-      // No need for separate token validation
-    } catch (error) {
-      setLoading(false);
-      console.error("Auth check error:", error);
-    }
-  };
-  const syncAuthState = async () => {
-    try {
-      // Firebase automatically handles auth state through onAuthStateChanged
-      // This function can be used to manually refresh user profile data
-      if (user && isAuthenticated) {
-        await fetchUserProfile(user);
-        setLoading(false);
+        console.log("⚠️ No user data in response");
+        return null;
       }
     } catch (error) {
-      setLoading(false);
-      console.error("Auth sync error:", error);
-    }
-  };
-
-  const updateUserProfile = (updatedProfile) => {
-    setUserProfile(updatedProfile);
-  };
-
-  const completeOnboarding = async () => {
-    try {
-      setHasCompletedOnboarding(true);
-      return { success: true };
-    } catch (error) {
-      console.error("Complete onboarding error:", error);
-      return { success: false, error: error.message };
+      console.error("❌ Error fetching user profile:", error);
+      return null;
     }
   };
 
   const value = {
     user,
-    userProfile,
-    loading,
     isAuthenticated,
     hasCompletedOnboarding,
-    updateUserProfile,
-    completeOnboarding,
-    checkAuthStatus,
-    syncAuthState,
+    loading,
+    setLoading,
     logout,
+    setUser,
+    setHasCompletedOnboarding, // Allow manual updates after onboarding completion
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -3,12 +3,12 @@ import axios from "axios";
 import { auth } from "../firebase/firebaseConfig";
 
 // Get the correct base URL for development
-const getBaseURL = () => {
+export const getBaseURL = () => {
   if (__DEV__) {
     // Your machine's IP address for mobile device to connect
-    return "http://localhost:5000";
+    return "https://api.aarath.app";
   }
-  return "https://your-production-api.com"; // Your production API URL
+  return "https://api.aarath.app"; // Your production API URL
 };
 
 // Create axios instance with base configuration
@@ -59,8 +59,8 @@ export const apiClient = {
   // Auth endpoints
   auth: {
     login: (mobile) => api.post("/api/auth/otp/login-whatsapp", { mobile }),
-    verifyOtp: (mobile, otp) =>
-      api.post("/api/auth/otp/verify-otp", { mobile, code: otp }),
+    verifyOtp: (mobile, otp, usecase = null) =>
+      api.post("/api/auth/otp/verify-otp", { mobile, code: otp, usecase }),
     sendOtp: (phone, usecase = null) => {
       console.log("API: Sending OTP to phone:", phone);
       return api.post("/api/auth/otp/send-otp", { phone, usecase });
@@ -70,6 +70,7 @@ export const apiClient = {
     onboardingComplete: (data) => {
       return api.post("/api/users/onboarding-complete", data);
     },
+    getById: (userId) => api.get(`/api/users/${userId}`),
   },
 };
 

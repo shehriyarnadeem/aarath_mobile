@@ -2,7 +2,7 @@ import React from "react";
 import { Text } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator } from "@react-navigation/stack";
-import { Ionicons, MaterialIcons, AntDesign } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons, AntDesign } from "@expo/vector-icons";
 import { useTheme } from "../constants/Theme";
 
 // Import the tab screens
@@ -32,7 +32,7 @@ const TabNavigator = () => {
           paddingBottom: 8,
           paddingTop: 8,
           height: 65,
-          elevation: 8,
+
           shadowColor: "#000",
           shadowOffset: { width: 0, height: -2 },
           shadowOpacity: 0.1,
@@ -55,10 +55,10 @@ const TabNavigator = () => {
         component={MarketplaceTab}
         options={{
           tabBarIcon: ({ color, focused }) => (
-            <MaterialIcons 
-              name="storefront" 
-              size={focused ? 26 : 24} 
-              color={color} 
+            <MaterialIcons
+              name="storefront"
+              size={focused ? 26 : 24}
+              color={color}
             />
           ),
         }}
@@ -69,10 +69,10 @@ const TabNavigator = () => {
         component={MyProductsTab}
         options={{
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons 
-              name="cube-outline" 
-              size={focused ? 26 : 24} 
-              color={color} 
+            <Ionicons
+              name="cube-outline"
+              size={focused ? 26 : 24}
+              color={color}
             />
           ),
         }}
@@ -83,10 +83,10 @@ const TabNavigator = () => {
         component={AuctionTab}
         options={{
           tabBarIcon: ({ color, focused }) => (
-            <MaterialIcons 
-              name="gavel" 
-              size={focused ? 26 : 24} 
-              color={color} 
+            <MaterialIcons
+              name="gavel"
+              size={focused ? 26 : 24}
+              color={color}
             />
           ),
         }}
@@ -97,10 +97,10 @@ const TabNavigator = () => {
         component={ProfileTab}
         options={{
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons 
-              name="person-outline" 
-              size={focused ? 26 : 24} 
-              color={color} 
+            <Ionicons
+              name="person-outline"
+              size={focused ? 26 : 24}
+              color={color}
             />
           ),
         }}

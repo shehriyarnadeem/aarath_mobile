@@ -6,6 +6,7 @@ const ProfileCompletionForm = ({ profileData, onProfileChange }) => {
   const { COLORS, SIZES } = useTheme();
 
   const handleInputChange = (field, value) => {
+    console.log("Profile field changed:", field, value);
     onProfileChange({
       ...profileData,
       [field]: value,
@@ -100,119 +101,7 @@ const ProfileCompletionForm = ({ profileData, onProfileChange }) => {
             Optional - helps others understand your business better
           </Text>
         </View>
-
-        {/* Years of Experience */}
-        <View style={styles.inputGroup}>
-          <Text style={[styles.label, { color: COLORS.dark }]}>
-            Years of Experience
-          </Text>
-          <TextInput
-            style={[
-              styles.input,
-              {
-                borderColor: profileData.experience
-                  ? COLORS.primary
-                  : COLORS.gray300,
-                color: COLORS.dark,
-              },
-            ]}
-            placeholder="e.g., 5"
-            placeholderTextColor={COLORS.gray400}
-            value={profileData.experience || ""}
-            onChangeText={(text) => handleInputChange("experience", text)}
-            keyboardType="numeric"
-            maxLength={2}
-          />
-          <Text style={[styles.helperText, { color: COLORS.gray500 }]}>
-            Optional - your experience in agriculture/trading
-          </Text>
-        </View>
-
-        {/* Business Size */}
-        <View style={styles.inputGroup}>
-          <Text style={[styles.label, { color: COLORS.dark }]}>
-            Business Size
-          </Text>
-          <View style={styles.radioGroup}>
-            {[
-              { value: "small", label: "Small (1-10 employees)" },
-              { value: "medium", label: "Medium (11-50 employees)" },
-              { value: "large", label: "Large (50+ employees)" },
-              { value: "individual", label: "Individual/Self-employed" },
-            ].map((option) => (
-              <TouchableOpacity
-                key={option.value}
-                style={styles.radioOption}
-                onPress={() => handleInputChange("businessSize", option.value)}
-              >
-                <View
-                  style={[
-                    styles.radioButton,
-                    {
-                      borderColor:
-                        profileData.businessSize === option.value
-                          ? COLORS.primary
-                          : COLORS.gray300,
-                      backgroundColor:
-                        profileData.businessSize === option.value
-                          ? COLORS.primary
-                          : COLORS.white,
-                    },
-                  ]}
-                >
-                  {profileData.businessSize === option.value && (
-                    <View
-                      style={[
-                        styles.radioInner,
-                        { backgroundColor: COLORS.white },
-                      ]}
-                    />
-                  )}
-                </View>
-                <Text style={[styles.radioLabel, { color: COLORS.dark }]}>
-                  {option.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
       </View>
-
-      {/* Profile Preview */}
-      {profileData.businessName && (
-        <View
-          style={[styles.previewContainer, { backgroundColor: COLORS.gray50 }]}
-        >
-          <Text style={[styles.previewTitle, { color: COLORS.dark }]}>
-            Profile Preview
-          </Text>
-          <View style={[styles.previewCard, { backgroundColor: COLORS.white }]}>
-            <Text
-              style={[styles.previewBusinessName, { color: COLORS.primary }]}
-            >
-              {profileData.businessName}
-            </Text>
-            {profileData.email && (
-              <Text style={[styles.previewText, { color: COLORS.gray600 }]}>
-                📧 {profileData.email}
-              </Text>
-            )}
-            {profileData.experience && (
-              <Text style={[styles.previewText, { color: COLORS.gray600 }]}>
-                🎯 {profileData.experience} years of experience
-              </Text>
-            )}
-            {profileData.businessSize && (
-              <Text style={[styles.previewText, { color: COLORS.gray600 }]}>
-                🏢{" "}
-                {profileData.businessSize.charAt(0).toUpperCase() +
-                  profileData.businessSize.slice(1)}{" "}
-                business
-              </Text>
-            )}
-          </View>
-        </View>
-      )}
     </ScrollView>
   );
 };

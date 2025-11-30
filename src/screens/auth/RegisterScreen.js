@@ -16,10 +16,10 @@ import { useTheme } from "../../constants/Theme";
 import { useAuth } from "../../context/AuthContext";
 import CountryCodePicker from "../../components/CountryCodePicker";
 import apiClient from "../../utils/apiClient";
-
+import Toast from "react-native-toast-message";
+import { getAuth, signInWithCustomToken } from "firebase/auth";
 const RegisterScreen = ({ navigation }) => {
   const { COLORS, SIZES } = useTheme();
-  const { register, sendOtp } = useAuth();
 
   const [step, setStep] = useState("choose"); // 'choose', 'phone', 'otp'
   const [countryCode, setCountryCode] = useState("+92"); // Default to Pakistan
@@ -29,7 +29,7 @@ const RegisterScreen = ({ navigation }) => {
   const [error, setError] = useState("");
 
   const handleChoosePhone = () => {
-    navigation.navigate("Onboarding");
+    setStep("phone");
   };
   const handleSendOtp = async () => {
     if (!phoneNumber.trim()) {
@@ -37,20 +37,25 @@ const RegisterScreen = ({ navigation }) => {
       return;
     }
 
-    const fullPhoneNumber = `${countryCode}${phoneNumber}`;
+    const fullPhoneNumber = phoneNumber.includes("+")
+      ? phoneNumber
+      : `${countryCode}${phoneNumber}`;
     console.log("Sending OTP to:", fullPhoneNumber);
     setIsLoading(true);
     setError("");
     try {
-      const result = await apiClient.auth.sendOtp(fullPhoneNumber);
+      const result = await apiClient.auth.sendOtp(
+        fullPhoneNumber,
+        "registration"
+      );
       console.log("OTP send response:", result.success);
       if (result.success) {
         setIsLoading(false);
         setError("");
-        Alert.alert(
-          "Success",
-          result.message || "OTP sent to your phone number!"
-        );
+        Toast.show({
+          text1: result.message || "OTP sent to your phone number!",
+          type: "success",
+        });
         setStep("otp");
       } else {
         setIsLoading(false);
@@ -74,19 +79,22 @@ const RegisterScreen = ({ navigation }) => {
     setError("");
 
     try {
-      const response = await apiClient.auth.verifyOtp(fullPhoneNumber, otp);
-
+      const response = await apiClient.auth.verifyOtp(
+        fullPhoneNumber,
+        otp,
+        "registration"
+      );
       if (response.success) {
         // Handle successful verification
-        Alert.alert("Success", "Login successful!", [
-          {
-            text: "Continue",
-            onPress: () => {
-              // Navigate to main app
-              navigation.navigate("Onboarding");
-            },
-          },
-        ]);
+        Toast.show({
+          text1: response.otp?.message || "Verification successful!",
+          text2: response.user?.message || "User created successfully!",
+          type: "success",
+          text1Style: { fontSize: 16, fontWeight: "600" },
+          text2Style: { fontSize: 14 },
+        });
+        const auth = getAuth();
+        await signInWithCustomToken(auth, response.user?.token);
       } else {
         setError(
           response.error || "OTP verification failed. Please try again."
@@ -94,6 +102,10 @@ const RegisterScreen = ({ navigation }) => {
       }
     } catch (err) {
       setError(err?.message || "Network error. Please try again.");
+      Toast.show({
+        text1: err?.message || "Network error. Please try again.",
+        type: "error",
+      });
     } finally {
       setIsLoading(false);
     }

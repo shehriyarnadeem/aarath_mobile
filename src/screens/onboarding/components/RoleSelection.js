@@ -5,7 +5,11 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  Dimensions,
 } from "react-native";
+
+const { height: screenHeight } = Dimensions.get("window");
+
 import { useTheme } from "../../../constants/Theme";
 
 const RoleSelection = ({ selectedRole, onRoleSelect }) => {
@@ -34,44 +38,6 @@ const RoleSelection = ({ selectedRole, onRoleSelect }) => {
         "I purchase agricultural products for business or consumption",
       icon: "🛒",
       color: COLORS.secondary,
-    },
-    {
-      id: "RESELLER",
-      title: "Reseller/Seller",
-      description:
-        "I resell or sell agricultural products to other businesses or consumers",
-      icon: "🏪",
-      color: COLORS.warning,
-    },
-    {
-      id: "DISTRIBUTOR",
-      title: "Distributor",
-      description:
-        "I distribute agricultural products across different markets",
-      icon: "🚛",
-      color: "#8b5cf6",
-    },
-    {
-      id: "PROCESSOR",
-      title: "Processor",
-      description: "I process raw agricultural products into finished goods",
-      icon: "🏭",
-      color: "#06b6d4",
-    },
-    {
-      id: "EXPORTER",
-      title: "Exporter",
-      description: "I export agricultural products to international markets",
-      icon: "🌍",
-      color: "#10b981",
-    },
-    {
-      id: "MARKETPLACE",
-      title: "Marketplace/Platform",
-      description:
-        "I operate a platform or marketplace for agricultural trading",
-      icon: "🏢",
-      color: "#f59e0b",
     },
   ];
 
@@ -137,7 +103,10 @@ const RoleSelection = ({ selectedRole, onRoleSelect }) => {
 
       <ScrollView
         style={styles.rolesContainer}
+        contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        bounces={true}
+        scrollEnabled={true}
       >
         {roles.map(renderRoleCard)}
       </ScrollView>
@@ -148,20 +117,37 @@ const RoleSelection = ({ selectedRole, onRoleSelect }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 8,
   },
   subtitle: {
     fontSize: 16,
     marginBottom: 24,
     textAlign: "center",
+    lineHeight: 22,
   },
   rolesContainer: {
     flex: 1,
+    maxHeight: screenHeight * 0.7, // Ensure it doesn't exceed 70% of screen height
+  },
+  scrollContent: {
+    paddingTop: 4,
+    flexGrow: 1,
   },
   roleCard: {
     borderWidth: 2,
     borderRadius: 12,
     padding: 16,
-    marginBottom: 12,
+    marginBottom: 16,
+    marginHorizontal: 4,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   roleHeader: {
     flexDirection: "row",
@@ -181,6 +167,7 @@ const styles = StyleSheet.create({
   roleInfo: {
     flex: 1,
     marginRight: 12,
+    minWidth: 0, // Allows flex items to shrink below their content size
   },
   roleTitle: {
     fontSize: 16,
@@ -189,7 +176,9 @@ const styles = StyleSheet.create({
   },
   roleDescription: {
     fontSize: 14,
-    lineHeight: 18,
+    lineHeight: 20,
+    flexWrap: "wrap",
+    flexShrink: 1,
   },
   radioButton: {
     width: 24,

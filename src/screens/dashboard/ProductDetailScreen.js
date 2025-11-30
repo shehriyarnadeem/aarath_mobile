@@ -35,10 +35,10 @@ const ProductDetailScreen = ({ navigation, route }) => {
   };
 
   const handleContactSeller = () => {
-    if (product.user.whatsapp) {
+    if (product.seller.whatsapp) {
       const message = `Hi, I'm interested in your ${product.title} (Serial: ${product.serialNumber}). Could you provide more details?`;
       const whatsappUrl = `whatsapp://send?phone=${
-        product.user.whatsapp
+        product.seller.whatsapp
       }&text=${encodeURIComponent(message)}`;
 
       Linking.canOpenURL(whatsappUrl)
@@ -91,6 +91,9 @@ const ProductDetailScreen = ({ navigation, route }) => {
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
+            bounces={false}
+            overScrollMode="never"
+            nestedScrollEnabled={false}
             onMomentumScrollEnd={(event) => {
               const index = Math.round(
                 event.nativeEvent.contentOffset.x / screenWidth
@@ -292,37 +295,37 @@ const ProductDetailScreen = ({ navigation, route }) => {
               ]}
             >
               <Text style={[styles.sellerInitial, { color: COLORS.white }]}>
-                {product.user?.businessName
-                  ? product.user?.businessName.charAt(0)
-                  : product.user?.name?.charAt(0) || "U"}
+                {product.seller?.businessName
+                  ? product.seller?.businessName.charAt(0)
+                  : product.seller?.name?.charAt(0) || "U"}
               </Text>
             </View>
 
             <View style={styles.sellerInfo}>
               <View style={styles.sellerNameRow}>
                 <Text style={[styles.sellerName, { color: COLORS.dark }]}>
-                  {product.user?.businessName ||
-                    product.user?.name ||
+                  {product.seller?.businessName ||
+                    product.seller?.name ||
                     "Unknown Seller"}
                 </Text>
               </View>
 
-              {product.user?.name && product.user?.businessName && (
+              {product.seller?.name && product.seller?.businessName && (
                 <Text style={[styles.personalName, { color: COLORS.gray600 }]}>
-                  Contact: {product.user?.name}
+                  Contact: {product.seller?.name}
                 </Text>
               )}
 
               <Text style={[styles.sellerLocation, { color: COLORS.gray600 }]}>
-                📍 {product.user?.city}, {product.user?.state}
+                📍 {product.seller?.city}, {product.seller?.state}
               </Text>
 
               {product?.user?.whatsapp && (
                 <Text
                   style={[styles.whatsappNumber, { color: COLORS.success600 }]}
                 >
-                  📱 {product.user?.whatsapp}
-                  {product.user.whatsappVerified && " (Verified)"}
+                  📱 {product.seller?.whatsapp}
+                  {product.seller.whatsappVerified && " (Verified)"}
                 </Text>
               )}
             </View>
@@ -400,7 +403,7 @@ const ProductDetailScreen = ({ navigation, route }) => {
           onPress={handleContactSeller}
         >
           <Text style={[styles.contactSellerText, { color: COLORS.white }]}>
-            💬 Contact Seller
+            Contact Seller
           </Text>
         </TouchableOpacity>
       </View>

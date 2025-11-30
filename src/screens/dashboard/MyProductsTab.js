@@ -44,6 +44,7 @@ const MyProductsTab = ({ navigation }) => {
         verified: true,
         rating: 4.8,
         location: "Lahore, Punjab",
+        whatsapp: "+9201234567890",
       },
     },
     {
