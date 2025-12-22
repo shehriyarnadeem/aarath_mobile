@@ -31,7 +31,6 @@ const { width: screenWidth } = Dimensions.get("window");
 const LoginScreen = ({ navigation }) => {
   const { COLORS, SIZES } = useTheme();
   const { loading, setLoading } = useAuth();
-  console.log("LoginScreen Rendered", getBaseURL());
   const [step, setStep] = useState("choose"); // 'choose', 'phone', 'otp'
   const [countryCode, setCountryCode] = useState("+92"); // Default to Pakistan
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -131,7 +130,8 @@ const LoginScreen = ({ navigation }) => {
         );
         return;
       }
-      setLoading(true); // --- ADDED LINE ---
+      console.log("OTP verified successfully:", verifyResult);
+      setIsLoading(true); // --- ADDED LINE ---
       await signInWithCustomToken(getAuth(), verifyResult?.user?.token);
       Toast.show({
         type: "success",
@@ -139,6 +139,7 @@ const LoginScreen = ({ navigation }) => {
       });
       setIsLoading(false);
     } catch (err) {
+      console.log("Error during OTP verification:", err);
       setError(err?.error || "Network error. Please try again.");
     } finally {
       setIsLoading(false);

@@ -15,7 +15,7 @@ const ProfileCompletionForm = ({ profileData, onProfileChange }) => {
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <Text style={[styles.subtitle, { color: COLORS.gray600 }]}>
+      <Text style={StyleSheet.flatten([styles.subtitle, { color: COLORS.gray600 }])}>
         Complete your business profile to start connecting with the agricultural
         marketplace
       </Text>
@@ -23,11 +23,11 @@ const ProfileCompletionForm = ({ profileData, onProfileChange }) => {
       <View style={styles.formContainer}>
         {/* Business Name */}
         <View style={styles.inputGroup}>
-          <Text style={[styles.label, { color: COLORS.dark }]}>
+          <Text style={StyleSheet.flatten([styles.label, { color: COLORS.dark }])}>
             Business Name *
           </Text>
           <TextInput
-            style={[
+            style={StyleSheet.flatten([
               styles.input,
               {
                 borderColor: profileData.businessName
@@ -35,25 +35,25 @@ const ProfileCompletionForm = ({ profileData, onProfileChange }) => {
                   : COLORS.gray300,
                 color: COLORS.dark,
               },
-            ]}
+            ])}
             placeholder="Enter your business or farm name"
             placeholderTextColor={COLORS.gray400}
             value={profileData.businessName}
             onChangeText={(text) => handleInputChange("businessName", text)}
             autoCapitalize="words"
           />
-          <Text style={[styles.helperText, { color: COLORS.gray500 }]}>
+          <Text style={StyleSheet.flatten([styles.helperText, { color: COLORS.gray500 }])}>
             This will be displayed on your profile and listings
           </Text>
         </View>
 
         {/* Email */}
         <View style={styles.inputGroup}>
-          <Text style={[styles.label, { color: COLORS.dark }]}>
+          <Text style={StyleSheet.flatten([styles.label, { color: COLORS.dark }])}>
             Email Address
           </Text>
           <TextInput
-            style={[
+            style={StyleSheet.flatten([
               styles.input,
               {
                 borderColor: profileData.email
@@ -61,7 +61,7 @@ const ProfileCompletionForm = ({ profileData, onProfileChange }) => {
                   : COLORS.gray300,
                 color: COLORS.dark,
               },
-            ]}
+            ])}
             placeholder="Enter your email address"
             placeholderTextColor={COLORS.gray400}
             value={profileData.email}
@@ -69,18 +69,18 @@ const ProfileCompletionForm = ({ profileData, onProfileChange }) => {
             keyboardType="email-address"
             autoCapitalize="none"
           />
-          <Text style={[styles.helperText, { color: COLORS.gray500 }]}>
+          <Text style={StyleSheet.flatten([styles.helperText, { color: COLORS.gray500 }])}>
             Optional - for important notifications and updates
           </Text>
         </View>
 
         {/* Business Description */}
         <View style={styles.inputGroup}>
-          <Text style={[styles.label, { color: COLORS.dark }]}>
+          <Text style={StyleSheet.flatten([styles.label, { color: COLORS.dark }])}>
             Business Description
           </Text>
           <TextInput
-            style={[
+            style={StyleSheet.flatten([
               styles.textArea,
               {
                 borderColor: profileData.description
@@ -88,7 +88,7 @@ const ProfileCompletionForm = ({ profileData, onProfileChange }) => {
                   : COLORS.gray300,
                 color: COLORS.dark,
               },
-            ]}
+            ])}
             placeholder="Tell us about your business, farming practices, or trading activities..."
             placeholderTextColor={COLORS.gray400}
             value={profileData.description || ""}
@@ -97,7 +97,7 @@ const ProfileCompletionForm = ({ profileData, onProfileChange }) => {
             numberOfLines={4}
             textAlignVertical="top"
           />
-          <Text style={[styles.helperText, { color: COLORS.gray500 }]}>
+          <Text style={StyleSheet.flatten([styles.helperText, { color: COLORS.gray500 }])}>
             Optional - helps others understand your business better
           </Text>
         </View>

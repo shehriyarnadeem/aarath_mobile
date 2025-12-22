@@ -117,40 +117,40 @@ const MarketplaceScreen = ({ navigation }) => {
   const renderAuctionCard = (auction) => (
     <TouchableOpacity
       key={auction.id}
-      style={[styles.auctionCard, { borderColor: COLORS.light }]}
+      style={StyleSheet.flatten([styles.auctionCard, { borderColor: COLORS.light }])}
       onPress={() => {
         // TODO: Navigate to auction details screen
         Alert.alert("Auction", `Opening ${auction.title}...`);
       }}
     >
       <View style={styles.auctionHeader}>
-        <Text style={[styles.auctionTitle, { color: COLORS.dark }]}>
+        <Text style={StyleSheet.flatten([styles.auctionTitle, { color: COLORS.dark }])}>
           {auction.title}
         </Text>
-        <View style={[styles.statusBadge, { backgroundColor: COLORS.success }]}>
-          <Text style={[styles.statusText, { color: COLORS.white }]}>LIVE</Text>
+        <View style={StyleSheet.flatten([styles.statusBadge, { backgroundColor: COLORS.success }])}>
+          <Text style={StyleSheet.flatten([styles.statusText, { color: COLORS.white }])}>LIVE</Text>
         </View>
       </View>
 
-      <Text style={[styles.auctionDescription, { color: COLORS.secondary }]}>
+      <Text style={StyleSheet.flatten([styles.auctionDescription, { color: COLORS.secondary }])}>
         {auction.description}
       </Text>
 
       <View style={styles.auctionFooter}>
         <View>
-          <Text style={[styles.bidLabel, { color: COLORS.secondary }]}>
+          <Text style={StyleSheet.flatten([styles.bidLabel, { color: COLORS.secondary }])}>
             Current Bid
           </Text>
-          <Text style={[styles.bidAmount, { color: COLORS.primary }]}>
+          <Text style={StyleSheet.flatten([styles.bidAmount, { color: COLORS.primary }])}>
             {formatCurrency(auction.currentBid)}
           </Text>
         </View>
 
         <View style={styles.timeContainer}>
-          <Text style={[styles.timeLabel, { color: COLORS.secondary }]}>
+          <Text style={StyleSheet.flatten([styles.timeLabel, { color: COLORS.secondary }])}>
             Ends in
           </Text>
-          <Text style={[styles.timeRemaining, { color: COLORS.danger }]}>
+          <Text style={StyleSheet.flatten([styles.timeRemaining, { color: COLORS.danger }])}>
             {formatTimeRemaining(auction.endTime)}
           </Text>
         </View>
@@ -163,21 +163,21 @@ const MarketplaceScreen = ({ navigation }) => {
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
 
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: COLORS.white }]}>
+      <View style={StyleSheet.flatten([styles.header, { backgroundColor: COLORS.white }])}>
         <View>
-          <Text style={[styles.welcomeText, { color: COLORS.secondary }]}>
+          <Text style={StyleSheet.flatten([styles.welcomeText, { color: COLORS.secondary }])}>
             Welcome back,
           </Text>
-          <Text style={[styles.userName, { color: COLORS.dark }]}>
+          <Text style={StyleSheet.flatten([styles.userName, { color: COLORS.dark }])}>
             {user.name}
           </Text>
         </View>
 
         <TouchableOpacity
-          style={[styles.logoutButton, { borderColor: COLORS.light }]}
+          style={StyleSheet.flatten([styles.logoutButton, { borderColor: COLORS.light }])}
           onPress={handleLogout}
         >
-          <Text style={[styles.logoutText, { color: COLORS.danger }]}>
+          <Text style={StyleSheet.flatten([styles.logoutText, { color: COLORS.danger }])}>
             Logout
           </Text>
         </TouchableOpacity>
@@ -191,13 +191,13 @@ const MarketplaceScreen = ({ navigation }) => {
         }
       >
         <View style={styles.section}>
-          <Text style={[styles.sectionTitle, { color: COLORS.dark }]}>
+          <Text style={StyleSheet.flatten([styles.sectionTitle, { color: COLORS.dark }])}>
             Active Auctions
           </Text>
 
           {loading ? (
             <View style={styles.loadingContainer}>
-              <Text style={[styles.loadingText, { color: COLORS.secondary }]}>
+              <Text style={StyleSheet.flatten([styles.loadingText, { color: COLORS.secondary }])}>
                 Loading auctions...
               </Text>
             </View>
@@ -205,7 +205,7 @@ const MarketplaceScreen = ({ navigation }) => {
             auctions.map(renderAuctionCard)
           ) : (
             <View style={styles.emptyContainer}>
-              <Text style={[styles.emptyText, { color: COLORS.secondary }]}>
+              <Text style={StyleSheet.flatten([styles.emptyText, { color: COLORS.secondary }])}>
                 No active auctions available
               </Text>
             </View>

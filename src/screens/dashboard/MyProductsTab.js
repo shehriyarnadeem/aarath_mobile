@@ -312,7 +312,11 @@ const MyProductsTab = ({ navigation }) => {
         </View>
       </View>
       {/* Products List */}
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.content}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         {userProducts.map((product) => (
           <TouchableOpacity
             key={product.id}
@@ -578,6 +582,9 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 140,
   },
   productCard: {
     marginHorizontal: 20,

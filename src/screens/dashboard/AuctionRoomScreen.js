@@ -166,47 +166,47 @@ const AuctionRoomScreen = ({ navigation, route }) => {
 
   const BidItem = ({ bid, index }) => (
     <View
-      style={[
+      style={StyleSheet.flatten([
         styles.bidItem,
         {
           backgroundColor:
             bid.bidderName === "You" ? COLORS.primary50 : COLORS.white,
         },
-      ]}
+      ])}
     >
       <View style={styles.bidHeader}>
         <View style={styles.bidderInfo}>
           <View
-            style={[
+            style={StyleSheet.flatten([
               styles.bidderAvatar,
               {
                 backgroundColor:
                   bid.bidderName === "You" ? COLORS.primary600 : COLORS.gray400,
               },
-            ]}
+            ])}
           >
-            <Text style={[styles.bidderInitial, { color: COLORS.white }]}>
+            <Text style={StyleSheet.flatten([styles.bidderInitial, { color: COLORS.white }])}>
               {bid.bidderName.charAt(0)}
             </Text>
           </View>
           <View style={styles.bidderDetails}>
-            <Text style={[styles.bidderName, { color: COLORS.dark }]}>
+            <Text style={StyleSheet.flatten([styles.bidderName, { color: COLORS.dark }])}>
               {bid.bidderName}
               {bid.isWinningBid && (
                 <Text
-                  style={[styles.winningBadge, { color: COLORS.success600 }]}
+                  style={StyleSheet.flatten([styles.winningBadge, { color: COLORS.success600 }])}
                 >
                   {" "}
                   👑 Winning
                 </Text>
               )}
             </Text>
-            <Text style={[styles.bidTime, { color: COLORS.gray600 }]}>
+            <Text style={StyleSheet.flatten([styles.bidTime, { color: COLORS.gray600 }])}>
               {formatTime(bid.timestamp)}
             </Text>
           </View>
         </View>
-        <Text style={[styles.bidAmount, { color: COLORS.success600 }]}>
+        <Text style={StyleSheet.flatten([styles.bidAmount, { color: COLORS.success600 }])}>
           PKR {bid.amount.toLocaleString()}
         </Text>
       </View>
@@ -214,28 +214,28 @@ const AuctionRoomScreen = ({ navigation, route }) => {
   );
 
   const ParticipantItem = ({ participant }) => (
-    <View style={[styles.participantItem, { backgroundColor: COLORS.white }]}>
+    <View style={StyleSheet.flatten([styles.participantItem, { backgroundColor: COLORS.white }])}>
       <View
-        style={[
-          styles.participantAvatar,
-          { backgroundColor: COLORS.primary600 },
-        ]}
+        style={StyleSheet.flatten([
+                styles.participantAvatar,
+                { backgroundColor: COLORS.primary600 },
+              ])}
       >
-        <Text style={[styles.participantInitial, { color: COLORS.white }]}>
+        <Text style={StyleSheet.flatten([styles.participantInitial, { color: COLORS.white }])}>
           {participant.userName?.charAt(0) || "U"}
         </Text>
       </View>
       <View style={styles.participantInfo}>
-        <Text style={[styles.participantName, { color: COLORS.dark }]}>
+        <Text style={StyleSheet.flatten([styles.participantName, { color: COLORS.dark }])}>
           {participant.userName}
           {participant.isWinner && (
-            <Text style={[styles.winnerBadge, { color: COLORS.warning600 }]}>
+            <Text style={StyleSheet.flatten([styles.winnerBadge, { color: COLORS.warning600 }])}>
               {" "}
               👑
             </Text>
           )}
         </Text>
-        <Text style={[styles.participantStats, { color: COLORS.gray600 }]}>
+        <Text style={StyleSheet.flatten([styles.participantStats, { color: COLORS.gray600 }])}>
           {participant.totalBidsPlaced} bids • Highest: PKR{" "}
           {participant.highestBidAmount?.toLocaleString() || "0"}
         </Text>
@@ -245,17 +245,17 @@ const AuctionRoomScreen = ({ navigation, route }) => {
 
   return (
     <SafeAreaView
-      style={[styles.container, { backgroundColor: COLORS.gray50 }]}
+      style={StyleSheet.flatten([styles.container, { backgroundColor: COLORS.gray50 }])}
     >
       <StatusBar barStyle="light-content" backgroundColor={COLORS.primary600} />
 
       {/* Header */}
-      <View style={[styles.header, { backgroundColor: COLORS.primary600 }]}>
+      <View style={StyleSheet.flatten([styles.header, { backgroundColor: COLORS.primary600 }])}>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Text style={[styles.backButtonText, { color: COLORS.white }]}>
+          <Text style={StyleSheet.flatten([styles.backButtonText, { color: COLORS.white }])}>
             ← Exit
           </Text>
         </TouchableOpacity>
@@ -263,32 +263,32 @@ const AuctionRoomScreen = ({ navigation, route }) => {
         <View style={styles.headerCenter}>
           <View style={styles.liveIndicator}>
             <Animated.View
-              style={[
+              style={StyleSheet.flatten([
                 styles.liveIcon,
                 {
                   backgroundColor: COLORS.error500,
                   transform: [{ scale: pulseAnim }],
                 },
-              ]}
+              ])}
             />
-            <Text style={[styles.liveText, { color: COLORS.white }]}>
+            <Text style={StyleSheet.flatten([styles.liveText, { color: COLORS.white }])}>
               LIVE AUCTION
             </Text>
           </View>
-          <Text style={[styles.timerText, { color: COLORS.white }]}>
+          <Text style={StyleSheet.flatten([styles.timerText, { color: COLORS.white }])}>
             ⏰ {timeRemaining}
           </Text>
         </View>
 
         <TouchableOpacity style={styles.participantsButton}>
-          <Text style={[styles.participantsText, { color: COLORS.white }]}>
+          <Text style={StyleSheet.flatten([styles.participantsText, { color: COLORS.white }])}>
             👥 {participants.length}
           </Text>
         </TouchableOpacity>
       </View>
 
       {/* Product Info */}
-      <View style={[styles.productSection, { backgroundColor: COLORS.white }]}>
+      <View style={StyleSheet.flatten([styles.productSection, { backgroundColor: COLORS.white }])}>
         <Image
           source={{ uri: auction.product.images[0] }}
           style={styles.productImage}
@@ -296,20 +296,20 @@ const AuctionRoomScreen = ({ navigation, route }) => {
         />
         <View style={styles.productInfo}>
           <Text
-            style={[styles.productTitle, { color: COLORS.dark }]}
+            style={StyleSheet.flatten([styles.productTitle, { color: COLORS.dark }])}
             numberOfLines={2}
           >
             {auction.product.title}
           </Text>
-          <Text style={[styles.productQuantity, { color: COLORS.gray600 }]}>
+          <Text style={StyleSheet.flatten([styles.productQuantity, { color: COLORS.gray600 }])}>
             📦 {auction.product.quantity} {auction.product.unit} • Serial: #
             {auction.product.serialNumber}
           </Text>
           <View style={styles.sellerInfo}>
-            <Text style={[styles.sellerName, { color: COLORS.primary600 }]}>
+            <Text style={StyleSheet.flatten([styles.sellerName, { color: COLORS.primary600 }])}>
               🏪 {auction.product.user.businessName}
             </Text>
-            <Text style={[styles.sellerLocation, { color: COLORS.gray600 }]}>
+            <Text style={StyleSheet.flatten([styles.sellerLocation, { color: COLORS.gray600 }])}>
               📍 {auction.product.user.city}, {auction.product.user.state}
             </Text>
           </View>
@@ -318,20 +318,20 @@ const AuctionRoomScreen = ({ navigation, route }) => {
 
       {/* Current Bid Section */}
       <View
-        style={[
-          styles.currentBidSection,
-          { backgroundColor: COLORS.success50 },
-        ]}
+        style={StyleSheet.flatten([
+                styles.currentBidSection,
+                { backgroundColor: COLORS.success50 },
+              ])}
       >
         <View style={styles.bidRow}>
           <View style={styles.currentBidInfo}>
             <Text
-              style={[styles.currentBidLabel, { color: COLORS.success800 }]}
+              style={StyleSheet.flatten([styles.currentBidLabel, { color: COLORS.success800 }])}
             >
               Current Highest Bid
             </Text>
             <Text
-              style={[styles.currentBidAmount, { color: COLORS.success600 }]}
+              style={StyleSheet.flatten([styles.currentBidAmount, { color: COLORS.success600 }])}
             >
               PKR {currentBid.toLocaleString()}
             </Text>
@@ -340,7 +340,7 @@ const AuctionRoomScreen = ({ navigation, route }) => {
 
         {myHighestBid > 0 && (
           <View style={styles.myBidInfo}>
-            <Text style={[styles.myBidText, { color: COLORS.primary600 }]}>
+            <Text style={StyleSheet.flatten([styles.myBidText, { color: COLORS.primary600 }])}>
               💎 Your highest bid: PKR {myHighestBid.toLocaleString()}
             </Text>
           </View>
@@ -348,7 +348,7 @@ const AuctionRoomScreen = ({ navigation, route }) => {
       </View>
 
       {/* Tab Navigation */}
-      <View style={[styles.tabContainer, { backgroundColor: COLORS.white }]}>
+      <View style={StyleSheet.flatten([styles.tabContainer, { backgroundColor: COLORS.white }])}>
         {[
           { key: "bidding", label: "Place Bid", icon: "💰" },
           { key: "bids", label: "Bid History", icon: "📊" },
@@ -356,7 +356,7 @@ const AuctionRoomScreen = ({ navigation, route }) => {
         ].map((tab) => (
           <TouchableOpacity
             key={tab.key}
-            style={[
+            style={StyleSheet.flatten([
               styles.tabItem,
               {
                 backgroundColor:
@@ -364,12 +364,12 @@ const AuctionRoomScreen = ({ navigation, route }) => {
                 borderBottomColor:
                   selectedTab === tab.key ? COLORS.primary600 : "transparent",
               },
-            ]}
+            ])}
             onPress={() => setSelectedTab(tab.key)}
           >
             <Text style={styles.tabIcon}>{tab.icon}</Text>
             <Text
-              style={[
+              style={StyleSheet.flatten([
                 styles.tabLabel,
                 {
                   color:
@@ -377,7 +377,7 @@ const AuctionRoomScreen = ({ navigation, route }) => {
                       ? COLORS.primary700
                       : COLORS.gray600,
                 },
-              ]}
+              ])}
             >
               {tab.label}
             </Text>
@@ -389,27 +389,27 @@ const AuctionRoomScreen = ({ navigation, route }) => {
       <View style={styles.tabContent}>
         {selectedTab === "bidding" && (
           <View
-            style={[styles.biddingSection, { backgroundColor: COLORS.white }]}
+            style={StyleSheet.flatten([styles.biddingSection, { backgroundColor: COLORS.white }])}
           >
-            <Text style={[styles.biddingTitle, { color: COLORS.dark }]}>
+            <Text style={StyleSheet.flatten([styles.biddingTitle, { color: COLORS.dark }])}>
               💰 Place Your Bid
             </Text>
 
             <View style={styles.bidInputSection}>
-              <Text style={[styles.minBidText, { color: COLORS.gray600 }]}>
+              <Text style={StyleSheet.flatten([styles.minBidText, { color: COLORS.gray600 }])}>
                 Minimum bid: PKR{" "}
                 {(currentBid + auction.minBidIncrement).toLocaleString()}
               </Text>
 
               <View style={styles.bidInputContainer}>
-                <Text style={[styles.currencySymbol, { color: COLORS.dark }]}>
+                <Text style={StyleSheet.flatten([styles.currencySymbol, { color: COLORS.dark }])}>
                   PKR
                 </Text>
                 <TextInput
-                  style={[
-                    styles.bidInput,
-                    { color: COLORS.dark, borderColor: COLORS.gray300 },
-                  ]}
+                  style={StyleSheet.flatten([
+                styles.bidInput,
+                { color: COLORS.dark, borderColor: COLORS.gray300 },
+              ])}
                   placeholder={(
                     currentBid + auction.minBidIncrement
                   ).toString()}
@@ -423,13 +423,13 @@ const AuctionRoomScreen = ({ navigation, route }) => {
 
             <Animated.View style={{ transform: [{ scale: bidButtonScale }] }}>
               <TouchableOpacity
-                style={[
-                  styles.bidButton,
-                  { backgroundColor: COLORS.primary600 },
-                ]}
+                style={StyleSheet.flatten([
+                styles.bidButton,
+                { backgroundColor: COLORS.primary600 },
+              ])}
                 onPress={handlePlaceBid}
               >
-                <Text style={[styles.bidButtonText, { color: COLORS.white }]}>
+                <Text style={StyleSheet.flatten([styles.bidButtonText, { color: COLORS.white }])}>
                   🔨 Place Bid
                 </Text>
               </TouchableOpacity>
@@ -437,14 +437,14 @@ const AuctionRoomScreen = ({ navigation, route }) => {
 
             {auction.buyNowPrice && (
               <TouchableOpacity
-                style={[
-                  styles.buyNowButton,
-                  { backgroundColor: COLORS.warning500 },
-                ]}
+                style={StyleSheet.flatten([
+                styles.buyNowButton,
+                { backgroundColor: COLORS.warning500 },
+              ])}
                 onPress={handleBuyNow}
               >
                 <Text
-                  style={[styles.buyNowButtonText, { color: COLORS.white }]}
+                  style={StyleSheet.flatten([styles.buyNowButtonText, { color: COLORS.white }])}
                 >
                   🏷️ Buy Now - PKR {auction.buyNowPrice.toLocaleString()}
                 </Text>
@@ -465,7 +465,7 @@ const AuctionRoomScreen = ({ navigation, route }) => {
             ListEmptyComponent={() => (
               <View style={styles.emptyState}>
                 <Text style={styles.emptyIcon}>💰</Text>
-                <Text style={[styles.emptyText, { color: COLORS.gray600 }]}>
+                <Text style={StyleSheet.flatten([styles.emptyText, { color: COLORS.gray600 }])}>
                   No bids placed yet. Be the first to bid!
                 </Text>
               </View>
@@ -483,7 +483,7 @@ const AuctionRoomScreen = ({ navigation, route }) => {
             ListEmptyComponent={() => (
               <View style={styles.emptyState}>
                 <Text style={styles.emptyIcon}>👥</Text>
-                <Text style={[styles.emptyText, { color: COLORS.gray600 }]}>
+                <Text style={StyleSheet.flatten([styles.emptyText, { color: COLORS.gray600 }])}>
                   No participants yet. Join the auction!
                 </Text>
               </View>
@@ -494,14 +494,14 @@ const AuctionRoomScreen = ({ navigation, route }) => {
 
       {/* Connection Status */}
       <View
-        style={[
+        style={StyleSheet.flatten([
           styles.connectionStatus,
           {
             backgroundColor: isConnected ? COLORS.success500 : COLORS.error500,
           },
-        ]}
+        ])}
       >
-        <Text style={[styles.connectionText, { color: COLORS.white }]}>
+        <Text style={StyleSheet.flatten([styles.connectionText, { color: COLORS.white }])}>
           {isConnected ? "🟢 Connected" : "🔴 Connection Lost"}
         </Text>
       </View>

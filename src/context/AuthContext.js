@@ -1,4 +1,4 @@
-// Update: src/context/AuthContext.js
+// Updated AuthContext with cleaner approach
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged, getAuth } from "firebase/auth";
 import { signOut } from "../firebase/firebaseConfig";
@@ -15,78 +15,127 @@ export const useAuth = () => {
 };
 
 export const AuthProvider = ({ children }) => {
+  const [initializing, setInitializing] = useState(true);
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
-  const [loading, setLoading] = useState(true);
+
+  // Debug current state
+  console.log("📱 AuthProvider State:", {
+    initializing,
+    isAuthenticated,
+    hasUser: !!user,
+    userUid: user?.uid || "none",
+  });
+
+  // Handle user state changes
+  function handleAuthStateChanged(firebaseUser) {
+    console.log("🔄 Auth state changed:", firebaseUser?.uid || "signed out");
+
+    if (firebaseUser) {
+      // User is signed in
+      console.log("✅ Firebase user found:", firebaseUser.uid);
+      setIsAuthenticated(true);
+
+      // Set basic user info immediately
+      setUser({
+        uid: firebaseUser.uid,
+        email: firebaseUser.email,
+        phoneNumber: firebaseUser.phoneNumber,
+      });
+
+      // Optionally fetch user profile from backend
+      fetchUserProfile(firebaseUser.uid)
+        .then((userProfile) => {
+          if (userProfile && typeof userProfile === "object") {
+            console.log("✅ User profile loaded successfully");
+            setUser((prevUser) => ({ ...prevUser, ...userProfile }));
+            setHasCompletedOnboarding(userProfile.profileCompleted || false);
+          }
+        })
+        .catch((profileError) => {
+          console.log(
+            "⚠️ Could not fetch user profile, but user is still authenticated"
+          );
+          // Keep user authenticated even if profile fetch fails
+        });
+    } else {
+      // User is signed out
+      console.log("🚪 User signed out");
+      setIsAuthenticated(false);
+      setUser(null);
+      setHasCompletedOnboarding(false);
+    }
+
+    // Set initializing to false after first auth state change
+    if (initializing) {
+      setInitializing(false);
+      console.log("✅ Auth initialization complete");
+    }
+  }
 
   useEffect(() => {
-    const auth = getAuth();
+    console.log("🚀 Setting up auth state listener...");
+    const subscriber = onAuthStateChanged(getAuth(), handleAuthStateChanged);
 
-    // Listen to Firebase auth state changes
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      try {
-        if (firebaseUser) {
-          // User is signed in
-          setIsAuthenticated(true);
+    // Cleanup subscription on unmount
+    return subscriber;
+  }, []);
 
-          // Fetch user profile from your backend
-          const userProfile = await fetchUserProfile(firebaseUser.uid);
+  const checkUserSession = async () => {
+    try {
+      const auth = getAuth();
+      const firebaseUser = auth.currentUser;
+      console.log(
+        "🔍 Checking user session for:",
+        firebaseUser?.uid || "no user"
+      );
+      await firebaseUser.getIdToken(true);
+      if (firebaseUser) {
+        // Verify the token is still valid
+        await firebaseUser.getIdToken(true); // Force refresh token
 
-          if (userProfile && typeof userProfile === "object") {
-            setUser(userProfile);
-            setHasCompletedOnboarding(userProfile.profileCompleted || false);
-          } else {
-            // If no profile found, user needs to complete onboarding
-            setUser({ uid: firebaseUser.uid });
-            setHasCompletedOnboarding(false);
-            console.log("⚠️ No user profile found, needs onboarding");
-          }
-          setLoading(false);
+        setIsAuthenticated(true);
+        const userProfile = await fetchUserProfile(firebaseUser.uid);
+        if (userProfile && typeof userProfile === "object") {
+          setUser(userProfile);
+          setHasCompletedOnboarding(userProfile.profileCompleted || false);
         } else {
-          // User is signed out
-          console.log("🚪 User signed out");
-          setIsAuthenticated(false);
-          setUser(null);
+          setUser({ uid: firebaseUser.uid });
           setHasCompletedOnboarding(false);
-          setLoading(false);
         }
-      } catch (error) {
-        console.error("❌ Error in auth state change:", error);
+        console.log("✅ Session validated successfully");
+      } else {
+        console.log("❌ No Firebase user found");
         setIsAuthenticated(false);
         setUser(null);
         setHasCompletedOnboarding(false);
-      } finally {
-        setLoading(false);
       }
-    });
-
-    // Cleanup subscription on unmount
-    return () => unsubscribe();
-  }, []);
+    } catch (error) {
+      console.error("❌ Session validation failed:", error);
+      setIsAuthenticated(false);
+      setUser(null);
+      setHasCompletedOnboarding(false);
+    }
+  };
 
   const logout = async () => {
     try {
-      // Sign out from Firebase
-      setLoading(true);
+      console.log("🚪 Signing out...");
       const auth = getAuth();
       await signOut(auth);
 
-      // Clear local state immediately
-      setUser(null);
-      setIsAuthenticated(false);
-
-      // Clear any local storage if needed
-      setLoading(false);
-      // User successfully signed out
+      // State will be updated by handleAuthStateChanged
+      console.log("✅ Signed out successfully");
     } catch (error) {
-      console.error("Error signing out:", error);
+      console.error("❌ Error signing out:", error);
 
-      // Even if Firebase signout fails, clear local state
+      // Force clear state even if signOut fails
       setUser(null);
       setIsAuthenticated(false);
+      setHasCompletedOnboarding(false);
 
-      throw error; // Re-throw so AppLayout can handle it
+      throw error;
     }
   };
 
@@ -120,11 +169,12 @@ export const AuthProvider = ({ children }) => {
     user,
     isAuthenticated,
     hasCompletedOnboarding,
-    loading,
-    setLoading,
-    logout,
+    loading: initializing, // Use initializing as loading state
     setUser,
-    setHasCompletedOnboarding, // Allow manual updates after onboarding completion
+    setHasCompletedOnboarding,
+    checkUserSession,
+    initializing,
+    logout,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

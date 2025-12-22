@@ -125,42 +125,83 @@ const RegisterScreen = ({ navigation }) => {
   const renderChooseStep = () => (
     <View style={styles.content}>
       <View style={styles.header}>
-        <Text style={[styles.title, { color: COLORS.dark }]}>Join Aarath</Text>
-        <Text style={[styles.subtitle, { color: COLORS.gray600 }]}>
+        <Text
+          style={StyleSheet.flatten([styles.title, { color: COLORS.dark }])}
+        >
+          Join Aarath
+        </Text>
+        <Text
+          style={StyleSheet.flatten([
+            styles.subtitle,
+            { color: COLORS.gray600 },
+          ])}
+        >
           Start your agricultural marketplace journey
         </Text>
       </View>
 
       <View style={styles.optionsContainer}>
         <TouchableOpacity
-          style={[styles.optionButton, { borderColor: COLORS.primary }]}
+          style={StyleSheet.flatten([
+            styles.optionButton,
+            { borderColor: COLORS.primary },
+          ])}
           onPress={handleChoosePhone}
         >
-          <Text style={[styles.optionTitle, { color: COLORS.primary }]}>
+          <Text
+            style={StyleSheet.flatten([
+              styles.optionTitle,
+              { color: COLORS.primary },
+            ])}
+          >
             Sign up with Phone
           </Text>
-          <Text style={[styles.optionSubtitle, { color: COLORS.gray500 }]}>
+          <Text
+            style={StyleSheet.flatten([
+              styles.optionSubtitle,
+              { color: COLORS.gray500 },
+            ])}
+          >
             Create account using your mobile number
           </Text>
         </TouchableOpacity>
 
         <View style={styles.divider}>
           <View
-            style={[styles.dividerLine, { backgroundColor: COLORS.gray300 }]}
+            style={StyleSheet.flatten([
+              styles.dividerLine,
+              { backgroundColor: COLORS.gray300 },
+            ])}
           />
-          <Text style={[styles.dividerText, { color: COLORS.gray500 }]}>
+          <Text
+            style={StyleSheet.flatten([
+              styles.dividerText,
+              { color: COLORS.gray500 },
+            ])}
+          >
             or
           </Text>
           <View
-            style={[styles.dividerLine, { backgroundColor: COLORS.gray300 }]}
+            style={StyleSheet.flatten([
+              styles.dividerLine,
+              { backgroundColor: COLORS.gray300 },
+            ])}
           />
         </View>
 
         <TouchableOpacity
-          style={[styles.secondaryButton, { borderColor: COLORS.gray300 }]}
+          style={StyleSheet.flatten([
+            styles.secondaryButton,
+            { borderColor: COLORS.gray300 },
+          ])}
           onPress={() => navigation.navigate("Login")}
         >
-          <Text style={[styles.secondaryButtonText, { color: COLORS.gray700 }]}>
+          <Text
+            style={StyleSheet.flatten([
+              styles.secondaryButtonText,
+              { color: COLORS.gray700 },
+            ])}
+          >
             Already have an account? Sign in
           </Text>
         </TouchableOpacity>
@@ -171,21 +212,40 @@ const RegisterScreen = ({ navigation }) => {
   const renderPhoneStep = () => (
     <View style={styles.content}>
       <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-        <Text style={[styles.backText, { color: COLORS.primary }]}>← Back</Text>
+        <Text
+          style={StyleSheet.flatten([
+            styles.backText,
+            { color: COLORS.primary },
+          ])}
+        >
+          ← Back
+        </Text>
       </TouchableOpacity>
 
       <View style={styles.header}>
-        <Text style={[styles.title, { color: COLORS.dark }]}>
+        <Text
+          style={StyleSheet.flatten([styles.title, { color: COLORS.dark }])}
+        >
           Enter Phone Number
         </Text>
-        <Text style={[styles.subtitle, { color: COLORS.gray600 }]}>
+        <Text
+          style={StyleSheet.flatten([
+            styles.subtitle,
+            { color: COLORS.gray600 },
+          ])}
+        >
           We'll send you a verification code to get started
         </Text>
       </View>
 
       <View style={styles.form}>
         <View style={styles.inputContainer}>
-          <Text style={[styles.inputLabel, { color: COLORS.dark }]}>
+          <Text
+            style={StyleSheet.flatten([
+              styles.inputLabel,
+              { color: COLORS.dark },
+            ])}
+          >
             Phone Number
           </Text>
           <View style={styles.phoneInputContainer}>
@@ -218,13 +278,23 @@ const RegisterScreen = ({ navigation }) => {
         </View>
 
         {error ? (
-          <Text style={[styles.errorText, { color: COLORS.error }]}>
+          <Text
+            style={StyleSheet.flatten([
+              styles.errorText,
+              { color: COLORS.error },
+            ])}
+          >
             {error}
           </Text>
         ) : null}
 
         <View style={styles.termsContainer}>
-          <Text style={[styles.termsText, { color: COLORS.gray500 }]}>
+          <Text
+            style={StyleSheet.flatten([
+              styles.termsText,
+              { color: COLORS.gray500 },
+            ])}
+          >
             By continuing, you agree to our{" "}
             <Text style={{ color: COLORS.primary }}>Terms of Service</Text> and{" "}
             <Text style={{ color: COLORS.primary }}>Privacy Policy</Text>
@@ -245,7 +315,12 @@ const RegisterScreen = ({ navigation }) => {
           {isLoading ? (
             <ActivityIndicator color={COLORS.white} />
           ) : (
-            <Text style={[styles.primaryButtonText, { color: COLORS.white }]}>
+            <Text
+              style={StyleSheet.flatten([
+                styles.primaryButtonText,
+                { color: COLORS.white },
+              ])}
+            >
               Send OTP
             </Text>
           )}
@@ -257,14 +332,28 @@ const RegisterScreen = ({ navigation }) => {
   const renderOtpStep = () => (
     <View style={styles.content}>
       <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-        <Text style={[styles.backText, { color: COLORS.primary }]}>← Back</Text>
+        <Text
+          style={StyleSheet.flatten([
+            styles.backText,
+            { color: COLORS.primary },
+          ])}
+        >
+          ← Back
+        </Text>
       </TouchableOpacity>
 
       <View style={styles.header}>
-        <Text style={[styles.title, { color: COLORS.dark }]}>
+        <Text
+          style={StyleSheet.flatten([styles.title, { color: COLORS.dark }])}
+        >
           Verify Phone Number
         </Text>
-        <Text style={[styles.subtitle, { color: COLORS.gray600 }]}>
+        <Text
+          style={StyleSheet.flatten([
+            styles.subtitle,
+            { color: COLORS.gray600 },
+          ])}
+        >
           Enter the 6-digit code sent to {phoneNumber}
         </Text>
       </View>
@@ -293,7 +382,12 @@ const RegisterScreen = ({ navigation }) => {
         </View>
 
         {error ? (
-          <Text style={[styles.errorText, { color: COLORS.error }]}>
+          <Text
+            style={StyleSheet.flatten([
+              styles.errorText,
+              { color: COLORS.error },
+            ])}
+          >
             {error}
           </Text>
         ) : null}
@@ -312,14 +406,24 @@ const RegisterScreen = ({ navigation }) => {
           {isLoading ? (
             <ActivityIndicator color={COLORS.white} />
           ) : (
-            <Text style={[styles.primaryButtonText, { color: COLORS.white }]}>
+            <Text
+              style={StyleSheet.flatten([
+                styles.primaryButtonText,
+                { color: COLORS.white },
+              ])}
+            >
               Verify & Continue
             </Text>
           )}
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.resendButton} onPress={handleSendOtp}>
-          <Text style={[styles.resendText, { color: COLORS.primary }]}>
+          <Text
+            style={StyleSheet.flatten([
+              styles.resendText,
+              { color: COLORS.primary },
+            ])}
+          >
             Resend OTP
           </Text>
         </TouchableOpacity>
@@ -329,7 +433,10 @@ const RegisterScreen = ({ navigation }) => {
 
   return (
     <KeyboardAvoidingView
-      style={[styles.container, { backgroundColor: COLORS.white }]}
+      style={StyleSheet.flatten([
+        styles.container,
+        { backgroundColor: COLORS.white },
+      ])}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />

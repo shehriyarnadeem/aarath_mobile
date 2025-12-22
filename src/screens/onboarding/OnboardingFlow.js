@@ -20,7 +20,7 @@ import WhatsappVerification from "../onboarding/components/WhatsappVerification"
 import ProfileCompletionForm from "../onboarding/components/ProfileCompletionForm";
 import CategorySelection from "../onboarding/components/CategorySelection";
 import apiClient from "../../utils/apiClient";
-import { signInWithCustomToken } from "firebase/auth";
+import { signInWithCustomToken, getAuth } from "firebase/auth";
 import { auth } from "../../firebase/firebaseConfig";
 import Toast from "react-native-toast-message";
 import { useAuth } from "../../context/AuthContext";
@@ -47,6 +47,11 @@ const OnboardingFlow = ({ navigation }) => {
     role: "",
     state: "",
     city: "",
+    location: {
+      latitude: null,
+      longitude: null,
+      address: "",
+    },
     businessCategories: [],
     profileCompletion: {
       businessName: "",
@@ -61,7 +66,7 @@ const OnboardingFlow = ({ navigation }) => {
     1: "Select Your Role",
     2: "Choose Location",
     3: "Business Categories",
-    4: "Complete Profile",
+    4: "Select Categories",
   };
 
   const canProceedToNext = () => {
@@ -77,7 +82,11 @@ const OnboardingFlow = ({ navigation }) => {
         );
         break;
       case 2:
-        canProceed = formData.state !== "" && formData.city !== "";
+        canProceed =
+          formData.state !== "" &&
+          formData.city !== "" &&
+          formData.location.latitude !== null &&
+          formData.location.longitude !== null;
         break;
       case 3:
         canProceed = formData.profileCompletion.businessName !== "";
@@ -117,6 +126,7 @@ const OnboardingFlow = ({ navigation }) => {
   const handleSubmit = async () => {
     try {
       // Prepare data for backend
+      setIsSubmitting(true);
       const payload = {
         whatsapp: formData.phoneNumber,
         state: formData.state,
@@ -137,16 +147,16 @@ const OnboardingFlow = ({ navigation }) => {
         });
         setUser(response.user);
         setHasCompletedOnboarding(true);
+        await signInWithCustomToken(getAuth(), response?.token);
+        setIsSubmitting(false);
+        navigation.navigate("Dashboard");
       } else if (response?.error) {
-        console.log("Onboarding error response:", response);
         Toast.show({
           text1: response.error?.message,
           type: "error",
         });
+        setIsSubmitting(false);
       }
-      console.log(
-        "✅ Firebase sign-in complete, waiting for auth state change..."
-      );
     } catch (err) {
       console.log("Onboarding error responseq:", err);
       Toast.show({
@@ -156,6 +166,7 @@ const OnboardingFlow = ({ navigation }) => {
           "Failed to complete profile setup. Please try again.",
         type: "error",
       });
+      setIsSubmitting(false);
     } finally {
       setIsSubmitting(false);
     }
@@ -175,8 +186,14 @@ const OnboardingFlow = ({ navigation }) => {
           <LocationSelection
             selectedState={formData.state}
             selectedCity={formData.city}
-            onLocationSelect={(state, city) =>
-              setFormData({ ...formData, state, city })
+            selectedLocation={formData.location}
+            onLocationSelect={(state, city, location) =>
+              setFormData({
+                ...formData,
+                state,
+                city,
+                location: location || formData.location,
+              })
             }
           />
         );
@@ -252,36 +269,10 @@ const OnboardingFlow = ({ navigation }) => {
                   </View>
                 </TouchableOpacity>
               )}
-              <TouchableOpacity
-                style={{
-                  paddingHorizontal: 16,
-                  paddingVertical: 8,
-                  borderRadius: 20,
-                  backgroundColor: "#FEE2E2",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  borderWidth: 1,
-                  borderColor: "#F87171",
-                }}
-                onPress={handleLogout}
-                activeOpacity={0.8}
-              >
-                <MaterialIcons name="logout" size={16} color="#DC2626" />
-                <Text
-                  style={{
-                    color: "#DC2626",
-                    fontWeight: "700",
-                    marginLeft: 6,
-                    fontSize: 14,
-                  }}
-                >
-                  Logout
-                </Text>
-              </TouchableOpacity>
             </View>
           </View>
         </View>
-        {/* Progress Bar */}}
+        {/* Progress Bar */}
         <View
           style={[
             styles.progressContainer,
@@ -442,10 +433,11 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+    marginBottom: 50, // Account for absolutely positioned footer
   },
   contentContainer: {
     paddingHorizontal: 24,
-    paddingBottom: 24,
+    paddingBottom: 10, // Increased to account for footer height + extra space
   },
   footer: {
     padding: 24,
@@ -457,6 +449,10 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 5,
     minHeight: 100,
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
   nextButton: {
     borderRadius: 16,

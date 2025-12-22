@@ -73,25 +73,25 @@ const AuctionTermsModal = ({
       presentationStyle="pageSheet"
     >
       <SafeAreaView
-        style={[styles.container, { backgroundColor: COLORS.gray50 }]}
+        style={StyleSheet.flatten([styles.container, { backgroundColor: COLORS.gray50 }])}
       >
         <StatusBar barStyle="dark-content" backgroundColor={COLORS.gray50} />
 
         {/* Header */}
-        <View style={[styles.header, { backgroundColor: COLORS.white }]}>
+        <View style={StyleSheet.flatten([styles.header, { backgroundColor: COLORS.white }])}>
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <Text style={[styles.closeButtonText, { color: COLORS.gray600 }]}>
+            <Text style={StyleSheet.flatten([styles.closeButtonText, { color: COLORS.gray600 }])}>
               ✕
             </Text>
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: COLORS.dark }]}>
+          <Text style={StyleSheet.flatten([styles.headerTitle, { color: COLORS.dark }])}>
             Auction Room Terms & Conditions
           </Text>
           <View style={styles.placeholder} />
         </View>
 
         {/* Auction Info Header */}
-        <View style={[styles.auctionHeader, { backgroundColor: COLORS.white }]}>
+        <View style={StyleSheet.flatten([styles.auctionHeader, { backgroundColor: COLORS.white }])}>
           <Image
             source={{ uri: auction.product.images[0] }}
             style={styles.productImage}
@@ -99,18 +99,18 @@ const AuctionTermsModal = ({
           />
           <View style={styles.auctionInfo}>
             <Text
-              style={[styles.productTitle, { color: COLORS.dark }]}
+              style={StyleSheet.flatten([styles.productTitle, { color: COLORS.dark }])}
               numberOfLines={2}
             >
               {auction.product.title}
             </Text>
-            <Text style={[styles.currentBid, { color: COLORS.success600 }]}>
+            <Text style={StyleSheet.flatten([styles.currentBid, { color: COLORS.success600 }])}>
               Current Bid: PKR
               {(
                 auction.currentHighestBid || auction.startingBid
               ).toLocaleString()}
             </Text>
-            <Text style={[styles.participants, { color: COLORS.gray600 }]}>
+            <Text style={StyleSheet.flatten([styles.participants, { color: COLORS.gray600 }])}>
               {auction.totalParticipants} participants • {auction.totalBids}{" "}
               bids
             </Text>
@@ -125,28 +125,28 @@ const AuctionTermsModal = ({
           showsVerticalScrollIndicator={true}
         >
           <View
-            style={[styles.termsSection, { backgroundColor: COLORS.white }]}
+            style={StyleSheet.flatten([styles.termsSection, { backgroundColor: COLORS.white }])}
           >
             {/* Important Notice */}
             <View
-              style={[
+              style={StyleSheet.flatten([
                 styles.noticeCard,
                 {
                   backgroundColor: COLORS.warning50,
                   borderColor: COLORS.warning200,
                 },
-              ]}
+              ])}
             >
-              <Text style={[styles.noticeIcon, { color: COLORS.warning600 }]}>
+              <Text style={StyleSheet.flatten([styles.noticeIcon, { color: COLORS.warning600 }])}>
                 ⚠️
               </Text>
               <View style={styles.noticeContent}>
                 <Text
-                  style={[styles.noticeTitle, { color: COLORS.warning800 }]}
+                  style={StyleSheet.flatten([styles.noticeTitle, { color: COLORS.warning800 }])}
                 >
                   Important Notice
                 </Text>
-                <Text style={[styles.noticeText, { color: COLORS.warning700 }]}>
+                <Text style={StyleSheet.flatten([styles.noticeText, { color: COLORS.warning700 }])}>
                   By entering the auction room, you agree to participate in live
                   bidding for agricultural products. All bids are final and
                   legally binding.
@@ -155,23 +155,23 @@ const AuctionTermsModal = ({
             </View>
 
             {/* Terms Title */}
-            <Text style={[styles.sectionTitle, { color: COLORS.dark }]}>
+            <Text style={StyleSheet.flatten([styles.sectionTitle, { color: COLORS.dark }])}>
               Key Terms and Conditions:
             </Text>
 
             {/* Binding Bids */}
             <View style={styles.termItem}>
               <View
-                style={[styles.termIcon, { backgroundColor: COLORS.error100 }]}
+                style={StyleSheet.flatten([styles.termIcon, { backgroundColor: COLORS.error100 }])}
               >
                 <Text style={styles.termEmoji}>⚖️</Text>
               </View>
               <View style={styles.termContent}>
-                <Text style={[styles.termTitle, { color: COLORS.dark }]}>
+                <Text style={StyleSheet.flatten([styles.termTitle, { color: COLORS.dark }])}>
                   Binding Bids
                 </Text>
                 <Text
-                  style={[styles.termDescription, { color: COLORS.gray700 }]}
+                  style={StyleSheet.flatten([styles.termDescription, { color: COLORS.gray700 }])}
                 >
                   All bids placed are legally binding. If you win an auction,
                   you must complete the purchase within 24 hours.
@@ -182,19 +182,19 @@ const AuctionTermsModal = ({
             {/* Auction Timeline */}
             <View style={styles.termItem}>
               <View
-                style={[
-                  styles.termIcon,
-                  { backgroundColor: COLORS.primary100 },
-                ]}
+                style={StyleSheet.flatten([
+                styles.termIcon,
+                { backgroundColor: COLORS.primary100 },
+              ])}
               >
                 <Text style={styles.termEmoji}>⏰</Text>
               </View>
               <View style={styles.termContent}>
-                <Text style={[styles.termTitle, { color: COLORS.dark }]}>
+                <Text style={StyleSheet.flatten([styles.termTitle, { color: COLORS.dark }])}>
                   Auction Timeline
                 </Text>
                 <Text
-                  style={[styles.termDescription, { color: COLORS.gray700 }]}
+                  style={StyleSheet.flatten([styles.termDescription, { color: COLORS.gray700 }])}
                 >
                   Auctions end at the specified time. Last-minute bids may
                   extend the auction by a few minutes to prevent sniping.
@@ -205,19 +205,19 @@ const AuctionTermsModal = ({
             {/* Verification Required */}
             <View style={styles.termItem}>
               <View
-                style={[
-                  styles.termIcon,
-                  { backgroundColor: COLORS.success100 },
-                ]}
+                style={StyleSheet.flatten([
+                styles.termIcon,
+                { backgroundColor: COLORS.success100 },
+              ])}
               >
                 <Text style={styles.termEmoji}>✅</Text>
               </View>
               <View style={styles.termContent}>
-                <Text style={[styles.termTitle, { color: COLORS.dark }]}>
+                <Text style={StyleSheet.flatten([styles.termTitle, { color: COLORS.dark }])}>
                   Verification Required
                 </Text>
                 <Text
-                  style={[styles.termDescription, { color: COLORS.gray700 }]}
+                  style={StyleSheet.flatten([styles.termDescription, { color: COLORS.gray700 }])}
                 >
                   All participants must be verified users. Fraudulent activities
                   will result in permanent account suspension.
@@ -228,19 +228,19 @@ const AuctionTermsModal = ({
             {/* Payment Terms */}
             <View style={styles.termItem}>
               <View
-                style={[
-                  styles.termIcon,
-                  { backgroundColor: COLORS.warning100 },
-                ]}
+                style={StyleSheet.flatten([
+                styles.termIcon,
+                { backgroundColor: COLORS.warning100 },
+              ])}
               >
                 <Text style={styles.termEmoji}>💳</Text>
               </View>
               <View style={styles.termContent}>
-                <Text style={[styles.termTitle, { color: COLORS.dark }]}>
+                <Text style={StyleSheet.flatten([styles.termTitle, { color: COLORS.dark }])}>
                   Payment Terms
                 </Text>
                 <Text
-                  style={[styles.termDescription, { color: COLORS.gray700 }]}
+                  style={StyleSheet.flatten([styles.termDescription, { color: COLORS.gray700 }])}
                 >
                   Winners must pay the full amount within 24 hours. Failure to
                   pay may result in account penalties and loss of bidding
@@ -252,28 +252,28 @@ const AuctionTermsModal = ({
             {/* Additional Responsibilities */}
             <View style={styles.termItem}>
               <View
-                style={[styles.termIcon, { backgroundColor: COLORS.info100 }]}
+                style={StyleSheet.flatten([styles.termIcon, { backgroundColor: COLORS.info100 }])}
               >
                 <Text style={styles.termEmoji}>📋</Text>
               </View>
               <View style={styles.termContent}>
-                <Text style={[styles.termTitle, { color: COLORS.dark }]}>
+                <Text style={StyleSheet.flatten([styles.termTitle, { color: COLORS.dark }])}>
                   Additional Responsibilities:
                 </Text>
                 <View style={styles.bulletPoints}>
-                  <Text style={[styles.bulletPoint, { color: COLORS.gray700 }]}>
+                  <Text style={StyleSheet.flatten([styles.bulletPoint, { color: COLORS.gray700 }])}>
                     • Inspect product details carefully before bidding
                   </Text>
-                  <Text style={[styles.bulletPoint, { color: COLORS.gray700 }]}>
+                  <Text style={StyleSheet.flatten([styles.bulletPoint, { color: COLORS.gray700 }])}>
                     • Contact sellers within 24 hours of winning
                   </Text>
-                  <Text style={[styles.bulletPoint, { color: COLORS.gray700 }]}>
+                  <Text style={StyleSheet.flatten([styles.bulletPoint, { color: COLORS.gray700 }])}>
                     • Arrange pickup/delivery as agreed with seller
                   </Text>
-                  <Text style={[styles.bulletPoint, { color: COLORS.gray700 }]}>
+                  <Text style={StyleSheet.flatten([styles.bulletPoint, { color: COLORS.gray700 }])}>
                     • Report any issues through the platform support
                   </Text>
-                  <Text style={[styles.bulletPoint, { color: COLORS.gray700 }]}>
+                  <Text style={StyleSheet.flatten([styles.bulletPoint, { color: COLORS.gray700 }])}>
                     • Maintain respectful communication with all parties
                   </Text>
                 </View>
@@ -282,37 +282,37 @@ const AuctionTermsModal = ({
 
             {/* Consequences */}
             <View
-              style={[
+              style={StyleSheet.flatten([
                 styles.consequencesCard,
                 {
                   backgroundColor: COLORS.error50,
                   borderColor: COLORS.error200,
                 },
-              ]}
+              ])}
             >
               <Text
-                style={[styles.consequencesTitle, { color: COLORS.error800 }]}
+                style={StyleSheet.flatten([styles.consequencesTitle, { color: COLORS.error800 }])}
               >
                 ⚠️ Consequences of Non-Compliance:
               </Text>
               <View style={styles.consequencesList}>
                 <Text
-                  style={[styles.consequenceItem, { color: COLORS.error700 }]}
+                  style={StyleSheet.flatten([styles.consequenceItem, { color: COLORS.error700 }])}
                 >
                   • Account suspension for failed payments
                 </Text>
                 <Text
-                  style={[styles.consequenceItem, { color: COLORS.error700 }]}
+                  style={StyleSheet.flatten([styles.consequenceItem, { color: COLORS.error700 }])}
                 >
                   • Loss of bidding privileges
                 </Text>
                 <Text
-                  style={[styles.consequenceItem, { color: COLORS.error700 }]}
+                  style={StyleSheet.flatten([styles.consequenceItem, { color: COLORS.error700 }])}
                 >
                   • Legal action for fraudulent activities
                 </Text>
                 <Text
-                  style={[styles.consequenceItem, { color: COLORS.error700 }]}
+                  style={StyleSheet.flatten([styles.consequenceItem, { color: COLORS.error700 }])}
                 >
                   • Permanent ban from the platform
                 </Text>
@@ -321,42 +321,42 @@ const AuctionTermsModal = ({
 
             {/* Auction Specific Details */}
             <View
-              style={[
+              style={StyleSheet.flatten([
                 styles.auctionDetailsCard,
                 {
                   backgroundColor: COLORS.primary50,
                   borderColor: COLORS.primary200,
                 },
-              ]}
+              ])}
             >
               <Text
-                style={[
-                  styles.auctionDetailsTitle,
-                  { color: COLORS.primary800 },
-                ]}
+                style={StyleSheet.flatten([
+                styles.auctionDetailsTitle,
+                { color: COLORS.primary800 },
+              ])}
               >
                 📊 This Auction Details:
               </Text>
               <View style={styles.detailRow}>
                 <Text
-                  style={[styles.detailLabel, { color: COLORS.primary700 }]}
+                  style={StyleSheet.flatten([styles.detailLabel, { color: COLORS.primary700 }])}
                 >
                   Minimum Bid Increment:
                 </Text>
                 <Text
-                  style={[styles.detailValue, { color: COLORS.primary800 }]}
+                  style={StyleSheet.flatten([styles.detailValue, { color: COLORS.primary800 }])}
                 >
                   PKR {auction.minBidIncrement}
                 </Text>
               </View>
               <View style={styles.detailRow}>
                 <Text
-                  style={[styles.detailLabel, { color: COLORS.primary700 }]}
+                  style={StyleSheet.flatten([styles.detailLabel, { color: COLORS.primary700 }])}
                 >
                   Reserve Price:
                 </Text>
                 <Text
-                  style={[styles.detailValue, { color: COLORS.primary800 }]}
+                  style={StyleSheet.flatten([styles.detailValue, { color: COLORS.primary800 }])}
                 >
                   PKR {auction.reservePrice.toLocaleString()}
                 </Text>
@@ -364,12 +364,12 @@ const AuctionTermsModal = ({
               {auction.buyNowPrice && (
                 <View style={styles.detailRow}>
                   <Text
-                    style={[styles.detailLabel, { color: COLORS.primary700 }]}
+                    style={StyleSheet.flatten([styles.detailLabel, { color: COLORS.primary700 }])}
                   >
                     Buy Now Price:
                   </Text>
                   <Text
-                    style={[styles.detailValue, { color: COLORS.primary800 }]}
+                    style={StyleSheet.flatten([styles.detailValue, { color: COLORS.primary800 }])}
                   >
                     PKR {auction.buyNowPrice.toLocaleString()}
                   </Text>
@@ -377,12 +377,12 @@ const AuctionTermsModal = ({
               )}
               <View style={styles.detailRow}>
                 <Text
-                  style={[styles.detailLabel, { color: COLORS.primary700 }]}
+                  style={StyleSheet.flatten([styles.detailLabel, { color: COLORS.primary700 }])}
                 >
                   Auction Ends:
                 </Text>
                 <Text
-                  style={[styles.detailValue, { color: COLORS.primary800 }]}
+                  style={StyleSheet.flatten([styles.detailValue, { color: COLORS.primary800 }])}
                 >
                   {new Date(auction.endTime).toLocaleString()}
                 </Text>
@@ -392,12 +392,12 @@ const AuctionTermsModal = ({
             {/* Scroll indicator */}
             {!hasScrolledToBottom && (
               <View
-                style={[
-                  styles.scrollIndicator,
-                  { backgroundColor: COLORS.warning100 },
-                ]}
+                style={StyleSheet.flatten([
+                styles.scrollIndicator,
+                { backgroundColor: COLORS.warning100 },
+              ])}
               >
-                <Text style={[styles.scrollText, { color: COLORS.warning700 }]}>
+                <Text style={StyleSheet.flatten([styles.scrollText, { color: COLORS.warning700 }])}>
                   👇 Please scroll down to read all terms
                 </Text>
               </View>
@@ -409,31 +409,31 @@ const AuctionTermsModal = ({
         </ScrollView>
 
         {/* Bottom Actions */}
-        <View style={[styles.bottomActions, { backgroundColor: COLORS.white }]}>
+        <View style={StyleSheet.flatten([styles.bottomActions, { backgroundColor: COLORS.white }])}>
           <TouchableOpacity
-            style={[styles.declineButton, { borderColor: COLORS.error500 }]}
+            style={StyleSheet.flatten([styles.declineButton, { borderColor: COLORS.error500 }])}
             onPress={handleAccept}
           >
             <Text
-              style={[styles.declineButtonText, { color: COLORS.error600 }]}
+              style={StyleSheet.flatten([styles.declineButtonText, { color: COLORS.error600 }])}
             >
               Decline
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[
+            style={StyleSheet.flatten([
               styles.acceptButton,
               {
                 backgroundColor: hasScrolledToBottom
                   ? COLORS.success600
                   : COLORS.gray400,
               },
-            ]}
+            ])}
             onPress={handleAccept}
             //      disabled={!hasScrolledToBottom}
           >
-            <Text style={[styles.acceptButtonText, { color: COLORS.white }]}>
+            <Text style={StyleSheet.flatten([styles.acceptButtonText, { color: COLORS.white }])}>
               Accept & Enter Auction
             </Text>
           </TouchableOpacity>

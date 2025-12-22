@@ -11,12 +11,17 @@ import { useAuth } from "../context/AuthContext";
 const Stack = createStackNavigator();
 
 const AppNavigator = () => {
-  const { isAuthenticated, loading, hasCompletedOnboarding, user } = useAuth();
-  const navKey = `${isAuthenticated}-${hasCompletedOnboarding}`;
-  const [navigationKey, setNavigationKey] = useState(0);
+  const { isAuthenticated, loading, initializing } = useAuth();
 
-  // Show splash screen while loading
-  if (loading) {
+  console.log(
+    "🔍 AppNavigator - isAuthenticated:",
+    isAuthenticated,
+    "loading:",
+    loading
+  );
+
+  // Show splash screen while initializing
+  if (loading || initializing) {
     return (
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Splash" component={SplashScreen} />
@@ -24,43 +29,28 @@ const AppNavigator = () => {
     );
   }
 
-  // Determine which screens to show based on auth state
-  const renderScreens = () => {
-    console.log("🧭 Rendering AppNavigator screens:", hasCompletedOnboarding);
-    if (isAuthenticated) {
-      if (hasCompletedOnboarding) {
-        console.log("🏠 Rendering Dashboard");
-        return <Stack.Screen name="Dashboard" component={DashboardNavigator} />;
-      } else {
-        console.log("📋 Rendering Onboarding");
-        return <Stack.Screen name="Onboarding" component={OnboardingFlow} />;
-      }
-    } else {
-      console.log("🔐 Rendering Auth screens");
-      return (
-        <>
-          <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="Signup" component={RegisterScreen} />
-        </>
-      );
-    }
-  };
-
-  return (
-    <Stack.Navigator
-      key={navKey} // Force remount when key changes
-      screenOptions={{ headerShown: false }}
-      initialRouteName={
-        isAuthenticated
-          ? hasCompletedOnboarding
-            ? "Dashboard"
-            : "Onboarding"
-          : "Login"
-      }
-    >
-      {renderScreens()}
-    </Stack.Navigator>
-  );
+  // Simple authentication-based routing
+  if (isAuthenticated) {
+    console.log("✅ User is authenticated - showing Dashboard");
+    return (
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="Dashboard" component={DashboardNavigator} />
+        <Stack.Screen name="Onboarding" component={OnboardingFlow} />
+      </Stack.Navigator>
+    );
+  } else {
+    console.log("❌ User not authenticated - showing Login");
+    return (
+      <Stack.Navigator
+        screenOptions={{ headerShown: false }}
+        initialRouteName="Dashboard"
+      >
+        <Stack.Screen name="Dashboard" component={DashboardNavigator} />
+        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="Signup" component={RegisterScreen} />
+      </Stack.Navigator>
+    );
+  }
 };
 
 export default AppNavigator;

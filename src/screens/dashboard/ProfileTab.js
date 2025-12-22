@@ -5,410 +5,512 @@ import {
   StyleSheet,
   SafeAreaView,
   StatusBar,
-  TouchableOpacity,
   Image,
   ScrollView,
+  TouchableOpacity,
   Alert,
 } from "react-native";
 import { useTheme } from "../../constants/Theme";
 import { useAuth } from "../../context/AuthContext";
+import { Ionicons } from "@expo/vector-icons";
 
 const ProfileTab = ({ navigation }) => {
   const { COLORS, SIZES } = useTheme();
-  const { user, logout } = useAuth();
+  const { user, logout, isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
 
-  // Mock user data based on the schema - replace with actual user data
-  const userData = {
-    id: "user123",
-    email: "farmer@example.com",
-    name: "John Farmer",
-    role: "FARMER",
-    state: "Punjab",
-    city: "Lahore",
-    businessCategories: ["Rice", "Wheat", "Organic"],
-    profileCompleted: 85,
-    accountType: "Premium",
-    businessAddress: "123 Farm Street, Agricultural District",
-    businessRole: "Owner",
-    companyName: "Green Valley Farms",
-    companyPicture:
-      "https://ui-avatars.com/api/?name=Green+Valley&background=10b981&color=fff&size=200",
-    personalLocation: "Lahore, Punjab",
-    personalName: "John Farmer",
-    personalProfilePic:
-      "https://ui-avatars.com/api/?name=John+Farmer&background=6366f1&color=fff&size=200",
-    whatsapp: "+92 300 1234567",
-    whatsappVerified: true,
-    businessName: "Green Valley Farms",
-    totalProducts: 12,
-    totalSales: 45670,
-    rating: 4.8,
-    totalOrders: 28,
-    joinDate: "2023-01-15",
-    ...user, // Merge with actual user data
-  };
-
-  const handleSignOut = async () => {
+  const handleLogout = async () => {
     try {
-      console.log("triggered");
+      setIsLoading(true);
       await logout();
     } catch (error) {
-      console.error("Sign out error:", error);
-      Toast.show({
-        type: "error",
-        text1: "Sign Out Failed",
-        text2: "Failed to sign out. Please try again.",
-      });
+      console.error("Logout error:", error);
+      Alert.alert("Logout Failed", "Failed to logout. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleEditProfile = () => {
-    // Navigate to edit profile screen
-    navigation.navigate("EditProfile", { userData });
+  const handleLogin = () => {
+    navigation.navigate("Login");
   };
 
-  const quickActions = [
-    {
-      id: "edit",
-      icon: "✏️",
-      title: "Edit Profile",
-      color: COLORS.primary600,
-      onPress: handleEditProfile,
-    },
-  ];
+  const handleSignup = () => {
+    navigation.navigate("Signup");
+  };
 
-  const menuSections = [
-    {
-      title: "Account & Business",
-      items: [
-        {
-          id: "personal",
-          icon: "👤",
-          title: "Personal Information",
-          subtitle: `${userData.personalName || "Not set"} • ${
-            userData.email || "No email"
-          }`,
-          rightText: "",
-          onPress: () => navigation.navigate("PersonalInfo"),
-        },
-        {
-          id: "business",
-          icon: "🏢",
-          title: "Business Profile",
-          subtitle: `${userData.businessName || "Not set"} • ${
-            userData.businessRole || "Not set"
-          }`,
-          rightText: userData.whatsappVerified ? "✓ Verified" : "Pending",
-        },
-        {
-          id: "location",
-          icon: "�",
-          title: "Location & Address",
-          subtitle: `${userData.city}, ${userData.state}`,
-          rightText: "",
-          onPress: () => navigation.navigate("LocationSettings"),
-        },
-      ],
-    },
-    {
-      title: "Business Operations",
-      items: [
-        {
-          id: "products",
-          icon: "�",
-          title: "My Products",
-          subtitle: `${userData.totalProducts} active listings`,
-          rightText: "Manage",
-          onPress: () => navigation.navigate("MyProducts"),
-        },
+  // If user is not authenticated, show login prompt
+  if (!isAuthenticated || !user) {
+    return (
+      <SafeAreaView
+        style={[
+          styles.container,
+          { backgroundColor: COLORS.background || COLORS.gray50 },
+        ]}
+      >
+        <StatusBar
+          barStyle="dark-content"
+          backgroundColor={COLORS.background || COLORS.gray50}
+        />
 
-        {
-          id: "categories",
-          icon: "🏷️",
-          title: "Business Categories",
-          subtitle: userData.businessCategories?.join(", ") || "Not set",
-          rightText: userData.businessCategories?.length || "0",
-          onPress: () => navigation.navigate("Categories"),
-        },
-      ],
-    },
-    {
-      title: "App Settings",
-      items: [
-        {
-          id: "notifications",
-          icon: "�",
-          title: "Notifications",
-          subtitle: "Push notifications and alerts",
-          rightText: "On",
-          onPress: () => navigation.navigate("NotificationSettings"),
-        },
-      ],
-    },
-  ];
+        <View style={styles.unauthenticatedContainer}>
+          <View
+            style={[styles.loginPromptCard, { backgroundColor: COLORS.white }]}
+          >
+            <Image
+              source={require("../../../assets/logo.png")}
+              style={{ width: 80, height: 80, marginBottom: 16 }}
+              resizeMode="contain"
+            />
 
-  const stats = [
-    {
-      label: "Products",
-      value: userData.totalProducts.toString(),
-      icon: "📦",
-      color: COLORS.primary600,
-      change: "+2 this month",
-    },
+            <Text
+              style={[
+                styles.welcomeSubtitle,
+                { color: COLORS.textSecondary || "#6b7280" },
+              ]}
+            >
+              Join Pakistan's leading agricultural marketplace to buy and sell
+              quality products.
+            </Text>
 
-    {
-      label: "Rating",
-      value: userData.rating.toString(),
-      icon: "⭐",
-      color: COLORS.warning500,
-      change: "Excellent",
-    },
-  ];
-
-  return (
-    <SafeAreaView
-      style={[styles.container, { backgroundColor: COLORS.gray50 }]}
-    >
-      <StatusBar barStyle="light-content" backgroundColor={COLORS.primary600} />
-
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Header with Gradient */}
-        <View
-          style={[
-            styles.headerGradient,
-            { backgroundColor: COLORS.primary600 },
-          ]}
-        >
-          <View style={styles.headerContent}>
-            <View style={styles.headerTop}>
-              <Text style={styles.headerTitle}>My Profile</Text>
-            </View>
-
-            {/* Profile Card in Header */}
-            <View style={styles.profileHeaderCard}>
-              <View style={styles.profileImageSection}>
-                <Image
-                  source={{
-                    uri: userData.personalProfilePic || userData.companyPicture,
-                  }}
-                  style={styles.profileAvatar}
-                />
-                <TouchableOpacity style={styles.cameraButton}>
-                  <Text style={styles.cameraIcon}>📷</Text>
-                </TouchableOpacity>
-
-                {/* Account Type Badge */}
-                <View
-                  style={[
-                    styles.accountTypeBadge,
-                    { backgroundColor: COLORS.warning500 },
-                  ]}
-                >
-                  <Text style={styles.accountTypeText}>
-                    {userData.accountType}
-                  </Text>
-                </View>
-              </View>
-
-              <View style={styles.profileHeaderInfo}>
-                <Text style={styles.profileHeaderName}>
-                  {userData.personalName || userData.businessName}
-                </Text>
-                <Text style={styles.profileHeaderRole}>
-                  {userData.businessRole} at {userData.businessName}
-                </Text>
-
-                <View style={styles.locationRow}>
-                  <Text style={styles.locationIcon}>�</Text>
-                  <Text style={styles.locationText}>
-                    {userData.city}, {userData.state}
-                  </Text>
-                </View>
-              </View>
-            </View>
-          </View>
-        </View>
-
-        {/* Quick Actions */}
-        <View style={styles.quickActionsContainer}>
-          <Text style={[styles.sectionTitle, { color: COLORS.dark }]}>
-            Quick Actions
-          </Text>
-          <View style={styles.quickActionsGrid}>
-            {quickActions.map((action) => (
+            <View style={styles.authButtonsContainer}>
               <TouchableOpacity
-                key={action.id}
                 style={[
-                  styles.quickActionCard,
-                  { backgroundColor: COLORS.white },
+                  styles.primaryButton,
+                  { backgroundColor: COLORS.primary || "#166534" },
                 ]}
-                onPress={action.onPress}
-                activeOpacity={0.8}
+                onPress={handleLogin}
               >
-                <View
+                <Ionicons name="log-in-outline" size={20} color="white" />
+                <Text style={styles.primaryButtonText}>Login</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.secondaryButton,
+                  {
+                    borderColor: COLORS.primary || "#166534",
+                    backgroundColor: "transparent",
+                  },
+                ]}
+                onPress={handleSignup}
+              >
+                <Ionicons
+                  name="person-add-outline"
+                  size={20}
+                  color={COLORS.primary || "#166534"}
+                />
+                <Text
                   style={[
-                    styles.quickActionIcon,
-                    { backgroundColor: action.color + "20" },
+                    styles.secondaryButtonText,
+                    { color: COLORS.primary || "#166534" },
                   ]}
                 >
-                  <Text style={styles.quickActionEmoji}>{action.icon}</Text>
-                </View>
-                <Text style={[styles.quickActionTitle, { color: COLORS.dark }]}>
-                  {action.title}
+                  Sign Up
                 </Text>
               </TouchableOpacity>
-            ))}
-          </View>
-        </View>
+            </View>
 
-        {/* Stats Cards */}
-        <View style={styles.statsSection}>
-          <Text style={[styles.sectionTitle, { color: COLORS.dark }]}>
-            Business Overview
-          </Text>
-          <View style={styles.statsGrid}>
-            {stats.map((stat, index) => (
-              <View
-                key={index}
+            <View style={styles.featuresContainer}>
+              <Text
                 style={[
-                  styles.modernStatCard,
-                  { backgroundColor: COLORS.white },
+                  styles.featuresTitle,
+                  { color: COLORS.textPrimary || "#1f2937" },
                 ]}
               >
-                <View style={styles.statCardHeader}>
-                  <View
+                What you can do after logging in:
+              </Text>
+
+              {[
+                {
+                  icon: "storefront-outline",
+                  text: "Manage your products and listings",
+                },
+
+                {
+                  icon: "settings-outline",
+                  text: "Customize your account settings",
+                },
+              ].map((feature, index) => (
+                <View key={index} style={styles.featureItem}>
+                  <Ionicons
+                    name={feature.icon}
+                    size={20}
+                    color={COLORS.primary || "#166534"}
+                    style={styles.featureIcon}
+                  />
+                  <Text
                     style={[
-                      styles.statIconContainer,
-                      { backgroundColor: stat.color + "20" },
+                      styles.featureText,
+                      { color: COLORS.textSecondary || "#6b7280" },
                     ]}
                   >
-                    <Text style={styles.statCardIcon}>{stat.icon}</Text>
-                  </View>
-                  <Text style={[styles.statCardValue, { color: stat.color }]}>
-                    {stat.value}
+                    {feature.text}
                   </Text>
                 </View>
-                <Text style={[styles.statCardLabel, { color: COLORS.dark }]}>
-                  {stat.label}
-                </Text>
-                <Text
-                  style={[styles.statCardChange, { color: COLORS.gray600 }]}
-                >
-                  {stat.change}
-                </Text>
-              </View>
-            ))}
-          </View>
-        </View>
-
-        {/* Menu Sections */}
-        {menuSections.map((section, sectionIndex) => (
-          <View key={sectionIndex} style={styles.menuSection}>
-            <Text style={[styles.sectionTitle, { color: COLORS.dark }]}>
-              {section.title}
-            </Text>
-            <View style={[styles.menuCard, { backgroundColor: COLORS.white }]}>
-              {section.items.map((item, itemIndex) => (
-                <TouchableOpacity
-                  key={item.id}
-                  style={[
-                    styles.modernMenuItem,
-                    itemIndex !== section.items.length - 1 &&
-                      styles.menuItemBorder,
-                  ]}
-                  onPress={item.onPress}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.menuItemContent}>
-                    <View style={styles.menuItemLeft}>
-                      <View
-                        style={[
-                          styles.menuItemIconContainer,
-                          { backgroundColor: COLORS.gray100 },
-                        ]}
-                      >
-                        <Text style={styles.menuItemIcon}>{item.icon}</Text>
-                      </View>
-                      <View style={styles.menuItemTextContainer}>
-                        <Text
-                          style={[styles.menuItemTitle, { color: COLORS.dark }]}
-                        >
-                          {item.title}
-                        </Text>
-                        <Text
-                          style={[
-                            styles.menuItemSubtitle,
-                            { color: COLORS.gray600 },
-                          ]}
-                        >
-                          {item.subtitle}
-                        </Text>
-                      </View>
-                    </View>
-                    <View style={styles.menuItemRight}>
-                      <Text
-                        style={[
-                          styles.menuItemRightText,
-                          { color: COLORS.gray500 },
-                        ]}
-                      >
-                        {item.rightText}
-                      </Text>
-                      <Text
-                        style={[
-                          styles.menuItemArrow,
-                          { color: COLORS.gray400 },
-                        ]}
-                      >
-                        ›
-                      </Text>
-                    </View>
-                  </View>
-                </TouchableOpacity>
               ))}
             </View>
           </View>
-        ))}
+        </View>
+      </SafeAreaView>
+    );
+  }
 
-        {/* Sign Out Section */}
-        <View style={styles.signOutSection}>
-          <TouchableOpacity
-            style={[
-              styles.modernSignOutButton,
-              {
-                backgroundColor: COLORS.error50,
-                borderColor: COLORS.error200,
-              },
-            ]}
-            onPress={handleSignOut}
-            disabled={isLoading}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.signOutButtonIcon}>🚪</Text>
+  // Use actual user data with fallbacks for authenticated users
+  const userData = {
+    name: user?.name || "User",
+    email: user?.email || "user@example.com",
+    city: user?.city || "City",
+    state: user?.state || "State",
+    whatsapp: user?.whatsapp || "+92 300 0000000",
+    whatsappVerified: user?.whatsappVerified || false,
+    totalProducts: user?.totalProducts || 0,
+    rating: user?.rating || 4.5,
+    personalProfilePic:
+      user?.personalProfilePic ||
+      `https://ui-avatars.com/api/?name=${encodeURIComponent(
+        user?.name || "User"
+      )}&background=166534&color=fff&size=200`,
+    ...user,
+  };
+
+  return (
+    <SafeAreaView
+      style={[
+        styles.container,
+        { backgroundColor: COLORS.background || COLORS.gray50 },
+      ]}
+    >
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor={COLORS.background || COLORS.gray50}
+      />
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.content}
+      >
+        {/* Profile Header */}
+        <View
+          style={[styles.profileHeader, { backgroundColor: COLORS.textWhite }]}
+        >
+          <View style={styles.profileImageContainer}>
+            <Image
+              source={{
+                uri: userData.personalProfilePic,
+              }}
+              resizeMode="cover"
+              style={styles.profileImage}
+            />
+          </View>
+
+          <View style={styles.profileInfo}>
             <Text
-              style={[styles.signOutButtonText, { color: COLORS.error600 }]}
+              style={[
+                styles.profileName,
+                { color: COLORS.dark || COLORS.textPrimary },
+              ]}
             >
-              {isLoading ? "Signing Out..." : "Sign Out"}
+              {userData.name}
             </Text>
+            <Text
+              style={[
+                styles.userEmail,
+                { color: COLORS.gray || COLORS.textSecondary },
+              ]}
+            >
+              {userData.email}
+            </Text>
+            <View style={styles.locationContainer}>
+              <Ionicons
+                name="location-outline"
+                size={14}
+                color={COLORS.gray || COLORS.textMuted}
+              />
+              <Text
+                style={[
+                  styles.locationText,
+                  { color: COLORS.gray || COLORS.textMuted },
+                ]}
+              >
+                {userData.city}, {userData.state}
+              </Text>
+              {userData.whatsappVerified && (
+                <Ionicons
+                  name="checkmark-circle"
+                  size={16}
+                  color={COLORS.success || "#10B981"}
+                  style={{ marginLeft: 8 }}
+                />
+              )}
+            </View>
+          </View>
+        </View>
+        {/* Quick Stats */}
+        <View style={[styles.statsCard, { backgroundColor: COLORS.white }]}>
+          <View style={styles.statItem}>
+            <Text style={[styles.statValue, { color: COLORS.primary600 }]}>
+              {userData.totalProducts || 0}
+            </Text>
+            <Text
+              style={[
+                styles.statLabel,
+                { color: COLORS.textSecondary || COLORS.textSecondary },
+              ]}
+            >
+              Products
+            </Text>
+          </View>
+          <View
+            style={[
+              styles.statDivider,
+              { backgroundColor: COLORS.lightGray || COLORS.gray200 },
+            ]}
+          />
+          <View style={styles.statItem}>
+            <Text style={[styles.statValue, { color: COLORS.primary600 }]}>
+              {userData.rating || "4.5"}
+            </Text>
+            <Text
+              style={[
+                styles.statLabel,
+                { color: COLORS.gray || COLORS.textSecondary },
+              ]}
+            >
+              Rating
+            </Text>
+          </View>
+          <View
+            style={[
+              styles.statDivider,
+              { backgroundColor: COLORS.lightGray || COLORS.gray200 },
+            ]}
+          />
+          <View style={styles.statItem}>
+            <Text style={[styles.statValue, { color: COLORS.primary600 }]}>
+              {userData.whatsappVerified ? "✓" : "✗"}
+            </Text>
+            <Text
+              style={[
+                styles.statLabel,
+                { color: COLORS.gray || COLORS.textSecondary },
+              ]}
+            >
+              Verified
+            </Text>
+          </View>
+        </View>
+
+        {/* Products Section */}
+        <View style={[styles.section, { backgroundColor: COLORS.white }]}>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate("ProductsManagement")}
+          >
+            <View
+              style={[
+                styles.iconContainer,
+                { backgroundColor: COLORS.primary + "15" },
+              ]}
+            >
+              <Ionicons
+                name="cube-outline"
+                size={22}
+                color={COLORS.primary || COLORS.textPrimary}
+              />
+            </View>
+            <View style={styles.menuContent}>
+              <Text
+                style={[
+                  styles.menuTitle,
+                  { color: COLORS.dark || COLORS.textPrimary },
+                ]}
+              >
+                Manage Ads
+              </Text>
+              <Text
+                style={[
+                  styles.menuSubtitle,
+                  { color: COLORS.gray || COLORS.textSecondary },
+                ]}
+              >
+                View and manage your listings
+              </Text>
+            </View>
+            <Ionicons
+              name="chevron-forward"
+              size={20}
+              color={COLORS.gray || COLORS.textMuted}
+            />
           </TouchableOpacity>
         </View>
 
-        {/* App Info */}
-        <View style={styles.appInfoSection}>
-          <Text style={[styles.appVersion, { color: COLORS.gray500 }]}>
-            Aarath Agricultural Marketplace v1.0.0
+        {/* Account Section */}
+        <View style={[styles.section, { backgroundColor: COLORS.white }]}>
+          <Text
+            style={[
+              styles.sectionTitle,
+              { color: COLORS.dark || COLORS.textPrimary },
+            ]}
+          >
+            Account
           </Text>
-          <Text style={[styles.joinDate, { color: COLORS.gray400 }]}>
-            Member since{" "}
-            {new Date(userData.joinDate).toLocaleDateString("en-US", {
-              year: "numeric",
-              month: "long",
-            })}
-          </Text>
+
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate("EditProfile")}
+          >
+            <View style={[styles.iconContainer]}>
+              <Ionicons
+                name="person-outline"
+                size={25}
+                color={COLORS.dark || COLORS.textPrimary}
+              />
+            </View>
+            <View style={styles.menuContent}>
+              <Text
+                style={[
+                  styles.menuTitle,
+                  { color: COLORS.dark || COLORS.textPrimary },
+                ]}
+              >
+                Edit Profile
+              </Text>
+              <Text
+                style={[
+                  styles.menuSubtitle,
+                  { color: COLORS.gray || COLORS.textSecondary },
+                ]}
+              >
+                Update your personal information
+              </Text>
+            </View>
+            <Ionicons
+              name="chevron-forward"
+              size={20}
+              color={COLORS.gray || COLORS.textMuted}
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate("AccountSettings")}
+          >
+            <View style={[styles.iconContainer]}>
+              <Ionicons
+                name="settings-outline"
+                size={22}
+                color={COLORS.dark || COLORS.textPrimary}
+              />
+            </View>
+            <View style={styles.menuContent}>
+              <Text
+                style={[
+                  styles.menuTitle,
+                  { color: COLORS.dark || COLORS.textPrimary },
+                ]}
+              >
+                Settings
+              </Text>
+              <Text
+                style={[
+                  styles.menuSubtitle,
+                  { color: COLORS.gray || COLORS.textSecondary },
+                ]}
+              >
+                Privacy, security, and preferences
+              </Text>
+            </View>
+            <Ionicons
+              name="chevron-forward"
+              size={20}
+              color={COLORS.gray || COLORS.textMuted}
+            />
+          </TouchableOpacity>
         </View>
+
+        {/* Support Section */}
+        <View style={[styles.section, { backgroundColor: COLORS.white }]}>
+          <Text
+            style={[
+              styles.sectionTitle,
+              { color: COLORS.dark || COLORS.textPrimary },
+            ]}
+          >
+            Support
+          </Text>
+
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => {
+              console.log("Navigate to Help Center");
+            }}
+          >
+            <View
+              style={[
+                styles.iconContainer,
+                { backgroundColor: "#F59E0B" + "15" },
+              ]}
+            >
+              <Ionicons
+                name="help-circle-outline"
+                size={22}
+                color={COLORS.dark || COLORS.textPrimary}
+              />
+            </View>
+            <View style={styles.menuContent}>
+              <Text
+                style={[
+                  styles.menuTitle,
+                  { color: COLORS.dark || COLORS.textPrimary },
+                ]}
+              >
+                Help Center
+              </Text>
+              <Text
+                style={[
+                  styles.menuSubtitle,
+                  { color: COLORS.gray || COLORS.textSecondary },
+                ]}
+              >
+                Get help with your account
+              </Text>
+            </View>
+            <Ionicons
+              name="chevron-forward"
+              size={20}
+              color={COLORS.gray || COLORS.textMuted}
+            />
+          </TouchableOpacity>
+        </View>
+
+        {/* Logout Button */}
+        <TouchableOpacity
+          style={[
+            styles.logoutButton,
+            {
+              backgroundColor: COLORS.white,
+              borderColor: COLORS.error || "#EF4444",
+              borderWidth: 1,
+            },
+          ]}
+          onPress={handleLogout}
+          disabled={isLoading}
+        >
+          <Ionicons
+            name="log-out-outline"
+            size={20}
+            color={COLORS.error || "#EF4444"}
+          />
+          <Text
+            style={[styles.logoutText, { color: COLORS.error || "#EF4444" }]}
+          >
+            {isLoading ? "Logging out..." : "Logout"}
+          </Text>
+        </TouchableOpacity>
+
+        {/* Footer spacing for new tab bar */}
+        <View style={{ height: 140 }} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -418,390 +520,232 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  content: {
+    paddingHorizontal: 16,
+    paddingTop: 45,
+  },
 
-  // Header Gradient Section
-  headerGradient: {
-    paddingTop: 20,
-    paddingBottom: 32,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-  },
-  headerContent: {
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-  },
-  headerTop: {
+  // Profile Header Styles
+  profileHeader: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 24,
-  },
-  headerTitle: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#ffffff",
-  },
-  settingsButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: "rgba(255,255,255,0.2)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  settingsIcon: {
-    fontSize: 20,
-  },
-
-  // Profile Header Card
-  profileHeaderCard: {
-    backgroundColor: "rgba(255,255,255,0.15)",
-    borderRadius: 20,
     padding: 20,
+    borderRadius: 16,
     marginBottom: 16,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.2)",
-  },
-  profileImageSection: {
-    alignItems: "center",
-    marginBottom: 16,
-    position: "relative",
-  },
-  profileAvatar: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    borderWidth: 4,
-    borderColor: "rgba(255,255,255,0.3)",
-  },
-  cameraButton: {
-    position: "absolute",
-    bottom: 0,
-    right: 8,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "#ffffff",
-    justifyContent: "center",
-    alignItems: "center",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 4,
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  cameraIcon: {
-    fontSize: 16,
+  profileImageContainer: {
+    marginRight: 16,
   },
-  accountTypeBadge: {
-    position: "absolute",
-    top: -8,
-    right: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 4,
+  profileImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
   },
-  accountTypeText: {
-    fontSize: 12,
-    fontWeight: "bold",
-    color: "#ffffff",
+  profileInfo: {
+    flex: 1,
   },
-  profileHeaderInfo: {
-    alignItems: "center",
-  },
-  profileHeaderName: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#ffffff",
+  profileName: {
+    fontSize: 20,
+    fontWeight: "700",
     marginBottom: 4,
-    textAlign: "center",
   },
-  profileHeaderRole: {
+  userEmail: {
     fontSize: 16,
-    color: "rgba(255,255,255,0.8)",
-    marginBottom: 12,
-    textAlign: "center",
-  },
-  verificationRow: {
     marginBottom: 8,
   },
-  verificationItem: {
+  locationContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.1)",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  verificationIcon: {
-    fontSize: 14,
-    marginRight: 6,
-  },
-  verificationText: {
-    fontSize: 14,
-    color: "rgba(255,255,255,0.9)",
-    fontWeight: "500",
-  },
-  locationRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 8,
-  },
-  locationIcon: {
-    fontSize: 16,
-    marginRight: 8,
   },
   locationText: {
-    fontSize: 16,
-    color: "rgba(255,255,255,0.8)",
-    fontWeight: "500",
-  },
-
-  // Profile Completion
-  completionCard: {
-    backgroundColor: "rgba(255,255,255,0.1)",
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.2)",
-  },
-  completionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  completionTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#ffffff",
-  },
-  completionPercentage: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#ffffff",
-  },
-  progressBar: {
-    height: 8,
-    backgroundColor: "rgba(255,255,255,0.2)",
-    borderRadius: 4,
-    marginBottom: 8,
-    overflow: "hidden",
-  },
-  progressFill: {
-    height: "100%",
-    borderRadius: 4,
-  },
-  completionSubtext: {
     fontSize: 14,
-    color: "rgba(255,255,255,0.7)",
-    textAlign: "center",
+    marginLeft: 4,
   },
 
-  // Quick Actions
-  quickActionsContainer: {
-    marginTop: 16,
-    paddingHorizontal: 20,
-    marginBottom: 24,
+  // Stats Card Styles
+  statsCard: {
+    flexDirection: "row",
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  statItem: {
+    flex: 1,
+  },
+  statValue: {
+    fontSize: 24,
+    fontWeight: "700",
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 12,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  statDivider: {
+    width: 1,
+    marginHorizontal: 15,
+  },
+
+  // Section Styles
+  section: {
+    borderRadius: 16,
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
   },
   sectionTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 16,
-    marginTop: 8,
-  },
-  quickActionsGrid: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  quickActionCard: {
-    width: "23%",
-    aspectRatio: 1,
-    borderRadius: 16,
-    justifyContent: "center",
-    alignItems: "center",
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  quickActionIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  quickActionEmoji: {
-    fontSize: 20,
-  },
-  quickActionTitle: {
-    fontSize: 12,
-    fontWeight: "600",
-    textAlign: "center",
+    fontSize: 18,
+    fontWeight: "700",
+    padding: 20,
+    paddingBottom: 10,
   },
 
-  // Stats Section
-  statsSection: {
-    paddingHorizontal: 20,
-    marginBottom: 24,
-  },
-  statsGrid: {
+  // Menu Item Styles
+  menuItem: {
     flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-  },
-  modernStatCard: {
-    width: "48%",
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  statCardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: "#f0f0f0",
   },
-  statIconContainer: {
+  iconContainer: {
     width: 40,
     height: 40,
     borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",
-  },
-  statCardIcon: {
-    fontSize: 18,
-  },
-  statCardValue: {
-    fontSize: 24,
-    fontWeight: "bold",
-  },
-  statCardLabel: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 4,
-  },
-  statCardChange: {
-    fontSize: 12,
-  },
-
-  // Menu Sections
-  menuSection: {
-    paddingHorizontal: 20,
-    marginBottom: 24,
-  },
-  menuCard: {
-    borderRadius: 16,
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    overflow: "hidden",
-  },
-  modernMenuItem: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-  },
-  menuItemBorder: {
-    borderBottomWidth: 1,
-    borderBottomColor: "#f3f4f6",
-  },
-  menuItemContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  menuItemLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    flex: 1,
-  },
-  menuItemIconContainer: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: "center",
-    alignItems: "center",
     marginRight: 16,
   },
-  menuItemIcon: {
-    fontSize: 20,
-  },
-  menuItemTextContainer: {
+  menuContent: {
     flex: 1,
   },
-  menuItemTitle: {
+  menuTitle: {
     fontSize: 16,
     fontWeight: "600",
     marginBottom: 2,
   },
-  menuItemSubtitle: {
+  menuSubtitle: {
     fontSize: 14,
-    lineHeight: 18,
-  },
-  menuItemRight: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  menuItemRightText: {
-    fontSize: 14,
-    fontWeight: "500",
-    marginRight: 8,
-  },
-  menuItemArrow: {
-    fontSize: 18,
-    fontWeight: "bold",
   },
 
-  // Sign Out Section
-  signOutSection: {
-    paddingHorizontal: 20,
-    marginBottom: 24,
+  // Logout Button Styles
+  logoutButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 16,
+    borderRadius: 16,
+    marginTop: 10,
+    marginBottom: 20,
   },
-  modernSignOutButton: {
+  logoutText: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginLeft: 8,
+  },
+
+  // Unauthenticated State Styles
+  unauthenticatedContainer: {
+    flex: 1,
+    justifyContent: "center",
+    paddingHorizontal: 20,
+  },
+  loginPromptCard: {
+    borderRadius: 20,
+    padding: 30,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 5,
+  },
+  loginIcon: {
+    marginBottom: 20,
+  },
+  welcomeTitle: {
+    fontSize: 24,
+    fontWeight: "700",
+    textAlign: "center",
+    marginBottom: 12,
+  },
+  welcomeSubtitle: {
+    fontSize: 16,
+    textAlign: "center",
+    lineHeight: 24,
+    marginBottom: 30,
+  },
+  authButtonsContainer: {
+    width: "100%",
+    gap: 12,
+    marginBottom: 30,
+  },
+  primaryButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 16,
-    borderRadius: 16,
-    borderWidth: 2,
+    paddingHorizontal: 32,
+    borderRadius: 12,
+    width: "100%",
   },
-  signOutButtonIcon: {
-    fontSize: 20,
-    marginRight: 12,
-  },
-  signOutButtonText: {
+  primaryButtonText: {
+    color: "white",
     fontSize: 16,
     fontWeight: "600",
+    marginLeft: 8,
   },
-
-  // App Info
-  appInfoSection: {
+  secondaryButton: {
+    flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 20,
-    paddingBottom: 32,
+    justifyContent: "center",
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    borderRadius: 12,
+    borderWidth: 2,
+    width: "100%",
   },
-  appVersion: {
+  secondaryButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginLeft: 8,
+  },
+  featuresContainer: {
+    width: "100%",
+  },
+  featuresTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 16,
+    textAlign: "center",
+  },
+  featureItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  featureIcon: {
+    marginRight: 12,
+  },
+  featureText: {
     fontSize: 14,
-    fontWeight: "500",
-    marginBottom: 4,
-  },
-  joinDate: {
-    fontSize: 12,
+    flex: 1,
+    lineHeight: 20,
   },
 });
 

@@ -155,21 +155,21 @@ const WhatsappVerification = ({ formData, setFormData }) => {
 
   return (
     <Animated.View
-      style={[
+      style={StyleSheet.flatten([
         styles.container,
         {
           opacity: fadeAnim,
           transform: [{ translateY: slideAnim }, { scale: scaleAnim }],
         },
-      ]}
+      ])}
     >
       {/* Header Section */}
       <View style={styles.header}>
         <View
-          style={[
-            styles.iconContainer,
-            { backgroundColor: COLORS.primary + "15" },
-          ]}
+          style={StyleSheet.flatten([
+                styles.iconContainer,
+                { backgroundColor: COLORS.primary + "15" },
+              ])}
         >
           <MaterialIcons
             name="phone-android"
@@ -177,10 +177,10 @@ const WhatsappVerification = ({ formData, setFormData }) => {
             color={COLORS.primary}
           />
         </View>
-        <Text style={[styles.title, { color: COLORS.dark }]}>
+        <Text style={StyleSheet.flatten([styles.title, { color: COLORS.dark }])}>
           {!isOtpSent ? "Verify Your Phone" : "Enter Verification Code"}
         </Text>
-        <Text style={[styles.subtitle, { color: COLORS.gray600 }]}>
+        <Text style={StyleSheet.flatten([styles.subtitle, { color: COLORS.gray600 }])}>
           {!isOtpSent
             ? "We'll send you a verification code to confirm your number"
             : `Enter the 6-digit code sent to ${formData.phoneNumber}`}
@@ -191,16 +191,16 @@ const WhatsappVerification = ({ formData, setFormData }) => {
         {formData.whatsappVerified ? (
           // Verification Success
           <Animated.View
-            style={[
-              styles.successContainer,
-              { backgroundColor: COLORS.success + "10" },
-            ]}
+            style={StyleSheet.flatten([
+                styles.successContainer,
+                { backgroundColor: COLORS.success + "10" },
+              ])}
           >
             <View
-              style={[
+              style={StyleSheet.flatten([
                 styles.successIconContainer,
                 { backgroundColor: COLORS.success },
-              ]}
+              ])}
             >
               <MaterialIcons
                 name="verified-user"
@@ -208,10 +208,10 @@ const WhatsappVerification = ({ formData, setFormData }) => {
                 color={COLORS.white}
               />
             </View>
-            <Text style={[styles.successTitle, { color: COLORS.success }]}>
+            <Text style={StyleSheet.flatten([styles.successTitle, { color: COLORS.success }])}>
               Phone Verified Successfully!
             </Text>
-            <Text style={[styles.successSubtitle, { color: COLORS.gray600 }]}>
+            <Text style={StyleSheet.flatten([styles.successSubtitle, { color: COLORS.gray600 }])}>
               Your phone number {formData.phoneNumber} has been verified and is
               ready to use.
             </Text>
@@ -223,7 +223,7 @@ const WhatsappVerification = ({ formData, setFormData }) => {
                   color={COLORS.success}
                 />
                 <Text
-                  style={[styles.successFeatureText, { color: COLORS.gray600 }]}
+                  style={StyleSheet.flatten([styles.successFeatureText, { color: COLORS.gray600 }])}
                 >
                   Receive auction notifications
                 </Text>
@@ -235,7 +235,7 @@ const WhatsappVerification = ({ formData, setFormData }) => {
                   color={COLORS.success}
                 />
                 <Text
-                  style={[styles.successFeatureText, { color: COLORS.gray600 }]}
+                  style={StyleSheet.flatten([styles.successFeatureText, { color: COLORS.gray600 }])}
                 >
                   Secure WhatsApp updates
                 </Text>
@@ -247,7 +247,7 @@ const WhatsappVerification = ({ formData, setFormData }) => {
                   color={COLORS.success}
                 />
                 <Text
-                  style={[styles.successFeatureText, { color: COLORS.gray600 }]}
+                  style={StyleSheet.flatten([styles.successFeatureText, { color: COLORS.gray600 }])}
                 >
                   Market alerts & bidding
                 </Text>
@@ -259,19 +259,19 @@ const WhatsappVerification = ({ formData, setFormData }) => {
           <Animated.View style={styles.inputSection}>
             <View style={styles.labelContainer}>
               <MaterialIcons name="phone" size={18} color={COLORS.primary} />
-              <Text style={[styles.label, { color: COLORS.dark }]}>
+              <Text style={StyleSheet.flatten([styles.label, { color: COLORS.dark }])}>
                 Phone Number *
               </Text>
             </View>
 
             <View
-              style={[
+              style={StyleSheet.flatten([
                 styles.phoneInputContainer,
                 {
                   borderColor: error ? COLORS.error : COLORS.gray300,
                   backgroundColor: COLORS.gray50,
                 },
-              ]}
+              ])}
             >
               <CountryCodePicker
                 selectedCode={countryCode}
@@ -279,13 +279,13 @@ const WhatsappVerification = ({ formData, setFormData }) => {
                 style={styles.countryPicker}
               />
               <View
-                style={[
-                  styles.inputDivider,
-                  { backgroundColor: COLORS.gray300 },
-                ]}
+                style={StyleSheet.flatten([
+                styles.inputDivider,
+                { backgroundColor: COLORS.gray300 },
+              ])}
               />
               <TextInput
-                style={[styles.phoneInput, { color: COLORS.dark }]}
+                style={StyleSheet.flatten([styles.phoneInput, { color: COLORS.dark }])}
                 placeholder="Enter your phone number"
                 placeholderTextColor={COLORS.gray400}
                 value={formData.phoneNumber}
@@ -306,20 +306,20 @@ const WhatsappVerification = ({ formData, setFormData }) => {
                   size={16}
                   color={COLORS.error}
                 />
-                <Text style={[styles.errorText, { color: COLORS.error }]}>
+                <Text style={StyleSheet.flatten([styles.errorText, { color: COLORS.error }])}>
                   {error}
                 </Text>
               </Animated.View>
             ) : null}
 
             <TouchableOpacity
-              style={[
+              style={StyleSheet.flatten([
                 styles.primaryButton,
                 {
                   backgroundColor: isLoading ? COLORS.gray400 : COLORS.primary,
                   opacity: isLoading ? 0.7 : 1,
                 },
-              ]}
+              ])}
               onPress={handleSendOtp}
               disabled={isLoading}
               activeOpacity={0.8}
@@ -328,10 +328,10 @@ const WhatsappVerification = ({ formData, setFormData }) => {
                 <View style={styles.loadingContainer}>
                   <ActivityIndicator color={COLORS.white} size="small" />
                   <Text
-                    style={[
-                      styles.primaryButtonText,
-                      { color: COLORS.white, marginLeft: 8 },
-                    ]}
+                    style={StyleSheet.flatten([
+                styles.primaryButtonText,
+                { color: COLORS.white, marginLeft: 8 },
+              ])}
                   >
                     Sending...
                   </Text>
@@ -340,7 +340,7 @@ const WhatsappVerification = ({ formData, setFormData }) => {
                 <View style={styles.buttonContent}>
                   <MaterialIcons name="send" size={18} color={COLORS.white} />
                   <Text
-                    style={[styles.primaryButtonText, { color: COLORS.white }]}
+                    style={StyleSheet.flatten([styles.primaryButtonText, { color: COLORS.white }])}
                   >
                     Send OTP
                   </Text>
@@ -358,7 +358,7 @@ const WhatsappVerification = ({ formData, setFormData }) => {
                   size={18}
                   color={COLORS.success}
                 />
-                <Text style={[styles.label, { color: COLORS.dark }]}>
+                <Text style={StyleSheet.flatten([styles.label, { color: COLORS.dark }])}>
                   Enter Verification Code
                 </Text>
               </View>
@@ -369,7 +369,7 @@ const WhatsappVerification = ({ formData, setFormData }) => {
               >
                 <MaterialIcons name="edit" size={16} color={COLORS.primary} />
                 <Text
-                  style={[styles.changeNumberText, { color: COLORS.primary }]}
+                  style={StyleSheet.flatten([styles.changeNumberText, { color: COLORS.primary }])}
                 >
                   Change number
                 </Text>
@@ -377,17 +377,17 @@ const WhatsappVerification = ({ formData, setFormData }) => {
             </View>
 
             <View
-              style={[
+              style={StyleSheet.flatten([
                 styles.otpInputContainer,
                 {
                   borderColor: error ? COLORS.error : COLORS.gray300,
                   backgroundColor: COLORS.gray50,
                 },
-              ]}
+              ])}
             >
               <MaterialIcons name="lock" size={20} color={COLORS.gray400} />
               <TextInput
-                style={[styles.otpInput, { color: COLORS.dark }]}
+                style={StyleSheet.flatten([styles.otpInput, { color: COLORS.dark }])}
                 placeholder="• • • • • •"
                 placeholderTextColor={COLORS.gray400}
                 value={otp}
@@ -409,20 +409,20 @@ const WhatsappVerification = ({ formData, setFormData }) => {
                   size={16}
                   color={COLORS.error}
                 />
-                <Text style={[styles.errorText, { color: COLORS.error }]}>
+                <Text style={StyleSheet.flatten([styles.errorText, { color: COLORS.error }])}>
                   {error}
                 </Text>
               </Animated.View>
             ) : null}
 
             <TouchableOpacity
-              style={[
+              style={StyleSheet.flatten([
                 styles.primaryButton,
                 {
                   backgroundColor: isLoading ? COLORS.gray400 : COLORS.success,
                   opacity: isLoading ? 0.7 : 1,
                 },
-              ]}
+              ])}
               onPress={handleVerifyOtp}
               disabled={isLoading}
               activeOpacity={0.8}
@@ -431,10 +431,10 @@ const WhatsappVerification = ({ formData, setFormData }) => {
                 <View style={styles.loadingContainer}>
                   <ActivityIndicator color={COLORS.white} size="small" />
                   <Text
-                    style={[
-                      styles.primaryButtonText,
-                      { color: COLORS.white, marginLeft: 8 },
-                    ]}
+                    style={StyleSheet.flatten([
+                styles.primaryButtonText,
+                { color: COLORS.white, marginLeft: 8 },
+              ])}
                   >
                     Verifying...
                   </Text>
@@ -447,7 +447,7 @@ const WhatsappVerification = ({ formData, setFormData }) => {
                     color={COLORS.white}
                   />
                   <Text
-                    style={[styles.primaryButtonText, { color: COLORS.white }]}
+                    style={StyleSheet.flatten([styles.primaryButtonText, { color: COLORS.white }])}
                   >
                     Verify OTP
                   </Text>
@@ -466,7 +466,7 @@ const WhatsappVerification = ({ formData, setFormData }) => {
                   size={16}
                   color={COLORS.primary}
                 />
-                <Text style={[styles.resendText, { color: COLORS.primary }]}>
+                <Text style={StyleSheet.flatten([styles.resendText, { color: COLORS.primary }])}>
                   Didn't receive OTP? Resend
                 </Text>
               </View>
@@ -478,27 +478,27 @@ const WhatsappVerification = ({ formData, setFormData }) => {
       {/* WhatsApp Info - Only show when not verified */}
       {!formData.whatsappVerified && (
         <View
-          style={[
+          style={StyleSheet.flatten([
             styles.infoContainer,
             {
               backgroundColor: COLORS.primary + "08",
               borderColor: COLORS.primary + "20",
             },
-          ]}
+          ])}
         >
           <View
-            style={[
-              styles.infoIconContainer,
-              { backgroundColor: COLORS.primary },
-            ]}
+            style={StyleSheet.flatten([
+                styles.infoIconContainer,
+                { backgroundColor: COLORS.primary },
+              ])}
           >
             <MaterialIcons name="whatsapp" size={20} color={COLORS.white} />
           </View>
           <View style={styles.infoTextContainer}>
-            <Text style={[styles.infoTitle, { color: COLORS.primary }]}>
+            <Text style={StyleSheet.flatten([styles.infoTitle, { color: COLORS.primary }])}>
               Phone Verification
             </Text>
-            <Text style={[styles.infoText, { color: COLORS.gray600 }]}>
+            <Text style={StyleSheet.flatten([styles.infoText, { color: COLORS.gray600 }])}>
               We'll use your phone number to send you important auction updates,
               bid notifications, and market alerts.
             </Text>

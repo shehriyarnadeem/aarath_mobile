@@ -39,6 +39,13 @@ const RoleSelection = ({ selectedRole, onRoleSelect }) => {
       icon: "🛒",
       color: COLORS.secondary,
     },
+    {
+      id: "EXPORTER",
+      title: "Exporter",
+      description: "I sell agricultural products to international markets",
+      icon: "🌍",
+      color: COLORS.secondary,
+    },
   ];
 
   const renderRoleCard = (role) => {
@@ -119,6 +126,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
     paddingTop: 8,
+    paddingBottom: 20, // Add bottom padding to account for fixed footer
   },
   subtitle: {
     fontSize: 16,
@@ -128,10 +136,11 @@ const styles = StyleSheet.create({
   },
   rolesContainer: {
     flex: 1,
-    maxHeight: screenHeight * 0.7, // Ensure it doesn't exceed 70% of screen height
+    maxHeight: screenHeight * 0.6, // Reduce to 60% to ensure space for Next button
   },
   scrollContent: {
     paddingTop: 4,
+    paddingBottom: 120, // Add bottom padding to prevent content from hiding behind Next button
     flexGrow: 1,
   },
   roleCard: {

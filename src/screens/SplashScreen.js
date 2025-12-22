@@ -421,26 +421,7 @@ const SplashScreen = ({ navigation }) => {
         }),
       ])
     ).start();
-
-    // Check auth status after animation
-    checkAuthStatus();
   }, []);
-
-  const checkAuthStatus = async () => {
-    try {
-      // Simulate app initialization delay
-      // Check for existing authentication token
-      if (isAuthenticated) {
-        // Validate token with backend (placeholder)
-        navigation.navigate("Marketplace");
-      } else {
-        await AsyncStorage.removeItem("authToken");
-        navigation.navigate("Login");
-      }
-    } catch (error) {
-      console.error("Error checking auth status:", error);
-    }
-  };
 
   return (
     <Animated.View

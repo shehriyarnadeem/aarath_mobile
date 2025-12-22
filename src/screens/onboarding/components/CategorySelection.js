@@ -51,47 +51,47 @@ const CategorySelection = ({ selectedCategories, onCategoriesChange }) => {
     return (
       <TouchableOpacity
         key={category.id}
-        style={[
+        style={StyleSheet.flatten([
           styles.categoryCard,
           {
             borderColor: isSelected ? category.color : COLORS.gray200,
             backgroundColor: isSelected ? `${category.color}10` : COLORS.white,
           },
-        ]}
+        ])}
         onPress={() => handleCategoryToggle(category.id)}
       >
         <View style={styles.categoryHeader}>
           <View
-            style={[
+            style={StyleSheet.flatten([
               styles.iconContainer,
               { backgroundColor: `${category.color}20` },
-            ]}
+            ])}
           >
             <Text style={styles.categoryIcon}>{category.icon}</Text>
           </View>
 
           <View style={styles.categoryInfo}>
-            <Text style={[styles.categoryTitle, { color: COLORS.dark }]}>
+            <Text style={StyleSheet.flatten([styles.categoryTitle, { color: COLORS.dark }])}>
               {category.name}
             </Text>
             <Text
-              style={[styles.categoryDescription, { color: COLORS.gray600 }]}
+              style={StyleSheet.flatten([styles.categoryDescription, { color: COLORS.gray600 }])}
             >
               {category.description}
             </Text>
           </View>
 
           <View
-            style={[
+            style={StyleSheet.flatten([
               styles.checkbox,
               {
                 borderColor: isSelected ? category.color : COLORS.gray300,
                 backgroundColor: isSelected ? category.color : COLORS.white,
               },
-            ]}
+            ])}
           >
             {isSelected && (
-              <Text style={[styles.checkmark, { color: COLORS.white }]}>✓</Text>
+              <Text style={StyleSheet.flatten([styles.checkmark, { color: COLORS.white }])}>✓</Text>
             )}
           </View>
         </View>
@@ -101,15 +101,15 @@ const CategorySelection = ({ selectedCategories, onCategoriesChange }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.subtitle, { color: COLORS.gray600 }]}>
+      <Text style={StyleSheet.flatten([styles.subtitle, { color: COLORS.gray600 }])}>
         Select the agricultural categories you work with (choose at least one)
       </Text>
 
       {selectedCategories.length > 0 && (
         <View
-          style={[styles.selectedInfo, { backgroundColor: COLORS.primary50 }]}
+          style={StyleSheet.flatten([styles.selectedInfo, { backgroundColor: COLORS.primary50 }])}
         >
-          <Text style={[styles.selectedText, { color: COLORS.primary700 }]}>
+          <Text style={StyleSheet.flatten([styles.selectedText, { color: COLORS.primary700 }])}>
             {selectedCategories.length} categor
             {selectedCategories.length === 1 ? "y" : "ies"} selected
           </Text>

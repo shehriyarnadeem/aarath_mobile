@@ -283,7 +283,7 @@ const AuctionTab = ({ navigation }) => {
 
     return (
       <TouchableOpacity
-        style={[styles.auctionCard, { backgroundColor: COLORS.white }]}
+        style={StyleSheet.flatten([styles.auctionCard, { backgroundColor: COLORS.white }])}
         activeOpacity={0.9}
         onPress={() => (isLive ? handleJoinAuction(auction) : null)}
       >
@@ -297,7 +297,7 @@ const AuctionTab = ({ navigation }) => {
 
           {/* Status Badge */}
           <View
-            style={[
+            style={StyleSheet.flatten([
               styles.statusBadge,
               {
                 backgroundColor: isLive
@@ -306,7 +306,7 @@ const AuctionTab = ({ navigation }) => {
                   ? "#f59e0b"
                   : "#10b981",
               },
-            ]}
+            ])}
           >
             <View style={styles.statusContent}>
               {isLive && (
@@ -326,9 +326,9 @@ const AuctionTab = ({ navigation }) => {
 
           {/* Timer */}
           <View
-            style={[styles.timerBadge, { backgroundColor: "rgba(0,0,0,0.8)" }]}
+            style={StyleSheet.flatten([styles.timerBadge, { backgroundColor: "rgba(0,0,0,0.8)" }])}
           >
-            <Text style={[styles.timerText, { color: COLORS.white }]}>
+            <Text style={StyleSheet.flatten([styles.timerText, { color: COLORS.white }])}>
               {isLive
                 ? getTimeRemaining(auction.endTime)
                 : isScheduled
@@ -342,7 +342,7 @@ const AuctionTab = ({ navigation }) => {
         <View style={styles.auctionInfo}>
           {/* Product Title */}
           <Text
-            style={[styles.productTitle, { color: COLORS.dark }]}
+            style={StyleSheet.flatten([styles.productTitle, { color: COLORS.dark }])}
             numberOfLines={2}
           >
             {auction.product.title}
@@ -351,18 +351,18 @@ const AuctionTab = ({ navigation }) => {
           {/* Seller Info */}
           <View style={styles.sellerRow}>
             <View
-              style={[
+              style={StyleSheet.flatten([
                 styles.sellerAvatar,
                 { backgroundColor: COLORS.primary600 },
-              ]}
+              ])}
             >
-              <Text style={[styles.sellerInitial, { color: COLORS.white }]}>
+              <Text style={StyleSheet.flatten([styles.sellerInitial, { color: COLORS.white }])}>
                 {auction.product.user.businessName?.charAt(0) || "S"}
               </Text>
             </View>
             <View style={styles.sellerInfo}>
               <Text
-                style={[styles.sellerName, { color: COLORS.dark }]}
+                style={StyleSheet.flatten([styles.sellerName, { color: COLORS.dark }])}
                 numberOfLines={1}
               >
                 {auction.product.user.businessName}
@@ -374,7 +374,7 @@ const AuctionTab = ({ navigation }) => {
                   color={COLORS.gray600}
                 />
                 <Text
-                  style={[styles.sellerLocation, { color: COLORS.gray600 }]}
+                  style={StyleSheet.flatten([styles.sellerLocation, { color: COLORS.gray600 }])}
                 >
                   {auction.product.user.city}, {auction.product.user.state}
                 </Text>
@@ -386,18 +386,18 @@ const AuctionTab = ({ navigation }) => {
           <View style={styles.bidSection}>
             <View style={styles.bidRow}>
               <View style={styles.currentBidContainer}>
-                <Text style={[styles.bidLabel, { color: COLORS.gray600 }]}>
+                <Text style={StyleSheet.flatten([styles.bidLabel, { color: COLORS.gray600 }])}>
                   {auction.currentHighestBid ? "Current Bid" : "Starting Bid"}
                 </Text>
-                <Text style={[styles.bidAmount, { color: COLORS.success600 }]}>
+                <Text style={StyleSheet.flatten([styles.bidAmount, { color: COLORS.success600 }])}>
                   PKR {currentBid.toLocaleString()}
                 </Text>
               </View>
               <View style={styles.reserveContainer}>
-                <Text style={[styles.reserveLabel, { color: COLORS.gray600 }]}>
+                <Text style={StyleSheet.flatten([styles.reserveLabel, { color: COLORS.gray600 }])}>
                   Reserve Price
                 </Text>
-                <Text style={[styles.reserveAmount, { color: COLORS.dark }]}>
+                <Text style={StyleSheet.flatten([styles.reserveAmount, { color: COLORS.dark }])}>
                   PKR {auction.reservePrice.toLocaleString()}
                 </Text>
               </View>
@@ -412,7 +412,7 @@ const AuctionTab = ({ navigation }) => {
                     color={COLORS.warning600}
                   />
                   <Text
-                    style={[styles.buyNowLabel, { color: COLORS.warning600 }]}
+                    style={StyleSheet.flatten([styles.buyNowLabel, { color: COLORS.warning600 }])}
                   >
                     Buy Now: PKR {auction.buyNowPrice.toLocaleString()}
                   </Text>
@@ -424,26 +424,26 @@ const AuctionTab = ({ navigation }) => {
           {/* Auction Stats */}
           <View style={styles.statsRow}>
             <View style={styles.statItem}>
-              <Text style={[styles.statNumber, { color: COLORS.primary600 }]}>
+              <Text style={StyleSheet.flatten([styles.statNumber, { color: COLORS.primary600 }])}>
                 {auction.totalParticipants}
               </Text>
-              <Text style={[styles.statLabel, { color: COLORS.gray600 }]}>
+              <Text style={StyleSheet.flatten([styles.statLabel, { color: COLORS.gray600 }])}>
                 Bidders
               </Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={[styles.statNumber, { color: COLORS.primary600 }]}>
+              <Text style={StyleSheet.flatten([styles.statNumber, { color: COLORS.primary600 }])}>
                 {auction.totalBids}
               </Text>
-              <Text style={[styles.statLabel, { color: COLORS.gray600 }]}>
+              <Text style={StyleSheet.flatten([styles.statLabel, { color: COLORS.gray600 }])}>
                 Bids
               </Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={[styles.statNumber, { color: COLORS.primary600 }]}>
+              <Text style={StyleSheet.flatten([styles.statNumber, { color: COLORS.primary600 }])}>
                 {auction.product.quantity}
               </Text>
-              <Text style={[styles.statLabel, { color: COLORS.gray600 }]}>
+              <Text style={StyleSheet.flatten([styles.statLabel, { color: COLORS.gray600 }])}>
                 {auction.product.unit}
               </Text>
             </View>
@@ -452,10 +452,10 @@ const AuctionTab = ({ navigation }) => {
           {/* Reserve Status */}
           {auction.isReserveReached && (
             <View
-              style={[
+              style={StyleSheet.flatten([
                 styles.reserveReachedBadge,
                 { backgroundColor: COLORS.success100 },
-              ]}
+              ])}
             >
               <View style={styles.reserveReachedRow}>
                 <AntDesign
@@ -464,10 +464,10 @@ const AuctionTab = ({ navigation }) => {
                   color={COLORS.success700}
                 />
                 <Text
-                  style={[
-                    styles.reserveReachedText,
-                    { color: COLORS.success700 },
-                  ]}
+                  style={StyleSheet.flatten([
+                styles.reserveReachedText,
+                { color: COLORS.success700 },
+              ])}
                 >
                   Reserve Price Met
                 </Text>
@@ -477,7 +477,7 @@ const AuctionTab = ({ navigation }) => {
 
           {/* Action Button */}
           <TouchableOpacity
-            style={[
+            style={StyleSheet.flatten([
               styles.actionButton,
               {
                 backgroundColor: isLive
@@ -486,7 +486,7 @@ const AuctionTab = ({ navigation }) => {
                   ? COLORS.warning500
                   : COLORS.gray400,
               },
-            ]}
+            ])}
             onPress={() => handleJoinAuction(auction)}
             disabled={!isLive && !isScheduled}
           >
@@ -508,7 +508,7 @@ const AuctionTab = ({ navigation }) => {
                   color={COLORS.white}
                 />
               )}
-              <Text style={[styles.actionButtonText, { color: COLORS.white }]}>
+              <Text style={StyleSheet.flatten([styles.actionButtonText, { color: COLORS.white }])}>
                 {isLive
                   ? " Join Auction"
                   : isScheduled
@@ -524,12 +524,12 @@ const AuctionTab = ({ navigation }) => {
 
   return (
     <SafeAreaView
-      style={[styles.container, { backgroundColor: COLORS.gray50 }]}
+      style={StyleSheet.flatten([styles.container, { backgroundColor: COLORS.gray50 }])}
     >
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.gray50} />
       {/* Modern Marketplace-style Header */}
       <View
-        style={[
+        style={StyleSheet.flatten([
           styles.header,
           {
             backgroundColor: "#17414F",
@@ -540,7 +540,7 @@ const AuctionTab = ({ navigation }) => {
             borderBottomWidth: 0,
             borderBottomColor: "transparent",
           },
-        ]}
+        ])}
       >
         <Text
           style={{
@@ -704,10 +704,10 @@ const AuctionTab = ({ navigation }) => {
                 />
               )}
             </View>
-            <Text style={[styles.emptyTitle, { color: COLORS.dark }]}>
+            <Text style={StyleSheet.flatten([styles.emptyTitle, { color: COLORS.dark }])}>
               No {selectedTab} auctions
             </Text>
-            <Text style={[styles.emptyText, { color: COLORS.gray600 }]}>
+            <Text style={StyleSheet.flatten([styles.emptyText, { color: COLORS.gray600 }])}>
               {selectedTab === "live"
                 ? "All auctions have ended for today"
                 : selectedTab === "scheduled"

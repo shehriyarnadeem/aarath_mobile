@@ -37,15 +37,15 @@ const CountryCodePicker = ({ selectedCode, onSelectCode, style }) => {
 
   const renderCountryItem = ({ item }) => (
     <TouchableOpacity
-      style={[styles.countryItem, { borderBottomColor: COLORS.gray200 }]}
+      style={StyleSheet.flatten([styles.countryItem, { borderBottomColor: COLORS.gray200 }])}
       onPress={() => handleSelectCountry(item)}
     >
       <Text style={styles.flag}>{item.flag}</Text>
       <View style={styles.countryInfo}>
-        <Text style={[styles.countryName, { color: COLORS.dark }]}>
+        <Text style={StyleSheet.flatten([styles.countryName, { color: COLORS.dark }])}>
           {item.country}
         </Text>
-        <Text style={[styles.countryCode, { color: COLORS.gray600 }]}>
+        <Text style={StyleSheet.flatten([styles.countryCode, { color: COLORS.gray600 }])}>
           {item.code}
         </Text>
       </View>
@@ -55,20 +55,20 @@ const CountryCodePicker = ({ selectedCode, onSelectCode, style }) => {
   return (
     <View style={style}>
       <TouchableOpacity
-        style={[
+        style={StyleSheet.flatten([
           styles.pickerButton,
           {
             borderColor: COLORS.gray300,
             backgroundColor: COLORS.white,
           },
-        ]}
+        ])}
         onPress={() => setModalVisible(true)}
       >
         <Text style={styles.flag}>{selectedCountry.flag}</Text>
-        <Text style={[styles.selectedCode, { color: COLORS.dark }]}>
+        <Text style={StyleSheet.flatten([styles.selectedCode, { color: COLORS.dark }])}>
           {selectedCountry.code}
         </Text>
-        <Text style={[styles.dropdownArrow, { color: COLORS.gray400 }]}>▼</Text>
+        <Text style={StyleSheet.flatten([styles.dropdownArrow, { color: COLORS.gray400 }])}>▼</Text>
       </TouchableOpacity>
 
       <Modal
@@ -77,20 +77,20 @@ const CountryCodePicker = ({ selectedCode, onSelectCode, style }) => {
         onRequestClose={() => setModalVisible(false)}
       >
         <View
-          style={[styles.modalContainer, { backgroundColor: COLORS.white }]}
+          style={StyleSheet.flatten([styles.modalContainer, { backgroundColor: COLORS.white }])}
         >
           {/* Header */}
           <View
-            style={[styles.modalHeader, { backgroundColor: COLORS.primary }]}
+            style={StyleSheet.flatten([styles.modalHeader, { backgroundColor: COLORS.primary }])}
           >
-            <Text style={[styles.modalTitle, { color: COLORS.white }]}>
+            <Text style={StyleSheet.flatten([styles.modalTitle, { color: COLORS.white }])}>
               Select Country
             </Text>
             <TouchableOpacity
               style={styles.closeButton}
               onPress={() => setModalVisible(false)}
             >
-              <Text style={[styles.closeButtonText, { color: COLORS.white }]}>
+              <Text style={StyleSheet.flatten([styles.closeButtonText, { color: COLORS.white }])}>
                 ✕
               </Text>
             </TouchableOpacity>
@@ -98,17 +98,17 @@ const CountryCodePicker = ({ selectedCode, onSelectCode, style }) => {
 
           {/* Search */}
           <View
-            style={[styles.searchContainer, { backgroundColor: COLORS.gray50 }]}
+            style={StyleSheet.flatten([styles.searchContainer, { backgroundColor: COLORS.gray50 }])}
           >
             <TextInput
-              style={[
+              style={StyleSheet.flatten([
                 styles.searchInput,
                 {
                   backgroundColor: COLORS.white,
                   color: COLORS.dark,
                   borderColor: COLORS.gray300,
                 },
-              ]}
+              ])}
               placeholder="Search country or code..."
               placeholderTextColor={COLORS.gray400}
               value={searchQuery}

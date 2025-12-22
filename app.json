@@ -9,13 +9,23 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.mycompany.myapp",
+      "config": {
+        "googleMapsApiKey": "AIzaSyA6N_Zh_d4PWuUUZ9_5bczUMLntJH8FZHI"
+      }
     },
     "android": {
       "package": "com.mycompany.myapp",
       "adaptiveIcon": {
         "backgroundColor": "#ffffff"
+      },
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyA6N_Zh_d4PWuUUZ9_5bczUMLntJH8FZHI"
+        }
       }
     },
     "web": {},
