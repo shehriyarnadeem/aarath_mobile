@@ -6,9 +6,9 @@ import { auth } from "../firebase/firebaseConfig";
 export const getBaseURL = () => {
   console.log("Using development API URL");
   if (__DEV__) {
-    console.log("Using development API URL");
     // Your machine's IP address for mobile device to connect
-    return "http://192.168.18.38:5000"; // Replace with your local IP
+    // Updated to match current host IPv4 (use env override if needed)
+    return "http://192.168.18.85:3000"; // Replace with your local IP
   }
   return "https://api.aarath.app"; // Your production API URL
 };
@@ -89,6 +89,7 @@ export const apiClient = {
       return api.post("/api/users/onboarding-complete", data);
     },
     getById: (userId) => api.get(`/api/users/${userId}`),
+    updateProfile: (userId, data) => api.put(`/api/users/${userId}`, data),
   },
   products: {
     create: (data) => api.post("/api/products/create", data),

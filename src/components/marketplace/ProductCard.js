@@ -33,22 +33,6 @@ const ProductCard = ({ product, onPress, onContact, onFavoriteToggle }) => {
             resizeMode="cover"
           />
 
-          {/* Favorite Heart Icon */}
-          <TouchableOpacity
-            style={[
-              styles.favoriteButton,
-              { backgroundColor: COLORS.white + "E6" },
-            ]}
-            onPress={handleFavoritePress}
-            activeOpacity={0.8}
-          >
-            <Ionicons
-              name={isFavorited ? "heart" : "heart-outline"}
-              size={18}
-              color={isFavorited ? "#ff4757" : COLORS.gray600}
-            />
-          </TouchableOpacity>
-
           {product.featured && (
             <View
               style={[
@@ -130,23 +114,6 @@ const ProductCard = ({ product, onPress, onContact, onFavoriteToggle }) => {
 
           {/* Product Details */}
           <View style={styles.productDetails}>
-            {/* Harvest Year */}
-            <View style={styles.detailItem}>
-              <Ionicons
-                name="calendar-outline"
-                size={12}
-                color={COLORS.gray500}
-              />
-              <Text
-                style={[
-                  TYPOGRAPHY.caption,
-                  { color: COLORS.textSecondary, marginLeft: 4 },
-                ]}
-              >
-                Harvested: {product.harvestYear || "2023"}
-              </Text>
-            </View>
-
             {/* Location */}
             <View style={styles.detailItem}>
               <Ionicons

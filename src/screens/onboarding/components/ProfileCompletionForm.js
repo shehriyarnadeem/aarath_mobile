@@ -1,10 +1,10 @@
 import React from "react";
 import { View, Text, TextInput, StyleSheet, ScrollView } from "react-native";
 import { useTheme } from "../../../constants/Theme";
-
+import { useTranslation } from "react-i18next";
 const ProfileCompletionForm = ({ profileData, onProfileChange }) => {
   const { COLORS, SIZES } = useTheme();
-
+  const { t } = useTranslation();
   const handleInputChange = (field, value) => {
     console.log("Profile field changed:", field, value);
     onProfileChange({
@@ -15,16 +15,13 @@ const ProfileCompletionForm = ({ profileData, onProfileChange }) => {
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <Text style={StyleSheet.flatten([styles.subtitle, { color: COLORS.gray600 }])}>
-        Complete your business profile to start connecting with the agricultural
-        marketplace
-      </Text>
-
       <View style={styles.formContainer}>
         {/* Business Name */}
         <View style={styles.inputGroup}>
-          <Text style={StyleSheet.flatten([styles.label, { color: COLORS.dark }])}>
-            Business Name *
+          <Text
+            style={StyleSheet.flatten([styles.label, { color: COLORS.dark }])}
+          >
+            {t("onboarding.businessName")} *
           </Text>
           <TextInput
             style={StyleSheet.flatten([
@@ -36,21 +33,28 @@ const ProfileCompletionForm = ({ profileData, onProfileChange }) => {
                 color: COLORS.dark,
               },
             ])}
-            placeholder="Enter your business or farm name"
+            placeholder={t("onboarding.businessNamePlaceholder")}
             placeholderTextColor={COLORS.gray400}
             value={profileData.businessName}
             onChangeText={(text) => handleInputChange("businessName", text)}
             autoCapitalize="words"
           />
-          <Text style={StyleSheet.flatten([styles.helperText, { color: COLORS.gray500 }])}>
-            This will be displayed on your profile and listings
+          <Text
+            style={StyleSheet.flatten([
+              styles.helperText,
+              { color: COLORS.gray500 },
+            ])}
+          >
+            {t("onboarding.businessNameSubtitle")}
           </Text>
         </View>
 
         {/* Email */}
         <View style={styles.inputGroup}>
-          <Text style={StyleSheet.flatten([styles.label, { color: COLORS.dark }])}>
-            Email Address
+          <Text
+            style={StyleSheet.flatten([styles.label, { color: COLORS.dark }])}
+          >
+            {t("onboarding.emailAddress")}
           </Text>
           <TextInput
             style={StyleSheet.flatten([
@@ -62,23 +66,25 @@ const ProfileCompletionForm = ({ profileData, onProfileChange }) => {
                 color: COLORS.dark,
               },
             ])}
-            placeholder="Enter your email address"
+            placeholder={t("onboarding.emailAddressPlaceholder")}
             placeholderTextColor={COLORS.gray400}
             value={profileData.email}
             onChangeText={(text) => handleInputChange("email", text)}
             keyboardType="email-address"
             autoCapitalize="none"
           />
-          <Text style={StyleSheet.flatten([styles.helperText, { color: COLORS.gray500 }])}>
-            Optional - for important notifications and updates
+          <Text
+            style={StyleSheet.flatten([
+              styles.helperText,
+              { color: COLORS.gray500 },
+            ])}
+          >
+            {t("onboarding.optionalEmail")}
           </Text>
         </View>
 
         {/* Business Description */}
         <View style={styles.inputGroup}>
-          <Text style={StyleSheet.flatten([styles.label, { color: COLORS.dark }])}>
-            Business Description
-          </Text>
           <TextInput
             style={StyleSheet.flatten([
               styles.textArea,
@@ -89,7 +95,7 @@ const ProfileCompletionForm = ({ profileData, onProfileChange }) => {
                 color: COLORS.dark,
               },
             ])}
-            placeholder="Tell us about your business, farming practices, or trading activities..."
+            placeholder={t("onboarding.businessDescriptionPlaceholder")}
             placeholderTextColor={COLORS.gray400}
             value={profileData.description || ""}
             onChangeText={(text) => handleInputChange("description", text)}
@@ -97,17 +103,19 @@ const ProfileCompletionForm = ({ profileData, onProfileChange }) => {
             numberOfLines={4}
             textAlignVertical="top"
           />
-          <Text style={StyleSheet.flatten([styles.helperText, { color: COLORS.gray500 }])}>
-            Optional - helps others understand your business better
+          <Text
+            style={StyleSheet.flatten([
+              styles.helperText,
+              { color: COLORS.gray500 },
+            ])}
+          >
+            {t("onboarding.optional")}
           </Text>
         </View>
       </View>
     </ScrollView>
   );
 };
-
-// Import TouchableOpacity
-import { TouchableOpacity } from "react-native";
 
 const styles = StyleSheet.create({
   container: {
@@ -121,6 +129,7 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     marginBottom: 32,
+    marginTop: 16,
   },
   inputGroup: {
     marginBottom: 24,

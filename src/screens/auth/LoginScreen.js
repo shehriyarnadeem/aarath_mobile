@@ -24,6 +24,8 @@ import Toast from "react-native-toast-message";
 import { Animated, Image } from "react-native";
 import { useRef, useEffect } from "react";
 import { getBaseURL } from "../../utils/apiClient";
+import { useTranslation } from "react-i18next";
+import LanguageSwitcher from "../../components/LanguageSwitcher";
 const LOGO = require("../../../assets/logo.png");
 
 const { width: screenWidth } = Dimensions.get("window");
@@ -31,6 +33,7 @@ const { width: screenWidth } = Dimensions.get("window");
 const LoginScreen = ({ navigation }) => {
   const { COLORS, SIZES } = useTheme();
   const { loading, setLoading } = useAuth();
+  const { t } = useTranslation();
   const [step, setStep] = useState("choose"); // 'choose', 'phone', 'otp'
   const [countryCode, setCountryCode] = useState("+92"); // Default to Pakistan
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -75,12 +78,10 @@ const LoginScreen = ({ navigation }) => {
   const handleSendOtp = async () => {
     console.log("Sending OTP to phone number:", phoneNumber);
     if (!phoneNumber.trim()) {
-      setError("Please enter your phone number");
+      setError(t("auth.pleaseEnterPhoneNumber"));
       return;
     }
-    console.log("Preparing to send OTP", phoneNumber);
     const fullPhoneNumber = `${countryCode}${phoneNumber}`;
-    console.log("Sending OTP to:", fullPhoneNumber);
     setIsLoading(true);
     setError("");
     try {
@@ -92,7 +93,7 @@ const LoginScreen = ({ navigation }) => {
         setError("");
         Toast.show({
           type: "success",
-          text1: result.message || "OTP sent to your phone number!",
+          text1: result.message || t("auth.otpSentSuccess"),
           text1Style: {
             fontSize: 14,
             display: "flex",
@@ -101,13 +102,13 @@ const LoginScreen = ({ navigation }) => {
         return;
       } else {
         setIsLoading(false);
-        setError(result.error || "Failed to send OTP. Please try again.");
+        setError(result.error || t("auth.failedToSend"));
         return;
       }
     } catch (err) {
       console.log("Error during OTP send:", err);
       setIsLoading(false);
-      setError(err.error || "Network error. Please try again.");
+      setError(err.error || t("auth.networkError"));
       return;
     }
   };
@@ -126,7 +127,7 @@ const LoginScreen = ({ navigation }) => {
         setError(
           verifyResult?.otp?.message ||
             verifyResult?.user?.message ||
-            "Invalid WhatsApp number or OTP. Please try again."
+            t("auth.invalidOTP")
         );
         return;
       }
@@ -135,12 +136,12 @@ const LoginScreen = ({ navigation }) => {
       await signInWithCustomToken(getAuth(), verifyResult?.user?.token);
       Toast.show({
         type: "success",
-        text1: "Successfully logged in!",
+        text1: t("auth.successfullyLoggedIn"),
       });
       setIsLoading(false);
     } catch (err) {
       console.log("Error during OTP verification:", err);
-      setError(err?.error || "Network error. Please try again.");
+      setError(err?.error || t("auth.networkError"));
     } finally {
       setIsLoading(false);
     }
@@ -201,7 +202,7 @@ const LoginScreen = ({ navigation }) => {
         <View style={styles.header}>
           <View style={styles.welcomeContainer}>
             <Text style={[styles.welcomeText, { color: COLORS.dark }]}>
-              Welcome to
+              {t("auth.welcomeTo")}
             </Text>
             <Animated.View
               style={[styles.logoContainer, { transform: [{ rotate: spin }] }]}
@@ -234,12 +235,12 @@ const LoginScreen = ({ navigation }) => {
               </View>
               <View style={styles.optionTextContainer}>
                 <Text style={[styles.optionTitle, { color: COLORS.primary }]}>
-                  Continue with Phone
+                  {t("auth.continueWithPhone")}
                 </Text>
                 <Text
                   style={[styles.optionSubtitle, { color: COLORS.gray500 }]}
                 >
-                  Sign in using your mobile number
+                  {t("auth.signInUsing")}
                 </Text>
               </View>
               <MaterialIcons
@@ -289,7 +290,7 @@ const LoginScreen = ({ navigation }) => {
               <Text
                 style={[styles.secondaryButtonText, { color: COLORS.gray700 }]}
               >
-                Create new account
+                {t("auth.createNewAccount")}
               </Text>
             </View>
           </TouchableOpacity>
@@ -304,19 +305,19 @@ const LoginScreen = ({ navigation }) => {
               color={COLORS.success}
             />
             <Text style={[styles.featureText, { color: COLORS.gray600 }]}>
-              Secure
+              {t("auth.secure")}
             </Text>
           </View>
           <View style={styles.featureItem}>
             <Ionicons name="flash" size={16} color={COLORS.warning} />
             <Text style={[styles.featureText, { color: COLORS.gray600 }]}>
-              Fast
+              {t("auth.fast")}
             </Text>
           </View>
           <View style={styles.featureItem}>
             <Ionicons name="people" size={16} color={COLORS.primary} />
             <Text style={[styles.featureText, { color: COLORS.gray600 }]}>
-              Trusted
+              {t("auth.trusted")}
             </Text>
           </View>
         </View>
@@ -341,7 +342,9 @@ const LoginScreen = ({ navigation }) => {
       >
         <View style={styles.backButtonContent}>
           <Ionicons name="arrow-back" size={20} color={COLORS.primary} />
-          <Text style={[styles.backText, { color: COLORS.primary }]}>Back</Text>
+          <Text style={[styles.backText, { color: COLORS.primary }]}>
+            {t("auth.back")}
+          </Text>
         </View>
       </TouchableOpacity>
 
@@ -354,9 +357,11 @@ const LoginScreen = ({ navigation }) => {
         >
           <MaterialIcons name="phone" size={32} color={COLORS.primary} />
         </View>
-        <Text style={[styles.title, { color: COLORS.dark }]}>Sign In</Text>
+        <Text style={[styles.title, { color: COLORS.dark }]}>
+          {t("auth.signIn")}
+        </Text>
         <Text style={[styles.subtitle, { color: COLORS.gray600 }]}>
-          We'll send you a verification code
+          {t("auth.willSendCode")}
         </Text>
       </View>
 
@@ -364,7 +369,7 @@ const LoginScreen = ({ navigation }) => {
         <View style={styles.inputContainer}>
           <Text style={[styles.inputLabel, { color: COLORS.dark }]}>
             <MaterialIcons name="phone" size={16} color={COLORS.primary} />{" "}
-            Phone Number
+            {t("auth.phoneNumber")}
           </Text>
           <View
             style={[
@@ -383,7 +388,7 @@ const LoginScreen = ({ navigation }) => {
             <View style={styles.inputDivider} />
             <TextInput
               style={[styles.phoneInput, { color: COLORS.dark }]}
-              placeholder="Enter phone number"
+              placeholder={t("auth.enterPhoneNumber")}
               placeholderTextColor={COLORS.gray400}
               value={phoneNumber}
               onChangeText={(text) => {
@@ -438,7 +443,7 @@ const LoginScreen = ({ navigation }) => {
             <View style={styles.buttonContent}>
               <MaterialIcons name="send" size={18} color={COLORS.white} />
               <Text style={[styles.primaryButtonText, { color: COLORS.white }]}>
-                Send OTP
+                {t("auth.sendOTP")}
               </Text>
             </View>
           )}
@@ -478,12 +483,12 @@ const LoginScreen = ({ navigation }) => {
           <MaterialIcons name="lock" size={32} color={COLORS.success} />
         </View>
         <Text style={[styles.title, { color: COLORS.dark }]}>
-          Enter Verification Code
+          {t("auth.enterVerificationCode")}
         </Text>
         <View style={styles.phoneNumberDisplay}>
           <MaterialIcons name="phone" size={16} color={COLORS.gray500} />
           <Text style={[styles.subtitle, { color: COLORS.gray600 }]}>
-            Code sent to {countryCode}
+            {t("auth.codeSentTo")} {countryCode}
             {phoneNumber}
           </Text>
         </View>
@@ -562,7 +567,7 @@ const LoginScreen = ({ navigation }) => {
                 color={COLORS.white}
               />
               <Text style={[styles.primaryButtonText, { color: COLORS.white }]}>
-                Verify & Login
+                {t("auth.verifyAndLogin")}
               </Text>
             </View>
           )}
@@ -576,7 +581,7 @@ const LoginScreen = ({ navigation }) => {
           <View style={styles.resendContent}>
             <MaterialIcons name="refresh" size={16} color={COLORS.primary} />
             <Text style={[styles.resendText, { color: COLORS.primary }]}>
-              Resend OTP
+              {t("auth.resendOTP")}
             </Text>
           </View>
         </TouchableOpacity>
@@ -590,6 +595,9 @@ const LoginScreen = ({ navigation }) => {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
+      <View style={styles.languageSwitcherContainer}>
+        <LanguageSwitcher backgroundColor="green" />
+      </View>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -607,6 +615,12 @@ const styles = StyleSheet.create({
     flex: 1,
     scrollHorizontal: false,
     marginHorizontal: 0,
+  },
+  languageSwitcherContainer: {
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    marginTop: 50,
+    alignItems: "flex-end",
   },
   scrollContent: {
     flexGrow: 1,

@@ -1,5 +1,11 @@
 // Updated AuthContext with cleaner approach
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
 import { onAuthStateChanged, getAuth } from "firebase/auth";
 import { signOut } from "../firebase/firebaseConfig";
 import apiClient from "../utils/apiClient";
@@ -25,7 +31,8 @@ export const AuthProvider = ({ children }) => {
     initializing,
     isAuthenticated,
     hasUser: !!user,
-    userUid: user?.uid || "none",
+    userUid: user?.id || user?.uid || "none",
+    hasCompletedOnboarding,
   });
 
   // Handle user state changes
@@ -49,14 +56,25 @@ export const AuthProvider = ({ children }) => {
         .then((userProfile) => {
           if (userProfile && typeof userProfile === "object") {
             console.log("✅ User profile loaded successfully");
+            console.log("📋 Profile data:", userProfile);
             setUser((prevUser) => ({ ...prevUser, ...userProfile }));
-            setHasCompletedOnboarding(userProfile.profileCompleted || false);
+            const isOnboardingComplete = userProfile.profileCompleted || false;
+            console.log(
+              "🎓 Setting hasCompletedOnboarding to:",
+              isOnboardingComplete
+            );
+            setHasCompletedOnboarding(isOnboardingComplete);
+          } else {
+            console.log("⚠️ Profile fetch returned invalid data:", userProfile);
+            setHasCompletedOnboarding(false);
           }
         })
         .catch((profileError) => {
           console.log(
             "⚠️ Could not fetch user profile, but user is still authenticated"
           );
+          console.error("Profile fetch error:", profileError);
+          setHasCompletedOnboarding(false);
           // Keep user authenticated even if profile fetch fails
         });
     } else {
@@ -80,7 +98,7 @@ export const AuthProvider = ({ children }) => {
 
     // Cleanup subscription on unmount
     return subscriber;
-  }, []);
+  }, [initializing]);
 
   const checkUserSession = async () => {
     try {
@@ -90,17 +108,27 @@ export const AuthProvider = ({ children }) => {
         "🔍 Checking user session for:",
         firebaseUser?.uid || "no user"
       );
-      await firebaseUser.getIdToken(true);
+
       if (firebaseUser) {
         // Verify the token is still valid
         await firebaseUser.getIdToken(true); // Force refresh token
 
         setIsAuthenticated(true);
         const userProfile = await fetchUserProfile(firebaseUser.uid);
+        console.log("📋 checkUserSession - Retrieved profile:", userProfile);
         if (userProfile && typeof userProfile === "object") {
+          console.log("✅ Setting user and onboarding state");
           setUser(userProfile);
-          setHasCompletedOnboarding(userProfile.profileCompleted || false);
+          const isOnboardingComplete = userProfile.profileCompleted || false;
+          console.log(
+            "🎓 checkUserSession - hasCompletedOnboarding:",
+            isOnboardingComplete
+          );
+          setHasCompletedOnboarding(isOnboardingComplete);
         } else {
+          console.log(
+            "⚠️ checkUserSession - Profile invalid, setting onboarding false"
+          );
           setUser({ uid: firebaseUser.uid });
           setHasCompletedOnboarding(false);
         }
@@ -147,6 +175,13 @@ export const AuthProvider = ({ children }) => {
       const response = await apiClient.user.getById(uid);
 
       console.log("📝 API Response:", response);
+      if (response && response.user) {
+        console.log("📝 User object from API:", response.user);
+        console.log(
+          "📝 profileCompleted value:",
+          response.user.profileCompleted
+        );
+      }
 
       // Check if response exists and has user data
       if (response.success) {
@@ -165,6 +200,22 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const refreshUserProfile = useCallback(async () => {
+    try {
+      const uid = user?.id || user?.uid;
+      if (!uid) return null;
+      const profile = await fetchUserProfile(uid);
+      if (profile) {
+        setUser((prev) => ({ ...prev, ...profile }));
+        setHasCompletedOnboarding(profile.profileCompleted || false);
+      }
+      return profile;
+    } catch (err) {
+      console.error("❌ Error refreshing user profile:", err);
+      return null;
+    }
+  }, [user]);
+
   const value = {
     user,
     isAuthenticated,
@@ -172,6 +223,7 @@ export const AuthProvider = ({ children }) => {
     loading: initializing, // Use initializing as loading state
     setUser,
     setHasCompletedOnboarding,
+    refreshUserProfile,
     checkUserSession,
     initializing,
     logout,

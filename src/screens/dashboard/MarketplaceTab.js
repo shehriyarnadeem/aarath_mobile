@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo, useEffect } from "react";
+import React, { useState, useRef, useMemo, useEffect, use } from "react";
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../../constants/Theme";
+import { useLanguage } from "../../context/LanguageContext";
 import { TYPOGRAPHY } from "../../constants/Typography";
 import { ProductCard } from "../../components/marketplace";
 import { apiClient } from "../../utils/apiClient";
@@ -28,6 +29,7 @@ const { width: screenWidth } = Dimensions.get("window");
 
 const MarketplaceTab = ({ navigation, route }) => {
   const { COLORS, SHADOWS } = useTheme();
+  const { t } = useLanguage();
   const [refreshing, setRefreshing] = useState(false);
 
   // Products state
@@ -62,21 +64,20 @@ const MarketplaceTab = ({ navigation, route }) => {
   useEffect(() => {
     if (route?.params?.presetFilter) {
       const { presetFilter } = route.params;
-
       setFilters((prev) => {
         const newFilters = { ...prev };
 
         if (presetFilter.type === "category") {
           newFilters.category = presetFilter.value;
-        } else if (presetFilter.type === "harvest") {
-          // Map harvest periods to categories or create harvest filter if needed
-          newFilters.harvestPeriod = presetFilter.value;
         }
 
         return newFilters;
       });
+
+      // Fetch products with the new filter
+      fetchProducts(1, true);
     }
-  }, [route?.params]);
+  }, [route?.params?.presetFilter]);
 
   // Fetch products from API
   const fetchProducts = async (page = 1, resetProducts = false) => {
@@ -116,10 +117,10 @@ const MarketplaceTab = ({ navigation, route }) => {
         params.city = filters.location;
       }
 
-      // TODO: Map category filter when backend supports it
-      // if (filters.category && filters.category !== "all") {
-      //   params.category = filters.category;
-      // }
+      // Map category filter
+      if (filters.category && filters.category !== "all") {
+        params.category = filters.category;
+      }
 
       const response = await apiClient.products.getAll(params);
 
@@ -176,9 +177,8 @@ const MarketplaceTab = ({ navigation, route }) => {
           product.category?.toLowerCase() === filters.category.toLowerCase()
       );
     }
-
     return filtered;
-  }, [products, filters.category]);
+  }, [products, filters]);
 
   // Calculate active filters count
   const activeFiltersCount = useMemo(() => {
@@ -291,7 +291,7 @@ const MarketplaceTab = ({ navigation, route }) => {
                     { color: COLORS.textPrimary, marginTop: 16 },
                   ]}
                 >
-                  Loading products...
+                  {t("marketplace.loadingProducts")}
                 </Text>
               </View>
             );
@@ -307,7 +307,7 @@ const MarketplaceTab = ({ navigation, route }) => {
                     { color: COLORS.textPrimary, marginTop: 16 },
                   ]}
                 >
-                  Error loading products
+                  {t("marketplace.noProducts")}
                 </Text>
                 <Text
                   style={[
@@ -334,7 +334,7 @@ const MarketplaceTab = ({ navigation, route }) => {
                   { color: COLORS.textPrimary, marginTop: 16 },
                 ]}
               >
-                No products found
+                {t("marketplace.noProducts")}
               </Text>
               <Text
                 style={[
@@ -346,8 +346,7 @@ const MarketplaceTab = ({ navigation, route }) => {
                   },
                 ]}
               >
-                Try adjusting your search filters or check back later for new
-                listings
+                {t("marketplace.noProductsMessage")}
               </Text>
             </View>
           );
@@ -400,8 +399,9 @@ const styles = StyleSheet.create({
 
   // Products List
   productsList: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 120,
   },
 
   // Empty State

@@ -17,6 +17,7 @@ import * as FileSystem from "expo-file-system/legacy";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../../constants/Theme";
 import { TYPOGRAPHY } from "../../constants/Typography";
+import { useLanguage } from "../../context/LanguageContext";
 import { apiClient } from "../../utils/apiClient";
 import Toast from "react-native-toast-message";
 // Selectable Field Component
@@ -120,6 +121,7 @@ const convertImageToBase64 = async (imageUri) => {
 
 const AddProductScreen = ({ navigation }) => {
   const { COLORS } = useTheme();
+  const { t } = useLanguage();
 
   const [formData, setFormData] = useState({
     category: "",
@@ -160,16 +162,7 @@ const AddProductScreen = ({ navigation }) => {
   const [images, setImages] = useState([]);
   const MAX_IMAGES = 10;
 
-  const categories = [
-    "Rice",
-    "Wheat",
-    "Maize",
-    "Pulses",
-    "Vegetables",
-    "Fruits",
-    "Seeds",
-    "Other",
-  ];
+  const categories = ["Rice", "Wheat", "Corn", "Barley", "Cotton"];
 
   const units = ["Kgs", "Tons", "Bags", "Boxes", "Pieces"];
 
@@ -242,8 +235,8 @@ const AddProductScreen = ({ navigation }) => {
   const pickImages = async () => {
     if (images.length >= MAX_IMAGES) {
       Alert.alert(
-        "Maximum Images",
-        `You can only upload up to ${MAX_IMAGES} images.`
+        t("addProduct.alerts.maxImagesTitle"),
+        t("addProduct.alerts.maxImagesMessage", { max: MAX_IMAGES })
       );
       return;
     }
@@ -253,8 +246,8 @@ const AddProductScreen = ({ navigation }) => {
 
     if (permissionResult.granted === false) {
       Alert.alert(
-        "Permission Required",
-        "Please allow access to your photos to upload images."
+        t("addProduct.alerts.permissionRequired"),
+        t("addProduct.alerts.permissionMessage")
       );
       return;
     }
@@ -492,6 +485,7 @@ const AddProductScreen = ({ navigation }) => {
         auction_live: false, // Since we're in marketplace mode
         price: formData.pricePerUnit,
         priceType: formData.pricingType,
+        status: "ACTIVE",
 
         // Additional fields from our form
         available: formData.available,
@@ -513,56 +507,12 @@ const AddProductScreen = ({ navigation }) => {
       const response = await apiClient.products.create(productData);
 
       if (response.success) {
-        Alert.alert(
-          "🎉 Ad Published Successfully!",
-          `Your "${formData.title}" has been listed in the marketplace and is now visible to buyers!`,
-          [
-            {
-              text: "View My Products",
-              onPress: () => {
-                // Navigate to products management screen
-                navigation.navigate("ProductsManagement");
-              },
-            },
-            {
-              text: "Create Another",
-              onPress: () => {
-                // Reset form for new product
-                setFormData({
-                  category: "",
-                  title: "",
-                  description: "",
-                  quantity: "",
-                  unit: "Kgs",
-                  pricePerUnit: "",
-                  pricingType: "Fixed Price",
-                  listingType: "Marketplace",
-                  available: "",
-                  minOrderQty: "",
-                  maxOrderQty: "",
-                  grade: "",
-                  purity: "",
-                  moisture: "",
-                  variety: "",
-                  type: "",
-                  sizeLength: "",
-                  farmingMethod: "",
-                  harvestSeason: "",
-                  storageConditions: "",
-                  packagingMethod: "",
-                  shelfLife: "",
-                });
-                setImages([]);
-                setErrors({});
-              },
-            },
-            {
-              text: "Go Back",
-              onPress: () => navigation.goBack(),
-              style: "cancel",
-            },
-          ]
-        );
+        Toast.show({
+          type: "success",
+          text1: "Ad Published",
+          text2: "Your product has been listed in the marketplace.",
+        });
+        navigation.navigate("My_Ads");
       } else {
         throw new Error(response.message || "Failed to publish product");
       }
@@ -586,12 +536,6 @@ const AddProductScreen = ({ navigation }) => {
       } else if (error.response?.status >= 500) {
         errorMessage = "Server error. Please try again later.";
       }
-
-      Alert.alert("Publishing Failed", errorMessage, [
-        { text: "Try Again", onPress: handleListInMarketplace },
-        { text: "Save as Draft", onPress: handleSaveDraft },
-        { text: "Cancel", style: "cancel" },
-      ]);
     } finally {
       setIsLoading(false);
     }
@@ -677,13 +621,13 @@ const AddProductScreen = ({ navigation }) => {
           {images.length === 0
             ? "Add Product Photos"
             : images.length >= MAX_IMAGES
-            ? `Maximum ${MAX_IMAGES} images reached`
-            : `Add More Photos (${MAX_IMAGES - images.length} remaining)`}
+              ? `Maximum ${MAX_IMAGES} images reached`
+              : `Add More Photos (${MAX_IMAGES - images.length} remaining)`}
         </Text>
         <Text style={[styles.uploadSubtext, { color: COLORS.gray500 }]}>
           {images.length === 0
-            ? "Upload high-quality photos to showcase your product"
-            : "Tap to add more photos of your product"}
+            ? t("addProduct.uploadHighQuality")
+            : t("addProduct.tapToAddMore")}
         </Text>
       </TouchableOpacity>
 
@@ -799,12 +743,12 @@ const AddProductScreen = ({ navigation }) => {
           onPress={() => navigation.goBack()}
         >
           <Text style={[styles.backButtonText, { color: "white" }]}>
-            Cancel
+            {t("addProduct.cancel")}
           </Text>
         </TouchableOpacity>
         <View style={styles.headerTitleContainer}>
           <Text style={[styles.headerTitle, { color: "white" }]}>
-            Publish Ad
+            {t("addProduct.title")}
           </Text>
         </View>
         <View style={styles.headerRightSpace} />
@@ -824,7 +768,7 @@ const AddProductScreen = ({ navigation }) => {
         {/* Product Title */}
         <View style={styles.sectionContainer}>
           <Text style={[styles.label, { color: "#1e293b" }]}>
-            Product Title *
+            {t("addProduct.productTitle")}
           </Text>
           <TextInput
             style={[
@@ -835,7 +779,7 @@ const AddProductScreen = ({ navigation }) => {
                 color: "#1e293b",
               },
             ]}
-            placeholder="e.g. Premium Basmati Rice"
+            placeholder={t("addProduct.productTitlePlaceholder")}
             placeholderTextColor="#64748b"
             value={formData.title}
             onChangeText={(text) => setFormData({ ...formData, title: text })}
@@ -848,7 +792,7 @@ const AddProductScreen = ({ navigation }) => {
           <View style={styles.sectionHeader}>
             <Ionicons name="layers-outline" size={20} color={COLORS.primary} />
             <Text style={[styles.sectionTitle, { color: COLORS.textPrimary }]}>
-              Quantity Management
+              {t("addProduct.quantityManagement")}
             </Text>
           </View>
 
@@ -856,7 +800,7 @@ const AddProductScreen = ({ navigation }) => {
           <View style={styles.rowContainer}>
             <View style={styles.halfWidth}>
               <Text style={[styles.label, { color: COLORS.textPrimary }]}>
-                Quantity *
+                {t("addProduct.quantityRequired")}
               </Text>
               <View
                 style={[
@@ -890,11 +834,11 @@ const AddProductScreen = ({ navigation }) => {
 
             <View style={styles.halfWidth}>
               <SelectableField
-                label="Unit *"
+                label={t("addProduct.unitRequired")}
                 options={units}
                 value={formData.unit}
                 onSelect={(value) => setFormData({ ...formData, unit: value })}
-                placeholder="Select unit"
+                placeholder={t("addProduct.selectUnit")}
               />
             </View>
           </View>
@@ -903,7 +847,9 @@ const AddProductScreen = ({ navigation }) => {
           <View style={styles.rowContainer}>
             <View style={styles.halfWidth}>
               <Text style={[styles.label, { color: COLORS.textPrimary }]}>
-                Price per {formData.unit} *
+                {t("addProduct.priceRequired", {
+                  unit: formData.unit || "unit",
+                })}
               </Text>
               <View
                 style={[
@@ -942,13 +888,13 @@ const AddProductScreen = ({ navigation }) => {
 
             <View style={styles.halfWidth}>
               <SelectableField
-                label="Pricing Type *"
+                label={t("addProduct.pricingTypeRequired")}
                 options={pricingTypes}
                 value={formData.pricingType}
                 onSelect={(value) =>
                   setFormData({ ...formData, pricingType: value })
                 }
-                placeholder="Select pricing type"
+                placeholder={t("addProduct.selectPricingType")}
               />
             </View>
           </View>
@@ -957,7 +903,9 @@ const AddProductScreen = ({ navigation }) => {
           <View style={[styles.rowContainer, { marginBottom: 0 }]}>
             <View style={styles.thirdWidth}>
               <Text style={[styles.label, { color: COLORS.textPrimary }]}>
-                Available ({formData.unit || "Units"}) *
+                {t("addProduct.availableRequired", {
+                  unit: formData.unit || "Units",
+                })}
               </Text>
               <View
                 style={[
@@ -991,7 +939,9 @@ const AddProductScreen = ({ navigation }) => {
 
             <View style={styles.thirdWidth}>
               <Text style={[styles.label, { color: COLORS.textPrimary }]}>
-                Min Order ({formData.unit || "Units"}) *
+                {t("addProduct.minOrderRequired", {
+                  unit: formData.unit || "Units",
+                })}
               </Text>
               <View
                 style={[
@@ -1025,7 +975,9 @@ const AddProductScreen = ({ navigation }) => {
 
             <View style={styles.thirdWidth}>
               <Text style={[styles.label, { color: COLORS.textPrimary }]}>
-                Max Order ({formData.unit || "Units"}) *
+                {t("addProduct.maxOrderRequired", {
+                  unit: formData.unit || "Units",
+                })}
               </Text>
               <View
                 style={[
@@ -1068,42 +1020,42 @@ const AddProductScreen = ({ navigation }) => {
               color={COLORS.primary}
             />
             <Text style={[styles.sectionTitle, { color: COLORS.textPrimary }]}>
-              Quality Parameters
+              {t("addProduct.qualityParameters")}
             </Text>
           </View>
 
           <View style={styles.rowContainer}>
             <View style={styles.thirdWidth}>
               <SelectableField
-                label="Grade"
+                label={t("addProduct.grade")}
                 options={gradeOptions}
                 value={formData.grade}
                 onSelect={(value) => setFormData({ ...formData, grade: value })}
-                placeholder="Select grade"
+                placeholder={t("addProduct.selectGrade")}
               />
             </View>
 
             <View style={styles.thirdWidth}>
               <SelectableField
-                label="Purity"
+                label={t("addProduct.purity")}
                 options={purityOptions}
                 value={formData.purity}
                 onSelect={(value) =>
                   setFormData({ ...formData, purity: value })
                 }
-                placeholder="Select purity"
+                placeholder={t("addProduct.selectPurity")}
               />
             </View>
           </View>
           <View style={[styles.thirdWidth, { width: "50%" }]}>
             <SelectableField
-              label="Moisture"
+              label={t("addProduct.moisture")}
               options={moistureOptions}
               value={formData.moisture}
               onSelect={(value) =>
                 setFormData({ ...formData, moisture: value })
               }
-              placeholder="Moisture"
+              placeholder={t("addProduct.moisture")}
             />
           </View>
         </View>
@@ -1113,30 +1065,30 @@ const AddProductScreen = ({ navigation }) => {
           <View style={styles.sectionHeader}>
             <Ionicons name="cube-outline" size={20} color={COLORS.primary} />
             <Text style={[styles.sectionTitle, { color: COLORS.textPrimary }]}>
-              Specifications
+              {t("addProduct.specifications")}
             </Text>
           </View>
 
           <View style={styles.rowContainer}>
             <View style={styles.thirdWidth}>
               <SelectableField
-                label="Variety"
+                label={t("addProduct.variety")}
                 options={varietyOptions}
                 value={formData.variety}
                 onSelect={(value) =>
                   setFormData({ ...formData, variety: value })
                 }
-                placeholder="Select variety"
+                placeholder={t("addProduct.selectVariety")}
               />
             </View>
 
             <View style={styles.thirdWidth}>
               <SelectableField
-                label="Type"
+                label={t("addProduct.type")}
                 options={typeOptions}
                 value={formData.type}
                 onSelect={(value) => setFormData({ ...formData, type: value })}
-                placeholder="Select type"
+                placeholder={t("addProduct.selectType")}
               />
             </View>
           </View>
@@ -1147,32 +1099,32 @@ const AddProductScreen = ({ navigation }) => {
           <View style={styles.sectionHeader}>
             <Ionicons name="leaf-outline" size={20} color={COLORS.primary} />
             <Text style={[styles.sectionTitle, { color: COLORS.textPrimary }]}>
-              Farming & Processing
+              {t("addProduct.farmingProcessing")}
             </Text>
           </View>
 
           <View style={styles.rowContainer}>
             <View style={styles.halfWidth}>
               <SelectableField
-                label="Farming Method"
+                label={t("addProduct.farmingMethod")}
                 options={farmingMethodOptions}
                 value={formData.farmingMethod}
                 onSelect={(value) =>
                   setFormData({ ...formData, farmingMethod: value })
                 }
-                placeholder="Method"
+                placeholder={t("addProduct.farmingMethod")}
               />
             </View>
 
             <View style={styles.halfWidth}>
               <SelectableField
-                label="Harvest Season"
+                label={t("addProduct.harvestSeason")}
                 options={harvestSeasonOptions}
                 value={formData.harvestSeason}
                 onSelect={(value) =>
                   setFormData({ ...formData, harvestSeason: value })
                 }
-                placeholder="Season"
+                placeholder={t("addProduct.harvestSeason")}
               />
             </View>
           </View>
@@ -1180,25 +1132,25 @@ const AddProductScreen = ({ navigation }) => {
           <View style={styles.rowContainer}>
             <View style={styles.halfWidth}>
               <SelectableField
-                label="Storage Conditions"
+                label={t("addProduct.storageConditions")}
                 options={storageOptions}
                 value={formData.storageConditions}
                 onSelect={(value) =>
                   setFormData({ ...formData, storageConditions: value })
                 }
-                placeholder="Storage"
+                placeholder={t("addProduct.storageConditions")}
               />
             </View>
 
             <View style={styles.halfWidth}>
               <SelectableField
-                label="Packaging Method"
+                label={t("addProduct.packagingMethod")}
                 options={packagingOptions}
                 value={formData.packagingMethod}
                 onSelect={(value) =>
                   setFormData({ ...formData, packagingMethod: value })
                 }
-                placeholder="Packaging"
+                placeholder={t("addProduct.packagingMethod")}
               />
             </View>
           </View>
@@ -1206,13 +1158,13 @@ const AddProductScreen = ({ navigation }) => {
           <View style={styles.rowContainer}>
             <View style={[styles.halfWidth, { width: "50%" }]}>
               <SelectableField
-                label="Shelf Life"
+                label={t("addProduct.shelfLife")}
                 options={shelfLifeOptions}
                 value={formData.shelfLife}
                 onSelect={(value) =>
                   setFormData({ ...formData, shelfLife: value })
                 }
-                placeholder="Shelf Life"
+                placeholder={t("addProduct.shelfLife")}
               />
             </View>
           </View>
@@ -1251,7 +1203,9 @@ const AddProductScreen = ({ navigation }) => {
               <Text
                 style={[styles.listButtonText, { color: COLORS.primaryDark }]}
               >
-                {isLoadingDraft ? "Saving..." : "Save Draft"}
+                {isLoadingDraft
+                  ? t("addProduct.saving")
+                  : t("addProduct.saveDraft")}
               </Text>
             </TouchableOpacity>
 
@@ -1276,7 +1230,9 @@ const AddProductScreen = ({ navigation }) => {
                 <Ionicons name="megaphone" size={20} color="white" />
               )}
               <Text style={[styles.listButtonText, { color: "white" }]}>
-                {isLoading ? "Publishing..." : "Publish Ad"}
+                {isLoading
+                  ? t("addProduct.publishing")
+                  : t("addProduct.publishAd")}
               </Text>
             </TouchableOpacity>
           </View>

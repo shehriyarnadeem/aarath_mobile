@@ -500,11 +500,9 @@ export const CategoryModal = ({
   const categories = [
     { id: "all", name: "All Categories", icon: "grid-outline" },
     { id: "Rice", name: "Rice", icon: "leaf-outline" },
-    { id: "Paddy", name: "Paddy", icon: "water-outline" },
     { id: "Wheat", name: "Wheat", icon: "nutrition-outline" },
-    { id: "Maize", name: "Maize", icon: "flower-outline" },
-    { id: "Pulses", name: "Pulses", icon: "ellipse-outline" },
-    { id: "Spices", name: "Spices", icon: "sparkles-outline" },
+    { id: "Cotton", name: "Cotton", icon: "nutrition-outline" },
+    { id: "Barley", name: "Barley", icon: "nutrition-outline" },
   ];
 
   return (

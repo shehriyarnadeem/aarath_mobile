@@ -12,11 +12,14 @@ import {
 } from "react-native";
 import { useTheme } from "../../constants/Theme";
 import { useAuth } from "../../context/AuthContext";
+import { useLanguage } from "../../context/LanguageContext";
 import { Ionicons } from "@expo/vector-icons";
+import { count } from "firebase/firestore";
 
 const ProfileTab = ({ navigation }) => {
   const { COLORS, SIZES } = useTheme();
   const { user, logout, isAuthenticated } = useAuth();
+  const { t } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogout = async () => {
@@ -25,7 +28,7 @@ const ProfileTab = ({ navigation }) => {
       await logout();
     } catch (error) {
       console.error("Logout error:", error);
-      Alert.alert("Logout Failed", "Failed to logout. Please try again.");
+      Alert.alert(t("profile.logoutFailed"), t("profile.logoutFailedMessage"));
     } finally {
       setIsLoading(false);
     }
@@ -69,8 +72,7 @@ const ProfileTab = ({ navigation }) => {
                 { color: COLORS.textSecondary || "#6b7280" },
               ]}
             >
-              Join Pakistan's leading agricultural marketplace to buy and sell
-              quality products.
+              {t("profile.loginPromptSubtitle")}
             </Text>
 
             <View style={styles.authButtonsContainer}>
@@ -82,7 +84,9 @@ const ProfileTab = ({ navigation }) => {
                 onPress={handleLogin}
               >
                 <Ionicons name="log-in-outline" size={20} color="white" />
-                <Text style={styles.primaryButtonText}>Login</Text>
+                <Text style={styles.primaryButtonText}>
+                  {t("profile.login")}
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -106,7 +110,7 @@ const ProfileTab = ({ navigation }) => {
                     { color: COLORS.primary || "#166534" },
                   ]}
                 >
-                  Sign Up
+                  {t("profile.signUp")}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -118,18 +122,18 @@ const ProfileTab = ({ navigation }) => {
                   { color: COLORS.textPrimary || "#1f2937" },
                 ]}
               >
-                What you can do after logging in:
+                {t("profile.whatYouCanDo")}
               </Text>
 
               {[
                 {
                   icon: "storefront-outline",
-                  text: "Manage your products and listings",
+                  text: t("profile.manageProducts"),
                 },
 
                 {
                   icon: "settings-outline",
-                  text: "Customize your account settings",
+                  text: t("profile.customizeSettings"),
                 },
               ].map((feature, index) => (
                 <View key={index} style={styles.featureItem}>
@@ -160,8 +164,14 @@ const ProfileTab = ({ navigation }) => {
   const userData = {
     name: user?.name || "User",
     email: user?.email || "user@example.com",
-    city: user?.city || "City",
-    state: user?.state || "State",
+    location: {
+      city: user?.city,
+      state: user?.state,
+      country: user?.country,
+      longitude: user?.longitude,
+      latitude: user?.latitude,
+      address: user?.businessAddress,
+    },
     whatsapp: user?.whatsapp || "+92 300 0000000",
     whatsappVerified: user?.whatsappVerified || false,
     totalProducts: user?.totalProducts || 0,
@@ -173,7 +183,6 @@ const ProfileTab = ({ navigation }) => {
       )}&background=166534&color=fff&size=200`,
     ...user,
   };
-
   return (
     <SafeAreaView
       style={[
@@ -211,7 +220,7 @@ const ProfileTab = ({ navigation }) => {
                 { color: COLORS.dark || COLORS.textPrimary },
               ]}
             >
-              {userData.name}
+              {userData.businessName}
             </Text>
             <Text
               style={[
@@ -235,69 +244,7 @@ const ProfileTab = ({ navigation }) => {
               >
                 {userData.city}, {userData.state}
               </Text>
-              {userData.whatsappVerified && (
-                <Ionicons
-                  name="checkmark-circle"
-                  size={16}
-                  color={COLORS.success || "#10B981"}
-                  style={{ marginLeft: 8 }}
-                />
-              )}
             </View>
-          </View>
-        </View>
-        {/* Quick Stats */}
-        <View style={[styles.statsCard, { backgroundColor: COLORS.white }]}>
-          <View style={styles.statItem}>
-            <Text style={[styles.statValue, { color: COLORS.primary600 }]}>
-              {userData.totalProducts || 0}
-            </Text>
-            <Text
-              style={[
-                styles.statLabel,
-                { color: COLORS.textSecondary || COLORS.textSecondary },
-              ]}
-            >
-              Products
-            </Text>
-          </View>
-          <View
-            style={[
-              styles.statDivider,
-              { backgroundColor: COLORS.lightGray || COLORS.gray200 },
-            ]}
-          />
-          <View style={styles.statItem}>
-            <Text style={[styles.statValue, { color: COLORS.primary600 }]}>
-              {userData.rating || "4.5"}
-            </Text>
-            <Text
-              style={[
-                styles.statLabel,
-                { color: COLORS.gray || COLORS.textSecondary },
-              ]}
-            >
-              Rating
-            </Text>
-          </View>
-          <View
-            style={[
-              styles.statDivider,
-              { backgroundColor: COLORS.lightGray || COLORS.gray200 },
-            ]}
-          />
-          <View style={styles.statItem}>
-            <Text style={[styles.statValue, { color: COLORS.primary600 }]}>
-              {userData.whatsappVerified ? "✓" : "✗"}
-            </Text>
-            <Text
-              style={[
-                styles.statLabel,
-                { color: COLORS.gray || COLORS.textSecondary },
-              ]}
-            >
-              Verified
-            </Text>
           </View>
         </View>
 
@@ -307,16 +254,11 @@ const ProfileTab = ({ navigation }) => {
             style={styles.menuItem}
             onPress={() => navigation.navigate("ProductsManagement")}
           >
-            <View
-              style={[
-                styles.iconContainer,
-                { backgroundColor: COLORS.primary + "15" },
-              ]}
-            >
+            <View style={[styles.iconContainer]}>
               <Ionicons
                 name="cube-outline"
                 size={22}
-                color={COLORS.primary || COLORS.textPrimary}
+                color={COLORS.dark || COLORS.textPrimary}
               />
             </View>
             <View style={styles.menuContent}>
@@ -326,7 +268,7 @@ const ProfileTab = ({ navigation }) => {
                   { color: COLORS.dark || COLORS.textPrimary },
                 ]}
               >
-                Manage Ads
+                {t("profile.manageAds")}
               </Text>
               <Text
                 style={[
@@ -334,7 +276,7 @@ const ProfileTab = ({ navigation }) => {
                   { color: COLORS.gray || COLORS.textSecondary },
                 ]}
               >
-                View and manage your listings
+                {t("profile.viewManageListings")}
               </Text>
             </View>
             <Ionicons
@@ -353,12 +295,12 @@ const ProfileTab = ({ navigation }) => {
               { color: COLORS.dark || COLORS.textPrimary },
             ]}
           >
-            Account
+            {t("profile.account")}
           </Text>
 
           <TouchableOpacity
             style={styles.menuItem}
-            onPress={() => navigation.navigate("EditProfile")}
+            onPress={() => navigation.navigate("EditProfile", userData)}
           >
             <View style={[styles.iconContainer]}>
               <Ionicons
@@ -374,7 +316,7 @@ const ProfileTab = ({ navigation }) => {
                   { color: COLORS.dark || COLORS.textPrimary },
                 ]}
               >
-                Edit Profile
+                {t("profile.editProfile")}
               </Text>
               <Text
                 style={[
@@ -382,7 +324,7 @@ const ProfileTab = ({ navigation }) => {
                   { color: COLORS.gray || COLORS.textSecondary },
                 ]}
               >
-                Update your personal information
+                {t("profile.updatePersonalInfo")}
               </Text>
             </View>
             <Ionicons
@@ -410,7 +352,7 @@ const ProfileTab = ({ navigation }) => {
                   { color: COLORS.dark || COLORS.textPrimary },
                 ]}
               >
-                Settings
+                {t("profile.settings")}
               </Text>
               <Text
                 style={[
@@ -418,62 +360,7 @@ const ProfileTab = ({ navigation }) => {
                   { color: COLORS.gray || COLORS.textSecondary },
                 ]}
               >
-                Privacy, security, and preferences
-              </Text>
-            </View>
-            <Ionicons
-              name="chevron-forward"
-              size={20}
-              color={COLORS.gray || COLORS.textMuted}
-            />
-          </TouchableOpacity>
-        </View>
-
-        {/* Support Section */}
-        <View style={[styles.section, { backgroundColor: COLORS.white }]}>
-          <Text
-            style={[
-              styles.sectionTitle,
-              { color: COLORS.dark || COLORS.textPrimary },
-            ]}
-          >
-            Support
-          </Text>
-
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => {
-              console.log("Navigate to Help Center");
-            }}
-          >
-            <View
-              style={[
-                styles.iconContainer,
-                { backgroundColor: "#F59E0B" + "15" },
-              ]}
-            >
-              <Ionicons
-                name="help-circle-outline"
-                size={22}
-                color={COLORS.dark || COLORS.textPrimary}
-              />
-            </View>
-            <View style={styles.menuContent}>
-              <Text
-                style={[
-                  styles.menuTitle,
-                  { color: COLORS.dark || COLORS.textPrimary },
-                ]}
-              >
-                Help Center
-              </Text>
-              <Text
-                style={[
-                  styles.menuSubtitle,
-                  { color: COLORS.gray || COLORS.textSecondary },
-                ]}
-              >
-                Get help with your account
+                {t("profile.privacySecurityPreferences")}
               </Text>
             </View>
             <Ionicons
@@ -505,7 +392,7 @@ const ProfileTab = ({ navigation }) => {
           <Text
             style={[styles.logoutText, { color: COLORS.error || "#EF4444" }]}
           >
-            {isLoading ? "Logging out..." : "Logout"}
+            {isLoading ? t("profile.loggingOut") : t("profile.logout")}
           </Text>
         </TouchableOpacity>
 

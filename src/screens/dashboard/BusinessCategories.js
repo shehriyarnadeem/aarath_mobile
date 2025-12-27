@@ -19,38 +19,14 @@ const BusinessCategories = ({ navigation }) => {
   const { COLORS } = useTheme();
 
   // Predefined categories for agricultural marketplace
-  const availableCategories = [
-    "Rice",
-    "Wheat",
-    "Corn",
-    "Barley",
-    "Oats",
-    "Soybeans",
-    "Organic Produce",
-    "Vegetables",
-    "Fruits",
-    "Pulses",
-    "Cotton",
-    "Sugarcane",
-    "Tea",
-    "Coffee",
-    "Spices",
-    "Nuts",
-    "Seeds",
-    "Dairy",
-    "Poultry",
-    "Livestock",
-    "Fertilizers",
-    "Pesticides",
-    "Farm Equipment",
-    "Irrigation",
-  ];
+  const availableCategories = ["Rice", "Wheat", "Corn", "Barley", "Cotton"];
 
   const [categories, setCategories] = useState([
     { id: "1", name: "Rice", isActive: true, productCount: 8 },
     { id: "2", name: "Wheat", isActive: true, productCount: 4 },
-    { id: "3", name: "Organic Produce", isActive: false, productCount: 0 },
+    { id: "3", name: "Barley", isActive: false, productCount: 0 },
     { id: "4", name: "Corn", isActive: true, productCount: 2 },
+    { id: "5", name: "Cotton", isActive: true, productCount: 5 },
   ]);
 
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);

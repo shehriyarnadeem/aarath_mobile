@@ -661,8 +661,6 @@ const ProductEdit = ({ navigation, route }) => {
       payload.status = "DRAFT";
       payload.environment = null;
 
-      console.log("Saving product as draft:", payload);
-
       // Update the product via API
       const response = await apiClient.products.update(
         productId || product.id,
@@ -906,20 +904,7 @@ const ProductEdit = ({ navigation, route }) => {
           status: "ACTIVE",
         }));
 
-        Alert.alert(
-          "🎉 Product Listed Successfully!",
-          `Your "${formData.title}" is now live in the marketplace and visible to buyers!`,
-          [
-            {
-              text: "View Product",
-              onPress: () => navigation.goBack(),
-            },
-            {
-              text: "OK",
-              style: "default",
-            },
-          ]
-        );
+        navigation.navigate("My_Ads");
       } else {
         throw new Error(response.message || "Failed to list product");
       }
@@ -1111,8 +1096,8 @@ const ProductEdit = ({ navigation, route }) => {
                     {processingImages
                       ? "Processing..."
                       : draftLoading
-                      ? "Saving..."
-                      : "Save Draft"}
+                        ? "Saving..."
+                        : "Save Draft"}
                   </Text>
                 </TouchableOpacity>
 
@@ -1138,8 +1123,8 @@ const ProductEdit = ({ navigation, route }) => {
                     {processingImages
                       ? "Processing..."
                       : loading
-                      ? "Listing..."
-                      : "List in Marketplace"}
+                        ? "Listing..."
+                        : "List in Marketplace"}
                   </Text>
                 </TouchableOpacity>
               </View>

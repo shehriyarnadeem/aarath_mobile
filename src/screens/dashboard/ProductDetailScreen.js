@@ -17,12 +17,14 @@ import {
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useTheme } from "../../constants/Theme";
+import { useLanguage } from "../../context/LanguageContext";
 
 const { width: screenWidth } = Dimensions.get("window");
 // Enhanced product data matching new comprehensive schema
 
 const ProductDetailScreen = ({ navigation, route }) => {
   const { COLORS } = useTheme();
+  const { t } = useLanguage();
   const { productId, product } = route.params;
 
   // State management
@@ -64,7 +66,7 @@ const ProductDetailScreen = ({ navigation, route }) => {
     });
   };
 
-  console.log("Product Data:", product);
+  console.log("Product Data:", product.user);
   // Action handlers
   const handleContactSeller = () => {
     if (product.seller?.whatsapp) {
@@ -79,8 +81,8 @@ const ProductDetailScreen = ({ navigation, route }) => {
             return Linking.openURL(whatsappUrl);
           } else {
             Alert.alert(
-              "WhatsApp not installed",
-              "Please install WhatsApp to contact the seller"
+              t("productDetail.whatsappNotInstalled"),
+              t("productDetail.pleaseInstallWhatsApp")
             );
           }
         })
@@ -97,36 +99,105 @@ const ProductDetailScreen = ({ navigation, route }) => {
     // TODO: Add to favorites API call
   };
 
-  const handleShare = () => {
-    // TODO: Implement share functionality
-    Alert.alert("Share Product", "Share functionality will be implemented");
+  // Specification tabs configuration
+  const specificationTabs = [
+    { key: "general", label: t("productDetail.general") },
+    { key: "farming", label: t("productDetail.farming") },
+  ];
+
+  // Specification data structure
+  const getSpecifications = () => {
+    const specs = {
+      general: [
+        { label: t("productDetail.variety"), value: product.variety },
+        { label: t("productDetail.type"), value: product.type },
+      ],
+      farming: [
+        {
+          label: t("productDetail.farmingMethod"),
+          value: product.farmingMethod,
+        },
+        {
+          label: t("productDetail.harvestSeason"),
+          value: product.harvestSeason,
+        },
+        {
+          label: t("productDetail.storageConditions"),
+          value: product.storageConditions,
+        },
+        {
+          label: t("productDetail.packagingMethod"),
+          value: product.packagingMethod,
+        },
+        { label: t("productDetail.shelfLife"), value: product.shelfLife },
+      ],
+    };
+    return specs;
   };
 
-  const handleChatSeller = () => {
-    // TODO: Navigate to chat screen
-    Alert.alert("Chat with Seller", "Chat functionality will be implemented");
-  };
-
-  const handleRequestQuote = () => {
-    // TODO: Navigate to quote request screen
-    Alert.alert(
-      "Request Quote",
-      "Quote request functionality will be implemented"
+  // Render specification row
+  const renderSpecRow = (label, value) => {
+    if (!value) return null;
+    return (
+      <View key={label} style={styles.specRow}>
+        <Text style={[styles.specLabel, { color: COLORS.gray600 }]}>
+          {label}
+        </Text>
+        <Text style={[styles.specValue, { color: COLORS.dark }]}>{value}</Text>
+      </View>
     );
   };
 
-  // Animated header opacity based on scroll
-  const handleScroll = Animated.event(
-    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-    {
-      useNativeDriver: true,
-      listener: (event) => {
-        const offsetY = event.nativeEvent.contentOffset.y;
-        const opacity = Math.min(offsetY / 200, 1);
-        headerOpacity.setValue(opacity);
-      },
-    }
-  );
+  // Render Product Specifications Section
+  const renderSpecifications = () => {
+    const specifications = getSpecifications();
+    const activeTabKey = specificationTabs[activeSpecTab]?.key;
+
+    return (
+      <View
+        style={[styles.specificationsCard, { backgroundColor: COLORS.white }]}
+      >
+        <Text style={[styles.sectionTitle, { color: COLORS.dark }]}>
+          {t("productDetail.productSpecifications")}
+        </Text>
+
+        {/* Tabs */}
+        <View style={styles.specTabsContainer}>
+          {specificationTabs.map((tab, index) => (
+            <TouchableOpacity
+              key={tab.key}
+              style={[
+                styles.specTab,
+                {
+                  backgroundColor:
+                    activeSpecTab === index ? COLORS.primary : "transparent",
+                },
+              ]}
+              onPress={() => setActiveSpecTab(index)}
+            >
+              <Text
+                style={[
+                  styles.specTabText,
+                  {
+                    color: activeSpecTab === index ? COLORS.white : COLORS.gray,
+                  },
+                ]}
+              >
+                {tab.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Specification Content */}
+        <View style={styles.specsContent}>
+          {specifications[activeTabKey]?.map((spec) =>
+            renderSpecRow(spec.label, spec.value)
+          )}
+        </View>
+      </View>
+    );
+  };
 
   // Render Components
   const renderImageGallery = () => (
@@ -181,16 +252,6 @@ const ProductDetailScreen = ({ navigation, route }) => {
           <Text style={[styles.productTitle, { color: COLORS.dark }]}>
             {product.title}
           </Text>
-          <TouchableOpacity
-            onPress={handleToggleFavorite}
-            style={styles.favoriteBtn}
-          >
-            <Ionicons
-              name={isFavorite ? "heart" : "heart-outline"}
-              size={24}
-              color={isFavorite ? COLORS.error : COLORS.gray400}
-            />
-          </TouchableOpacity>
         </View>
 
         {/* Enhanced Category and Status Row */}
@@ -246,7 +307,7 @@ const ProductDetailScreen = ({ navigation, route }) => {
               {formatPrice(product.price)}
             </Text>
             <Text style={[styles.priceUnit, { color: COLORS.gray }]}>
-              per {product.unit}
+              {t("productDetail.perUnit")} {product.unit}
             </Text>
           </View>
         </View>
@@ -255,7 +316,7 @@ const ProductDetailScreen = ({ navigation, route }) => {
           <View style={styles.stockInfoCard}>
             <View style={styles.stockItem}>
               <Text style={[styles.stockLabel, { color: COLORS.gray600 }]}>
-                Available
+                {t("productDetail.available")}
               </Text>
               <Text style={[styles.stockValue, { color: COLORS.success }]}>
                 {product.quantity.toLocaleString()} {product.unit}
@@ -263,7 +324,7 @@ const ProductDetailScreen = ({ navigation, route }) => {
             </View>
             <View style={styles.stockItem}>
               <Text style={[styles.stockLabel, { color: COLORS.gray600 }]}>
-                Min Order
+                {t("productDetail.minOrder")}
               </Text>
               <Text style={[styles.stockValue, { color: COLORS.dark }]}>
                 {product.minOrderQty} {product.unit}
@@ -271,7 +332,7 @@ const ProductDetailScreen = ({ navigation, route }) => {
             </View>
             <View style={styles.stockItem}>
               <Text style={[styles.stockLabel, { color: COLORS.gray600 }]}>
-                Max Order
+                {t("productDetail.maxOrder")}
               </Text>
               <Text style={[styles.stockValue, { color: COLORS.dark }]}>
                 {product.maxOrderQty} {product.unit}
@@ -284,7 +345,7 @@ const ProductDetailScreen = ({ navigation, route }) => {
         <View style={styles.qualityQuickView}>
           <View style={styles.qualityParam}>
             <Text style={[styles.paramLabel, { color: COLORS.gray600 }]}>
-              Moisture
+              {t("productDetail.moisture")}
             </Text>
             <Text style={[styles.paramValue, { color: COLORS.success }]}>
               {product.moisture ? product.moisture + "%" : "N/A"}
@@ -292,7 +353,7 @@ const ProductDetailScreen = ({ navigation, route }) => {
           </View>
           <View style={styles.qualityParam}>
             <Text style={[styles.paramLabel, { color: COLORS.gray600 }]}>
-              Purity
+              {t("productDetail.purity")}
             </Text>
             <Text style={[styles.paramValue, { color: COLORS.success }]}>
               {product.purity ? product.purity + "%" : "N/A"}
@@ -300,7 +361,7 @@ const ProductDetailScreen = ({ navigation, route }) => {
           </View>
           <View style={styles.qualityParam}>
             <Text style={[styles.paramLabel, { color: COLORS.gray600 }]}>
-              Grade
+              {t("productDetail.grade")}
             </Text>
             <Text style={[styles.paramValue, { color: COLORS.warning }]}>
               {product.grade ? product.grade : "N/A"}
@@ -320,13 +381,13 @@ const ProductDetailScreen = ({ navigation, route }) => {
         <View style={styles.originItem}>
           <Ionicons name="calendar-outline" size={16} color={COLORS.success} />
           <Text style={[styles.originText, { color: COLORS.dark }]}>
-            Harvest: {formatDate(product.harvestDate)}
+            {t("productDetail.harvest")}: {formatDate(product.harvestDate)}
           </Text>
         </View>
         <View style={styles.originItem}>
           <Ionicons name="leaf-outline" size={16} color={COLORS.success} />
           <Text style={[styles.originText, { color: COLORS.dark }]}>
-            {product.farmingMethod} Farming
+            {product.farmingMethod} {t("productDetail.farming")}
           </Text>
         </View>
       </View>
@@ -356,15 +417,6 @@ const ProductDetailScreen = ({ navigation, route }) => {
             }}
             style={styles.sellerAvatar}
           />
-          {/* Online Indicator */}
-          {product.user?.isOnline && (
-            <View
-              style={[
-                styles.onlineIndicator,
-                { backgroundColor: COLORS.success },
-              ]}
-            />
-          )}
         </View>
 
         <View style={styles.sellerInfo}>
@@ -374,13 +426,6 @@ const ProductDetailScreen = ({ navigation, route }) => {
             >
               {product?.user?.businessName}
             </Text>
-            {product?.user?.verified && (
-              <Ionicons
-                name="checkmark-circle"
-                size={16}
-                color={COLORS.success}
-              />
-            )}
           </View>
           <Text style={[styles.sellerName, { color: COLORS.gray600 }]}>
             {product?.user?.role}
@@ -388,11 +433,12 @@ const ProductDetailScreen = ({ navigation, route }) => {
           <Text style={[styles.sellerName, { color: COLORS.gray600 }]}>
             {product?.user?.email}
           </Text>
-          <View style={styles.sellerLocationRow}></View>
-          <Ionicons name="location-outline" size={14} color={COLORS.gray} />
-          <Text style={[styles.sellerLocation, { color: COLORS.gray }]}>
-            {product?.user?.city}, {product?.user?.state}
-          </Text>
+          <View style={styles.sellerLocationRow}>
+            <Ionicons name="location-outline" size={14} color={COLORS.gray} />
+            <Text style={[styles.sellerLocation, { color: COLORS.gray }]}>
+              {product?.user?.city}, {product?.user?.state}
+            </Text>
+          </View>
         </View>
       </View>
 
@@ -400,19 +446,12 @@ const ProductDetailScreen = ({ navigation, route }) => {
       <View style={styles.sellerDetails}>
         <View style={styles.sellerDetailItem}>
           <Text style={[styles.sellerDetailLabel, { color: COLORS.gray600 }]}>
-            Products
+            {t("productDetail.products")}
           </Text>
           <Text style={[styles.sellerDetailValue, { color: COLORS.dark }]}>
             {product?.user?.products?.length ?? "-"}
           </Text>
         </View>
-      </View>
-
-      {/* View Profile Hint */}
-      <View style={styles.viewProfileHint}>
-        <Text style={[styles.viewProfileText, { color: COLORS.primary }]}>
-          View Seller Profile
-        </Text>
       </View>
     </TouchableOpacity>
   );
@@ -483,112 +522,7 @@ const ProductDetailScreen = ({ navigation, route }) => {
         {/* Seller Card */}
 
         {/* Product Specifications */}
-        <View
-          style={[styles.specificationsCard, { backgroundColor: COLORS.white }]}
-        >
-          <Text style={[styles.sectionTitle, { color: COLORS.dark }]}>
-            Product Specifications
-          </Text>
-
-          {/* Tabs for different spec categories */}
-          <View style={styles.specTabsContainer}>
-            {["General", "Farming"].map((tab, index) => (
-              <TouchableOpacity
-                key={tab}
-                style={[
-                  styles.specTab,
-                  {
-                    backgroundColor:
-                      activeSpecTab === index ? COLORS.primary : "transparent",
-                  },
-                ]}
-                onPress={() => setActiveSpecTab(index)}
-              >
-                <Text
-                  style={[
-                    styles.specTabText,
-                    {
-                      color:
-                        activeSpecTab === index ? COLORS.white : COLORS.gray,
-                    },
-                  ]}
-                >
-                  {tab}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-          {/* Specification Content */}
-          <View style={styles.specsContent}>
-            {activeSpecTab === 0 && (
-              <>
-                <View style={styles.specRow}>
-                  <Text style={[styles.specLabel, { color: COLORS.gray600 }]}>
-                    Variety
-                  </Text>
-                  <Text style={[styles.specValue, { color: COLORS.dark }]}>
-                    {product.variety}
-                  </Text>
-                </View>
-                <View style={styles.specRow}>
-                  <Text style={[styles.specLabel, { color: COLORS.gray600 }]}>
-                    Type
-                  </Text>
-                  <Text style={[styles.specValue, { color: COLORS.dark }]}>
-                    {product.type}
-                  </Text>
-                </View>
-              </>
-            )}
-
-            {activeSpecTab === 1 && (
-              <>
-                <View style={styles.specRow}>
-                  <Text style={[styles.specLabel, { color: COLORS.gray600 }]}>
-                    Farming Method
-                  </Text>
-                  <Text style={[styles.specValue, { color: COLORS.dark }]}>
-                    {product.farmingMethod}
-                  </Text>
-                </View>
-                <View style={styles.specRow}>
-                  <Text style={[styles.specLabel, { color: COLORS.gray600 }]}>
-                    Harvest Season
-                  </Text>
-                  <Text style={[styles.specValue, { color: COLORS.dark }]}>
-                    {product.harvestSeason}
-                  </Text>
-                </View>
-
-                <View style={styles.specRow}>
-                  <Text style={[styles.specLabel, { color: COLORS.gray600 }]}>
-                    Storage Conditions
-                  </Text>
-                  <Text style={[styles.specValue, { color: COLORS.dark }]}>
-                    {product.storageConditions}
-                  </Text>
-                </View>
-                <View style={styles.specRow}>
-                  <Text style={[styles.specLabel, { color: COLORS.gray600 }]}>
-                    Packaging Method
-                  </Text>
-                  <Text style={[styles.specValue, { color: COLORS.dark }]}>
-                    {product.packagingMethod}
-                  </Text>
-                </View>
-                <View style={styles.specRow}>
-                  <Text style={[styles.specLabel, { color: COLORS.gray600 }]}>
-                    Shelf Life
-                  </Text>
-                  <Text style={[styles.specValue, { color: COLORS.dark }]}>
-                    {product.shelfLife}
-                  </Text>
-                </View>
-              </>
-            )}
-          </View>
-        </View>
+        {renderSpecifications()}
 
         <View style={styles.sectionContainer}>
           <Text
@@ -597,7 +531,7 @@ const ProductDetailScreen = ({ navigation, route }) => {
               { color: COLORS.dark, marginBottom: 16, marginHorizontal: 16 },
             ]}
           >
-            Seller Information
+            {t("productDetail.sellerInformation")}
           </Text>
           {renderSellerCard()}
         </View>
@@ -611,7 +545,6 @@ const ProductDetailScreen = ({ navigation, route }) => {
         <View style={styles.actionButtonsContainer}>
           <TouchableOpacity
             style={[styles.chatButton, { backgroundColor: COLORS.primary }]}
-            onPress={handleChatSeller}
           >
             <Ionicons
               name="chatbubble-outline"
@@ -619,7 +552,7 @@ const ProductDetailScreen = ({ navigation, route }) => {
               color={COLORS.white}
             />
             <Text style={[styles.chatButtonText, { color: COLORS.white }]}>
-              Chat
+              {t("productDetail.chat")}
             </Text>
           </TouchableOpacity>
         </View>
@@ -1157,6 +1090,9 @@ const styles = StyleSheet.create({
   },
   sellerInfo: {
     flex: 1,
+    padding: 10,
+    alignItems: "flex-start",
+    justifyContent: "center",
   },
   sellerNameRow: {
     flexDirection: "row",
@@ -1176,7 +1112,7 @@ const styles = StyleSheet.create({
   sellerLocationRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    gap: 6,
     width: 80,
   },
   sellerLocation: {

@@ -3,11 +3,14 @@ import { Text, View } from "react-native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator } from "@react-navigation/stack";
 import { Ionicons, MaterialIcons, AntDesign } from "@expo/vector-icons";
+import Toast from "react-native-toast-message";
 import { useTheme } from "../constants/Theme";
+import { useLanguage } from "../context/LanguageContext";
+import { useAuth } from "../context/AuthContext";
 
 // Import the tab screens
 import HomeScreen from "../screens/dashboard/HomeScreen";
-import AuctionsScreen from "../screens/dashboard/AuctionsScreen";
+import CategoriesTab from "../screens/dashboard/CategoriesTab";
 import FavoritesScreen from "../screens/dashboard/FavoritesScreen";
 import MarketplaceScreen from "../screens/dashboard/MarketplaceTab";
 import ProfileTab from "../screens/dashboard/ProfileTab";
@@ -28,6 +31,8 @@ const Stack = createStackNavigator();
 
 const TabNavigator = () => {
   const { COLORS } = useTheme();
+  const { t } = useLanguage();
+  const { isAuthenticated, user } = useAuth();
 
   return (
     <Tab.Navigator
@@ -36,14 +41,13 @@ const TabNavigator = () => {
         tabBarStyle: {
           backgroundColor: "transparent",
           borderTopWidth: 0,
-          paddingBottom: 30,
+          paddingBottom: 40,
           paddingTop: 15,
-          paddingHorizontal: 15,
+          paddingHorizontal: 10,
           height: 90,
           position: "absolute",
           bottom: 0,
-          left: 15,
-          right: 15,
+
           elevation: 30,
           shadowColor: COLORS.primary,
           shadowOffset: { width: 0, height: -15 },
@@ -67,7 +71,7 @@ const TabNavigator = () => {
           <View
             style={{
               backgroundColor: "rgba(255, 255, 255, 0.95)",
-              borderRadius: 30,
+              borderRadius: 0,
               flex: 1,
               backdropFilter: "blur(20px)",
             }}
@@ -97,14 +101,13 @@ const TabNavigator = () => {
               <Text
                 style={{
                   color: focused ? COLORS.primary : COLORS.gray + "80",
-                  fontSize: 10,
-                  fontWeight: focused ? "700" : "600",
-                  marginTop: 4,
+                  fontSize: 12,
+                  fontWeight: focused ? "600" : "400",
                   letterSpacing: 0.2,
                   textAlign: "center",
                 }}
               >
-                Home
+                {t("tabs.home")}
               </Text>
             </View>
           ),
@@ -120,7 +123,7 @@ const TabNavigator = () => {
               style={{
                 alignItems: "center",
                 justifyContent: "center",
-                width: 60,
+                width: 70,
                 height: 55,
                 paddingVertical: 4,
               }}
@@ -133,14 +136,13 @@ const TabNavigator = () => {
               <Text
                 style={{
                   color: focused ? COLORS.primary : COLORS.gray + "80",
-                  fontSize: 10,
-                  fontWeight: focused ? "700" : "600",
-                  marginTop: 4,
+                  fontSize: 12,
+                  fontWeight: focused ? "600" : "400",
                   letterSpacing: 0.2,
                   textAlign: "center",
                 }}
               >
-                My Ads
+                {t("tabs.myAds")}
               </Text>
             </View>
           ),
@@ -156,12 +158,12 @@ const TabNavigator = () => {
               style={{
                 alignItems: "center",
                 justifyContent: "center",
-                width: 65,
-                height: 65,
-                borderRadius: 32.5,
+                width: 75,
+                height: 75,
+                borderRadius: 35,
                 backgroundColor: COLORS.primary,
-                marginTop: -20, // Elevate the button above the tab bar
-                borderWidth: 3,
+                marginTop: -40, // Elevate the button above the tab bar
+                borderWidth: 1,
                 borderColor: "white",
                 shadowColor: COLORS.primary,
                 shadowOffset: { width: 0, height: 6 },
@@ -170,17 +172,17 @@ const TabNavigator = () => {
                 elevation: 12,
               }}
             >
-              <Ionicons name="add" size={28} color="white" />
+              <Ionicons name="add" size={30} color="white" />
               <Text
                 style={{
                   color: "white",
-                  fontSize: 8,
-                  fontWeight: "700",
+                  fontSize: 10,
+                  fontWeight: "500",
                   marginTop: 1,
                   letterSpacing: 0.2,
                 }}
               >
-                SELL NOW
+                {t("tabs.sellNow")}
               </Text>
             </View>
           ),
@@ -189,14 +191,36 @@ const TabNavigator = () => {
         listeners={({ navigation }) => ({
           tabPress: (e) => {
             e.preventDefault(); // Prevent default navigation
-            navigation.navigate("AddProduct"); // Navigate to AddProduct screen instead
+
+            // Check if user is authenticated
+            if (!isAuthenticated || !user) {
+              // Show toast notification
+              Toast.show({
+                type: "info",
+                text1: t("auth.loginRequired") || "Login Required",
+                text2:
+                  t("auth.loginToPublish") ||
+                  "Please login to publish a product",
+                position: "top",
+                visibilityTime: 3000,
+              });
+
+              // Navigate to Profile (More) tab in the MainTabs navigator
+              const parent = navigation.getParent();
+              if (parent) {
+                parent.navigate("Profile");
+              }
+            } else {
+              // User is authenticated, navigate to AddProduct screen
+              navigation.navigate("AddProduct");
+            }
           },
         })}
       />
 
       <Tab.Screen
-        name="Auctions"
-        component={AuctionsScreen}
+        name="Categories"
+        component={CategoriesTab}
         options={({ focused }) => ({
           tabBarIcon: ({ color, focused, size }) => (
             <View
@@ -209,21 +233,21 @@ const TabNavigator = () => {
               }}
             >
               <Ionicons
-                name={focused ? "hammer" : "hammer-outline"}
+                name={focused ? "grid" : "grid-outline"}
                 size={24}
                 color={focused ? COLORS.primary : COLORS.gray}
               />
               <Text
                 style={{
                   color: focused ? COLORS.primary : COLORS.gray + "80",
-                  fontSize: 10,
-                  fontWeight: focused ? "700" : "600",
+                  fontSize: 12,
+                  fontWeight: focused ? "600" : "400",
                   marginTop: 4,
                   letterSpacing: 0.2,
                   textAlign: "center",
                 }}
               >
-                Auctions
+                {t("tabs.categories")}
               </Text>
             </View>
           ),
@@ -251,14 +275,14 @@ const TabNavigator = () => {
               <Text
                 style={{
                   color: focused ? COLORS.primary : COLORS.gray + "80",
-                  fontSize: 10,
-                  fontWeight: focused ? "700" : "600",
+                  fontSize: 12,
+                  fontWeight: focused ? "600" : "400",
                   marginTop: 4,
                   letterSpacing: 0.2,
                   textAlign: "center",
                 }}
               >
-                More
+                {t("tabs.more")}
               </Text>
             </View>
           ),

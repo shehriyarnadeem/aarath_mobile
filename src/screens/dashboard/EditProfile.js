@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, use, useCallback, useMemo } from "react";
+import * as ImagePicker from "expo-image-picker";
 import {
   View,
   Text,
@@ -42,6 +43,10 @@ if (ENABLE_NATIVE_MAPS && Platform.OS !== "web") {
   console.log("🔧 Native maps disabled or running on web platform");
 }
 import { useTheme } from "../../constants/Theme";
+import { useAuth } from "../../context/AuthContext";
+import { set } from "firebase/database";
+import Toast from "react-native-toast-message";
+import apiClient from "../../utils/apiClient";
 
 // Google Places API configuration
 const GOOGLE_API_KEY = "AIzaSyA6N_Zh_d4PWuUUZ9_5bczUMLntJH8FZHI";
@@ -110,73 +115,125 @@ const PAKISTANI_CITIES = [
   },
 ];
 
-const EditProfile = ({ navigation, route }) => {
-  const { COLORS } = useTheme();
-  const { userData: initialUserData } = route?.params || {};
+// Memoized sub-components to prevent unnecessary re-renders
+const FormSection = React.memo(({ title, children, COLORS }) => (
+  <View style={styles.section}>
+    <Text style={[styles.sectionTitle, { color: COLORS.textSecondary }]}>
+      {title}
+    </Text>
+    {children}
+  </View>
+));
 
+const InputField = React.memo(
+  ({
+    label,
+    value,
+    onChangeText,
+    placeholder,
+    keyboardType = "default",
+    multiline = false,
+    disabled = false,
+    COLORS,
+  }) => (
+    <View style={styles.inputContainer}>
+      <Text style={[styles.inputLabel, { color: COLORS.textPrimary }]}>
+        {label}
+      </Text>
+      <TextInput
+        style={[
+          styles.textInput,
+          multiline && styles.multilineInput,
+          {
+            color: COLORS.textPrimary,
+            ...(disabled ? { opacity: 0.5 } : {}),
+          },
+        ]}
+        value={value}
+        onChangeText={disabled ? undefined : onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor={COLORS.gray400}
+        keyboardType={keyboardType}
+        multiline={multiline}
+        numberOfLines={multiline ? 3 : 1}
+        editable={!disabled}
+      />
+    </View>
+  )
+);
+
+const LocationField = React.memo(({ label, location, onPress, COLORS }) => {
+  console.log("🗺️ LocationField - location prop:", location);
+  return (
+    <View style={styles.inputContainer}>
+      <Text style={[styles.inputLabel, { color: COLORS.textPrimary }]}>
+        {label}
+      </Text>
+      <TouchableOpacity style={styles.locationButton} onPress={onPress}>
+        <View style={styles.locationContent}>
+          <View
+            style={[
+              styles.locationIconContainer,
+              { backgroundColor: COLORS.primary + "10" },
+            ]}
+          >
+            <Ionicons name="location" size={18} color={COLORS.primary} />
+          </View>
+          <View style={styles.locationTextContainer}>
+            {location?.address ? (
+              <>
+                <Text
+                  style={[styles.locationText, { color: COLORS.textPrimary }]}
+                >
+                  {location.address}
+                </Text>
+                <Text
+                  style={[
+                    styles.locationSubtext,
+                    { color: COLORS.textSecondary, opacity: 0.6 },
+                  ]}
+                >
+                  Tap to change
+                </Text>
+              </>
+            ) : (
+              <Text
+                style={[styles.locationPlaceholder, { color: COLORS.gray400 }]}
+              >
+                Select your location
+              </Text>
+            )}
+          </View>
+        </View>
+        <Ionicons name="chevron-forward" size={18} color={COLORS.gray400} />
+      </TouchableOpacity>
+    </View>
+  );
+});
+
+const EditProfile = ({ navigation, route }) => {
+  const { COLORS, SIZES } = useTheme();
+  const { refreshUserProfile } = useAuth();
+  const userInfo = route?.params || {};
   // Business roles options
   const businessRoles = [
-    { id: 1, label: "Owner", value: "Owner", icon: "business" },
-    { id: 2, label: "Manager", value: "Manager", icon: "person-circle" },
-    { id: 3, label: "Partner", value: "Partner", icon: "people" },
+    { id: 1, label: "FARMER", value: "FARMER", icon: "business" },
+    { id: 2, label: "BROKER", value: "BROKER", icon: "person-circle" },
+    { id: 3, label: "BUYER", value: "BUYER", icon: "people" },
     {
       id: 4,
-      label: "Operations Head",
-      value: "Operations Head",
+      label: "EXPORTER",
+      value: "EXPORTER",
       icon: "settings",
-    },
-    {
-      id: 5,
-      label: "Sales Manager",
-      value: "Sales Manager",
-      icon: "trending-up",
-    },
-    { id: 6, label: "Farm Supervisor", value: "Farm Supervisor", icon: "leaf" },
-    {
-      id: 7,
-      label: "Quality Controller",
-      value: "Quality Controller",
-      icon: "checkmark-circle",
-    },
-    {
-      id: 8,
-      label: "Marketing Head",
-      value: "Marketing Head",
-      icon: "megaphone",
     },
   ];
 
-  const [userData, setUserData] = useState({
-    name: "John Farmer",
-    businessName: "Green Valley Farms",
-    email: "farmer@example.com",
-    whatsapp: "+92 300 1234567",
-    city: "Lahore",
-    state: "Punjab",
-    businessAddress: "123 Farm Street, Agricultural District",
-    businessRole: "Owner",
-    location: {
-      latitude: 31.5204,
-      longitude: 74.3587,
-      address: "Lahore, Punjab, Pakistan",
-      city: "Lahore",
-      state: "Punjab",
-      country: "Pakistan",
-    },
-    personalProfilePic:
-      "https://ui-avatars.com/api/?name=John+Farmer&background=6366f1&color=fff&size=200",
-    ...initialUserData,
-  });
-
+  const [userData, setUserData] = useState({ ...userInfo } || {});
   const [isLoading, setIsLoading] = useState(false);
   const [isRoleDropdownVisible, setIsRoleDropdownVisible] = useState(false);
   const [isLocationPickerVisible, setIsLocationPickerVisible] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState(
-    userData.location || {
-      latitude: 31.5204,
-      longitude: 74.3587,
-      address: "Lahore, Punjab, Pakistan",
-    }
+    userInfo.location || {}
   );
 
   // Location selection states
@@ -192,27 +249,157 @@ const EditProfile = ({ navigation, route }) => {
     longitudeDelta: 0.0421,
   });
 
-  const handleSave = async () => {
+  useEffect(() => {
+    setUserData((prevData) => ({
+      ...prevData,
+      name: userInfo?.businessName || "N/A",
+      businessName: userInfo?.businessName || "N/A",
+      email: userInfo?.email || "N/A",
+      whatsapp: userInfo?.whatsapp || "N/A",
+      city: userInfo?.city || "N/A",
+      state: userInfo?.state || "N/A",
+      businessAddress: userInfo?.businessAddress || "N/A",
+      businessRole: userInfo?.role || "N/A",
+      personalProfilePic:
+        userInfo?.personalProfilePic ||
+        "https://ui-avatars.com/api/?name=John+Farmer&background=6366f1&color=fff&size=200",
+    }));
+
+    setSelectedLocation(userInfo?.location || {});
+  }, []);
+
+  console.log("📝 EditProfile - userData state:", selectedLocation);
+
+  const handleChangePhoto = useCallback(async () => {
+    try {
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert(
+          "Permission Required",
+          "Please allow photo library access to change your profile picture."
+        );
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+        base64: true,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const asset = result.assets[0];
+        const dataUrl = asset.base64
+          ? `data:${asset.type || "image/jpeg"};base64,${asset.base64}`
+          : null;
+
+        setUserData((prev) => ({
+          ...prev,
+          personalProfilePic: asset.uri,
+          personalProfilePicBase64: dataUrl,
+        }));
+      }
+    } catch (err) {
+      console.error("Image picking error:", err);
+      Alert.alert("Error", "Failed to pick image. Please try again.");
+    }
+  }, []);
+
+  const handleSave = useCallback(async () => {
+    // Validate required fields
+    if (!userData.businessName || userData.businessName === "N/A") {
+      Alert.alert("Validation Error", "Business name is required.");
+      return;
+    }
+
+    if (!userData.businessRole || userData.businessRole === "N/A") {
+      Alert.alert("Validation Error", "Business role is required.");
+      return;
+    }
+
+    if (!userData.city || userData.city === "N/A") {
+      Alert.alert("Validation Error", "City is required.");
+      return;
+    }
+
+    if (!userData.state || userData.state === "N/A") {
+      Alert.alert("Validation Error", "State is required.");
+      return;
+    }
+
     setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Prepare update payload
+      const updatePayload = {
+        businessName: userData.businessName,
+        email: userData.email !== "N/A" ? userData.email : null,
+        whatsapp: userData.whatsapp !== "N/A" ? userData.whatsapp : null,
+        city: selectedLocation.city,
+        state: selectedLocation.state,
+        longitude: selectedLocation.longitude,
+        latitude: selectedLocation.latitude,
+        businessAddress:
+          selectedLocation.businessAddress !== null
+            ? selectedLocation.businessAddress
+            : null,
+        role: userData.businessRole,
+        businessCategories: userData.businessCategories || [],
+        personalLocation: selectedLocation || null,
+        // Send base64 if user selected a new image
+        personalProfilePicBase64: userData.personalProfilePicBase64 || null,
+      };
 
-      Alert.alert(
-        "Profile Updated",
-        "Your profile has been updated successfully.",
-        [{ text: "OK", onPress: () => navigation.goBack() }]
+      console.log("📤 Sending profile update:", updatePayload);
+
+      // Call backend API to update user profile
+      const response = await apiClient.user.updateProfile(
+        userInfo?.id || userInfo?.uid,
+        updatePayload
       );
+
+      if (response.success) {
+        // Refresh cached user profile so UI reflects latest data
+        await refreshUserProfile();
+
+        Toast.show({
+          type: "success",
+          text1: "Success",
+          text2: "Profile updated successfully!",
+        });
+
+        // Navigate back after successful update
+        navigation.navigate("My_Ads");
+      } else {
+        Alert.alert(
+          "Update Failed",
+          response.error?.message ||
+            "Failed to update profile. Please try again."
+        );
+      }
     } catch (error) {
-      Alert.alert("Error", "Failed to update profile. Please try again.");
+      console.error("❌ Profile update error:", error);
+      Alert.alert(
+        "Error",
+        error?.message || "Failed to update profile. Please try again."
+      );
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [
+    userData,
+    selectedLocation,
+    userInfo?.id,
+    userInfo?.uid,
+    navigation,
+    refreshUserProfile,
+  ]);
 
-  const handleInputChange = (field, value) => {
+  const handleInputChange = useCallback((field, value) => {
     setUserData((prev) => ({ ...prev, [field]: value }));
-  };
+  }, []);
 
   // Location utility functions
   const getCityCoordinates = (cityName) => {
@@ -226,7 +413,7 @@ const EditProfile = ({ navigation, route }) => {
         `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_API_KEY}`
       );
       const data = await response.json();
-
+      console.log("--data", data);
       if (data.results && data.results.length > 0) {
         return {
           address: data.results[0].formatted_address,
@@ -284,107 +471,21 @@ const EditProfile = ({ navigation, route }) => {
     }
   };
 
-  const FormSection = ({ title, children }) => (
-    <View style={[styles.section, { backgroundColor: COLORS.white }]}>
-      <Text style={[styles.sectionTitle, { color: COLORS.dark }]}>{title}</Text>
-      {children}
-    </View>
-  );
-
-  const InputField = ({
-    label,
-    value,
-    onChangeText,
-    placeholder,
-    keyboardType = "default",
-    multiline = false,
-    disabled = false,
-  }) => (
-    <View style={styles.inputContainer}>
-      <Text style={[styles.inputLabel, { color: COLORS.dark }]}>{label}</Text>
-      <TextInput
-        style={[
-          styles.textInput,
-          multiline && styles.multilineInput,
-          {
-            borderColor: COLORS.lightGray,
-            color: COLORS.dark,
-            backgroundColor: COLORS.background,
-            ...(disabled ? { opacity: 0.6 } : {}),
-          },
-        ]}
-        value={value}
-        onChangeText={disabled ? undefined : onChangeText}
-        placeholder={placeholder}
-        placeholderTextColor={COLORS.gray}
-        keyboardType={keyboardType}
-        multiline={multiline}
-        numberOfLines={multiline ? 3 : 1}
-        editable={!disabled}
-      />
-    </View>
-  );
-
-  const LocationField = ({ label, location, onPress }) => (
-    <View style={styles.inputContainer}>
-      <Text style={[styles.inputLabel, { color: COLORS.dark }]}>{label}</Text>
-      <TouchableOpacity
-        style={[
-          styles.locationButton,
-          {
-            borderColor: COLORS.lightGray,
-            backgroundColor: COLORS.background,
-          },
-        ]}
-        onPress={onPress}
-      >
-        <View style={styles.locationContent}>
-          <View
-            style={[
-              styles.locationIconContainer,
-              { backgroundColor: COLORS.primary + "15" },
-            ]}
-          >
-            <Ionicons name="location" size={20} color={COLORS.primary} />
-          </View>
-          <View style={styles.locationTextContainer}>
-            {location?.address ? (
-              <>
-                <Text style={[styles.locationText, { color: COLORS.dark }]}>
-                  {location.address}
-                </Text>
-                <Text style={[styles.locationSubtext, { color: COLORS.gray }]}>
-                  Tap to change location
-                </Text>
-              </>
-            ) : (
-              <Text
-                style={[styles.locationPlaceholder, { color: COLORS.gray }]}
-              >
-                Select your location
-              </Text>
-            )}
-          </View>
-        </View>
-        <Ionicons name="chevron-forward" size={20} color={COLORS.gray} />
-      </TouchableOpacity>
-    </View>
-  );
-
   // Business Role Dropdown Component
   const BusinessRoleDropdown = () => (
     <View style={styles.inputContainer}>
-      <Text style={[styles.inputLabel, { color: COLORS.dark }]}>
-        Business Role
-      </Text>
+      <Text style={[styles.inputLabel, { color: COLORS.dark }]}>Role</Text>
       <Dropdown
-        style={[
-          styles.dropdown,
-          { borderColor: COLORS.lightGray, backgroundColor: COLORS.background },
+        style={[styles.dropdown]}
+        placeholderStyle={[styles.placeholderStyle, { color: COLORS.gray400 }]}
+        selectedTextStyle={[
+          styles.selectedTextStyle,
+          { color: COLORS.textPrimary },
         ]}
-        placeholderStyle={[styles.placeholderStyle, { color: COLORS.gray }]}
-        selectedTextStyle={[styles.selectedTextStyle, { color: COLORS.dark }]}
-        inputSearchStyle={[styles.inputSearchStyle, { color: COLORS.dark }]}
+        inputSearchStyle={[
+          styles.inputSearchStyle,
+          { color: COLORS.textPrimary },
+        ]}
         iconStyle={styles.iconStyle}
         data={businessRoles}
         search
@@ -400,7 +501,7 @@ const EditProfile = ({ navigation, route }) => {
         renderLeftIcon={() => (
           <Ionicons
             name="business"
-            size={20}
+            size={18}
             color={COLORS.primary}
             style={styles.dropdownIcon}
           />
@@ -486,14 +587,14 @@ const EditProfile = ({ navigation, route }) => {
           coordinate.latitude,
           coordinate.longitude
         );
-
+        console.log(locationData, "--sss");
         const newLocation = {
           latitude: coordinate.latitude,
           longitude: coordinate.longitude,
-          address:
-            locationData?.address ||
-            `${coordinate.latitude}, ${coordinate.longitude}`,
+          businessAddress: locationData?.address || `${selectedCity}, Pakistan`,
           city: selectedCity,
+          state: "", // Could be enhanced to extract state as well
+          address: locationData?.address || `${selectedCity}, Pakistan`,
         };
 
         setSelectedLocation(newLocation);
@@ -803,22 +904,19 @@ const EditProfile = ({ navigation, route }) => {
         >
           <Ionicons name="arrow-back" size={24} color={COLORS.dark} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: COLORS.dark }]}>
+        <Text style={[styles.headerTitle, { color: COLORS.textPrimary }]}>
           Edit Profile
         </Text>
         <TouchableOpacity
-          style={[
-            styles.saveButton,
-            {
-              backgroundColor: isLoading ? COLORS.gray : COLORS.primary,
-            },
-          ]}
+          style={styles.backButton}
           onPress={handleSave}
           disabled={isLoading}
         >
-          <Text style={[styles.saveButtonText, { color: COLORS.white }]}>
-            {isLoading ? "Saving..." : "Save"}
-          </Text>
+          <Ionicons
+            name={isLoading ? "hourglass" : "checkmark"}
+            size={24}
+            color={isLoading ? COLORS.gray400 : COLORS.primary}
+          />
         </TouchableOpacity>
       </View>
 
@@ -829,12 +927,7 @@ const EditProfile = ({ navigation, route }) => {
         bounces={false}
       >
         {/* Profile Picture Section */}
-        <View
-          style={[
-            styles.profilePictureSection,
-            { backgroundColor: COLORS.white },
-          ]}
-        >
+        <View style={styles.profilePictureSection}>
           <View style={styles.profileImageContainer}>
             <Image
               source={{ uri: userData.personalProfilePic }}
@@ -845,33 +938,29 @@ const EditProfile = ({ navigation, route }) => {
                 styles.editImageButton,
                 { backgroundColor: COLORS.primary },
               ]}
-              onPress={() =>
-                Alert.alert(
-                  "Change Photo",
-                  "Photo upload feature will be implemented"
-                )
-              }
+              onPress={handleChangePhoto}
             >
-              <Ionicons name="camera" size={18} color={COLORS.white} />
+              <Ionicons name="camera" size={16} color={COLORS.white} />
             </TouchableOpacity>
           </View>
-          <Text style={[styles.changePhotoText, { color: COLORS.primary }]}>
+          <Text
+            style={[styles.changePhotoText, { color: COLORS.textSecondary }]}
+          >
             Change Photo
           </Text>
         </View>
 
         {/* Business Information */}
-        <FormSection title="Business Information">
+        <FormSection title="Business Information" COLORS={COLORS}>
           <InputField
-            label="Business Name"
-            value={userData.businessName}
+            COLORS={COLORS}
+            label="Name"
+            value={userData?.businessName}
             onChangeText={(value) => handleInputChange("businessName", value)}
             placeholder="Enter your business name"
           />
-
-          <BusinessRoleDropdown />
-
           <InputField
+            COLORS={COLORS}
             label="Phone Number"
             value={userData.whatsapp}
             onChangeText={(value) => handleInputChange("whatsapp", value)}
@@ -879,12 +968,23 @@ const EditProfile = ({ navigation, route }) => {
             keyboardType="phone-pad"
             disabled
           />
+
+          <InputField
+            COLORS={COLORS}
+            label="Email"
+            value={userData.email}
+            onChangeText={(value) => handleInputChange("email", value)}
+            placeholder="Enter your email"
+            keyboardType="email-address"
+            disabled
+          />
+          <BusinessRoleDropdown />
         </FormSection>
 
         {/* Location Information */}
-        <FormSection title="Location">
+        <FormSection title="Location" COLORS={COLORS}>
           <LocationField
-            label="Business Location"
+            COLORS={COLORS}
             location={userData.location}
             onPress={() => setIsLocationModalVisible(true)}
           />
@@ -903,39 +1003,32 @@ const EditProfile = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
-    paddingTop: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
+    paddingVertical: 80,
+    borderBottomWidth: 0,
   },
   backButton: {
-    padding: 8,
+    padding: 4,
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: "700",
+    fontSize: 17,
+    fontWeight: "600",
     flex: 1,
     textAlign: "center",
-    marginHorizontal: 16,
+    marginHorizontal: 12,
   },
   saveButton: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     paddingVertical: 8,
     borderRadius: 20,
   },
   saveButtonText: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "600",
   },
 
@@ -944,7 +1037,7 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: 20,
-    paddingTop: 24,
+    paddingTop: 32,
     paddingBottom: 100,
     flexGrow: 1,
   },
@@ -952,77 +1045,71 @@ const styles = StyleSheet.create({
   // Profile Picture Section
   profilePictureSection: {
     alignItems: "center",
-    padding: 30,
-    borderRadius: 16,
-    marginBottom: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    paddingVertical: 32,
+    marginBottom: 24,
   },
   profileImageContainer: {
     position: "relative",
-    marginBottom: 12,
+    marginBottom: 16,
   },
   profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    borderWidth: 3,
+    borderColor: "#f5f5f5",
   },
   editImageButton: {
     position: "absolute",
-    bottom: 0,
-    right: 0,
+    bottom: -2,
+    right: -2,
     width: 32,
     height: 32,
     borderRadius: 16,
     justifyContent: "center",
     alignItems: "center",
-    borderWidth: 2,
+    borderWidth: 3,
     borderColor: "white",
   },
   changePhotoText: {
-    fontSize: 16,
-    fontWeight: "600",
+    fontSize: 14,
+    fontWeight: "500",
+    opacity: 0.7,
   },
 
   // Form Section
   section: {
-    borderRadius: 16,
-    marginBottom: 28,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    marginBottom: 32,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    padding: 20,
+    fontSize: 13,
+    fontWeight: "600",
+    paddingHorizontal: 4,
     paddingBottom: 12,
-    letterSpacing: 0.3,
+    letterSpacing: 0.5,
+    textTransform: "uppercase",
+    opacity: 0.5,
   },
 
   // Input Fields
   inputContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 24,
+    marginBottom: 20,
   },
   inputLabel: {
-    fontSize: 16,
-    fontWeight: "700",
-    marginBottom: 10,
-    letterSpacing: 0.2,
+    fontSize: 15,
+    fontWeight: "600",
+    marginBottom: 8,
+    paddingHorizontal: 4,
+    opacity: 0.8,
   },
   textInput: {
-    borderWidth: 1.5,
+    borderWidth: 0,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
-    fontWeight: "500",
+    fontWeight: "400",
+    backgroundColor: "#f8f8f8",
   },
   multilineInput: {
     height: 80,
@@ -1033,10 +1120,9 @@ const styles = StyleSheet.create({
   actionItem: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: "#f0f0f0",
   },
   actionIcon: {
     width: 40,
@@ -1044,7 +1130,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",
-    marginRight: 16,
+    marginRight: 12,
   },
   actionContent: {
     flex: 1,
@@ -1088,31 +1174,24 @@ const styles = StyleSheet.create({
   // Modal Styles
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
   },
   dropdownModal: {
     width: "100%",
     maxWidth: 350,
-    borderRadius: 20,
+    borderRadius: 16,
     overflow: "hidden",
     maxHeight: "70%",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.25,
-    shadowRadius: 20,
-    elevation: 10,
   },
   dropdownHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   dropdownTitle: {
     fontSize: 18,
@@ -1128,10 +1207,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f8f9fa",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   optionContent: {
     flexDirection: "row",
@@ -1144,7 +1222,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",
-    marginRight: 16,
+    marginRight: 12,
   },
   optionText: {
     fontSize: 16,
@@ -1157,10 +1235,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16,
-    paddingVertical: 18,
-    borderWidth: 1.5,
+    paddingVertical: 16,
+    borderWidth: 0,
     borderRadius: 12,
-    minHeight: 70,
+    minHeight: 64,
+    backgroundColor: "#f8f8f8",
   },
   locationContent: {
     flexDirection: "row",
@@ -1168,9 +1247,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   locationIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     justifyContent: "center",
     alignItems: "center",
     marginRight: 12,
@@ -1198,10 +1277,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
   },
   locationModalTitle: {
     fontSize: 18,
@@ -1282,11 +1360,11 @@ const styles = StyleSheet.create({
 
   // New Dropdown Styles
   dropdown: {
-    height: 50,
-    borderWidth: 1,
+    height: 52,
+    borderWidth: 0,
     borderRadius: 12,
     paddingHorizontal: 16,
-    backgroundColor: "#fff",
+    backgroundColor: "#f8f8f8",
   },
   placeholderStyle: {
     fontSize: 16,
@@ -1355,12 +1433,12 @@ const styles = StyleSheet.create({
   // City Selection Styles
   citySelectionContainer: {
     flex: 1,
-    padding: 20,
+    padding: 16,
   },
   stepDescription: {
     fontSize: 16,
     textAlign: "center",
-    marginBottom: 20,
+    marginBottom: 16,
     lineHeight: 22,
   },
   cityList: {
@@ -1372,8 +1450,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     padding: 16,
     borderRadius: 12,
-    borderWidth: 2,
-    marginBottom: 12,
+    borderWidth: 1.5,
+    marginBottom: 10,
   },
   cityItemContent: {
     flexDirection: "row",
@@ -1388,13 +1466,13 @@ const styles = StyleSheet.create({
   // Map Styles
   mapContainer: {
     flex: 1,
-    padding: 20,
+    padding: 16,
   },
   mapWrapper: {
     flex: 1,
     borderRadius: 16,
     overflow: "hidden",
-    marginVertical: 20,
+    marginVertical: 16,
   },
   map: {
     flex: 1,
@@ -1408,8 +1486,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingVertical: 14,
     borderRadius: 12,
-    borderWidth: 2,
-    borderColor: "#e0e0e0",
+    borderWidth: 1,
     gap: 8,
   },
   currentLocationText: {
@@ -1423,11 +1500,6 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 12,
     gap: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
   },
   confirmLocationText: {
     fontSize: 16,
@@ -1438,18 +1510,17 @@ const styles = StyleSheet.create({
   mapFallback: {
     flex: 1,
     borderRadius: 16,
-    padding: 20,
+    padding: 16,
     justifyContent: "center",
     alignItems: "center",
-    borderWidth: 2,
-    borderColor: "#e0e0e0",
+    borderWidth: 1,
     borderStyle: "dashed",
   },
   mapPlaceholderContainer: {
     alignItems: "center",
-    padding: 30,
+    padding: 24,
     borderRadius: 16,
-    marginBottom: 20,
+    marginBottom: 16,
   },
   mapFallbackTitle: {
     fontSize: 18,
@@ -1467,7 +1538,6 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#e0e0e0",
     width: "100%",
   },
   coordinatesLabel: {
@@ -1488,8 +1558,8 @@ const styles = StyleSheet.create({
 
   // Footer spacing
   footerSpacer: {
-    height: 120,
-    marginBottom: 40,
+    height: 96,
+    marginBottom: 32,
   },
 });
 

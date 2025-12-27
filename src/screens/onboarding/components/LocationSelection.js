@@ -14,7 +14,8 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import { useTheme } from "../../../constants/Theme";
-
+import { useTranslation } from "react-i18next";
+const { height: screenHeight } = Dimensions.get("window");
 // Conditional import for react-native-maps (only works in native builds)
 let MapView, Marker;
 let HAS_NATIVE_MAP_SUPPORT = false;
@@ -120,6 +121,7 @@ const LocationSelection = ({
       ? PAKISTANI_CITIES.find((city) => city.value === selectedCity) || null
       : null
   );
+  const { t } = useTranslation();
   const [tempMapRegion, setTempMapRegion] = useState({
     latitude: 31.5204,
     longitude: 74.3587,
@@ -244,7 +246,7 @@ const LocationSelection = ({
     if (selectedMarker && selectedMarker.latitude && selectedMarker.longitude) {
       // Update the parent component with all location data
       onLocationSelect(
-        selectedMarker.state || "Punjab",
+        selectedMarker?.state,
         selectedMarker.city || selectedCityData?.value || "",
         selectedMarker
       );
@@ -520,66 +522,6 @@ const LocationSelection = ({
     );
   };
 
-  const renderModal = (
-    visible,
-    onClose,
-    title,
-    items,
-    onSelect,
-    selectedItem
-  ) => (
-    <Modal
-      visible={visible}
-      transparent={true}
-      animationType="slide"
-      onRequestClose={onClose}
-    >
-      <View style={styles.modalOverlay}>
-        <View style={[styles.modalContent, { backgroundColor: COLORS.white }]}>
-          <View style={styles.modalHeader}>
-            <Text style={[styles.modalTitle, { color: COLORS.dark }]}>
-              {title}
-            </Text>
-            <TouchableOpacity onPress={onClose}>
-              <Text style={[styles.closeButton, { color: COLORS.primary }]}>
-                ×
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          <ScrollView style={styles.itemsList}>
-            {items.map((item) => (
-              <TouchableOpacity
-                key={item}
-                style={[
-                  styles.modalItem,
-                  {
-                    backgroundColor:
-                      selectedItem === item ? COLORS.primary50 : COLORS.white,
-                  },
-                ]}
-                onPress={() => onSelect(item)}
-              >
-                <Text
-                  style={[
-                    styles.modalItemText,
-                    {
-                      color:
-                        selectedItem === item ? COLORS.primary : COLORS.dark,
-                      fontWeight: selectedItem === item ? "600" : "400",
-                    },
-                  ]}
-                >
-                  {item}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-      </View>
-    </Modal>
-  );
-
   // Location Field Component
   const LocationField = ({ label, location, cityData, onPress }) => (
     <View style={styles.inputContainer}>
@@ -629,7 +571,7 @@ const LocationSelection = ({
               <Text
                 style={[styles.locationPlaceholder, { color: COLORS.gray }]}
               >
-                Select your location
+                {t("onboarding.chooseLocation")}
               </Text>
             )}
           </View>
@@ -642,12 +584,12 @@ const LocationSelection = ({
   return (
     <View style={styles.container}>
       <Text style={[styles.subtitle, { color: COLORS.gray600 }]}>
-        Select your business location to connect with local opportunities
+        {t("onboarding.selectLocationSubtitle")}
       </Text>
 
       <View style={styles.formContainer}>
         <LocationField
-          label="Business Location *"
+          label={t("onboarding.location")}
           location={selectedLocation}
           cityData={selectedCityData}
           onPress={() => setIsLocationModalVisible(true)}
@@ -716,19 +658,20 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    marginBottom: 32,
+    marginBottom: 3,
     textAlign: "center",
     lineHeight: 22,
   },
   formContainer: {
     flex: 1,
+    marginTop: 4,
   },
   // Input Fields
   inputContainer: {
     marginBottom: 24,
   },
   inputLabel: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: "700",
     marginBottom: 10,
     letterSpacing: 0.2,
@@ -764,11 +707,11 @@ const styles = StyleSheet.create({
   locationText: {
     fontSize: 16,
     fontWeight: "500",
-    marginBottom: 2,
+    marginBottom: 10,
   },
   locationSubtext: {
     fontSize: 12,
-    marginBottom: 2,
+    marginBottom: 10,
   },
   locationChangeText: {
     fontSize: 11,

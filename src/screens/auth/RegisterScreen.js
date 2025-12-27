@@ -18,8 +18,12 @@ import CountryCodePicker from "../../components/CountryCodePicker";
 import apiClient from "../../utils/apiClient";
 import Toast from "react-native-toast-message";
 import { getAuth, signInWithCustomToken } from "firebase/auth";
+import { useTranslation } from "react-i18next";
+import LanguageSwitcher from "../../components/LanguageSwitcher";
 const RegisterScreen = ({ navigation }) => {
   const { COLORS, SIZES } = useTheme();
+  const { checkUserSession } = useAuth();
+  const { t } = useTranslation();
 
   const [step, setStep] = useState("choose"); // 'choose', 'phone', 'otp'
   const [countryCode, setCountryCode] = useState("+92"); // Default to Pakistan
@@ -95,7 +99,15 @@ const RegisterScreen = ({ navigation }) => {
         });
         const auth = getAuth();
         await signInWithCustomToken(auth, response.user?.token);
+        // Let AuthContext refresh session and AppNavigator handle routing
+        try {
+          await checkUserSession();
+          console.log("✅ checkUserSession completed after sign-in");
+        } catch (e) {
+          console.error("❌ checkUserSession failed:", e);
+        }
       } else {
+        console.log("OTP verification failed:", response);
         setError(
           response.error || "OTP verification failed. Please try again."
         );
@@ -136,7 +148,7 @@ const RegisterScreen = ({ navigation }) => {
             { color: COLORS.gray600 },
           ])}
         >
-          Start your agricultural marketplace journey
+          {t("auth.joinSubtitle")}
         </Text>
       </View>
 
@@ -154,7 +166,7 @@ const RegisterScreen = ({ navigation }) => {
               { color: COLORS.primary },
             ])}
           >
-            Sign up with Phone
+            {t("auth.signUpWithPhone")}
           </Text>
           <Text
             style={StyleSheet.flatten([
@@ -162,7 +174,7 @@ const RegisterScreen = ({ navigation }) => {
               { color: COLORS.gray500 },
             ])}
           >
-            Create account using your mobile number
+            {t("auth.createAccountUsing")}
           </Text>
         </TouchableOpacity>
 
@@ -179,7 +191,7 @@ const RegisterScreen = ({ navigation }) => {
               { color: COLORS.gray500 },
             ])}
           >
-            or
+            {t("auth.or")}
           </Text>
           <View
             style={StyleSheet.flatten([
@@ -202,7 +214,7 @@ const RegisterScreen = ({ navigation }) => {
               { color: COLORS.gray700 },
             ])}
           >
-            Already have an account? Sign in
+            {t("auth.alreadyHaveAccount")}
           </Text>
         </TouchableOpacity>
       </View>
@@ -226,7 +238,7 @@ const RegisterScreen = ({ navigation }) => {
         <Text
           style={StyleSheet.flatten([styles.title, { color: COLORS.dark }])}
         >
-          Enter Phone Number
+          {t("auth.enterPhoneNumberTitle")}
         </Text>
         <Text
           style={StyleSheet.flatten([
@@ -234,7 +246,7 @@ const RegisterScreen = ({ navigation }) => {
             { color: COLORS.gray600 },
           ])}
         >
-          We'll send you a verification code to get started
+          {t("auth.willSendCodeRegister")}
         </Text>
       </View>
 
@@ -246,7 +258,7 @@ const RegisterScreen = ({ navigation }) => {
               { color: COLORS.dark },
             ])}
           >
-            Phone Number
+            {t("auth.phoneNumber")}
           </Text>
           <View style={styles.phoneInputContainer}>
             <CountryCodePicker
@@ -262,7 +274,7 @@ const RegisterScreen = ({ navigation }) => {
                   color: COLORS.dark,
                 },
               ]}
-              placeholder="Enter phone number"
+              placeholder={t("auth.enterPhoneNumber")}
               placeholderTextColor={COLORS.gray400}
               value={phoneNumber}
               onChangeText={(text) => {
@@ -321,7 +333,7 @@ const RegisterScreen = ({ navigation }) => {
                 { color: COLORS.white },
               ])}
             >
-              Send OTP
+              {t("auth.sendOTP")}
             </Text>
           )}
         </TouchableOpacity>
@@ -440,6 +452,9 @@ const RegisterScreen = ({ navigation }) => {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
+      <View style={styles.languageSwitcherContainer}>
+        <LanguageSwitcher backgroundColor="green" />
+      </View>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {step === "choose" && renderChooseStep()}
         {step === "phone" && renderPhoneStep()}
@@ -452,6 +467,12 @@ const RegisterScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  languageSwitcherContainer: {
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    marginTop: 50,
+    alignItems: "flex-end",
   },
   scrollContent: {
     flexGrow: 1,

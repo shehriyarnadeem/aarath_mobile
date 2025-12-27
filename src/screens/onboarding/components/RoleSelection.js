@@ -7,43 +7,41 @@ import {
   ScrollView,
   Dimensions,
 } from "react-native";
-
+import { Ionicons } from "@expo/vector-icons";
 const { height: screenHeight } = Dimensions.get("window");
-
+import { useTranslation } from "react-i18next";
 import { useTheme } from "../../../constants/Theme";
 
 const RoleSelection = ({ selectedRole, onRoleSelect }) => {
   const { COLORS, SIZES } = useTheme();
-
+  const { t } = useTranslation();
   const roles = [
     {
       id: "FARMER",
-      title: "Farmer",
-      description:
-        "I grow and sell agricultural products directly from my farm",
-      icon: "🧑‍🌾",
+      title: t("onboarding.Farmer"),
+      description: t("onboarding.FarmerDescription"),
+      icon: "accessibility-outline",
       color: COLORS.primary,
     },
     {
       id: "BROKER",
-      title: "Broker",
-      description: "I help connect buyers and sellers in agricultural trading",
-      icon: "🤝",
+      title: t("onboarding.Broker"),
+      description: t("onboarding.BrokerDescription"),
+      icon: "people",
       color: COLORS.info,
     },
     {
       id: "BUYER",
-      title: "Buyer",
-      description:
-        "I purchase agricultural products for business or consumption",
-      icon: "🛒",
+      title: t("onboarding.Buyer"),
+      description: t("onboarding.BuyerDescription"),
+      icon: "cart",
       color: COLORS.secondary,
     },
     {
       id: "EXPORTER",
-      title: "Exporter",
-      description: "I sell agricultural products to international markets",
-      icon: "🌍",
+      title: t("onboarding.Exporter"),
+      description: t("onboarding.ExporterDescription"),
+      icon: "airplane",
       color: COLORS.secondary,
     },
   ];
@@ -64,13 +62,8 @@ const RoleSelection = ({ selectedRole, onRoleSelect }) => {
         onPress={() => onRoleSelect(role.id)}
       >
         <View style={styles.roleHeader}>
-          <View
-            style={[
-              styles.iconContainer,
-              { backgroundColor: `${role.color}20` },
-            ]}
-          >
-            <Text style={styles.roleIcon}>{role.icon}</Text>
+          <View style={[styles.iconContainer]}>
+            <Ionicons name={role.icon} size={22} color={role.color} />
           </View>
 
           <View style={styles.roleInfo}>
@@ -105,7 +98,7 @@ const RoleSelection = ({ selectedRole, onRoleSelect }) => {
   return (
     <View style={styles.container}>
       <Text style={[styles.subtitle, { color: COLORS.gray600 }]}>
-        Select your primary role in the agricultural marketplace
+        {t("onboarding.selectRoleSubtitle")}
       </Text>
 
       <ScrollView
@@ -125,7 +118,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 20,
-    paddingTop: 8,
+    paddingTop: 18,
     paddingBottom: 20, // Add bottom padding to account for fixed footer
   },
   subtitle: {
@@ -136,7 +129,7 @@ const styles = StyleSheet.create({
   },
   rolesContainer: {
     flex: 1,
-    maxHeight: screenHeight * 0.6, // Reduce to 60% to ensure space for Next button
+    maxHeight: screenHeight * 0.9, // Reduce to 60% to ensure space for Next button
   },
   scrollContent: {
     paddingTop: 4,

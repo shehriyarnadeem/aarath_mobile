@@ -19,6 +19,34 @@
 
 ---
 
+## 🌾 **Agricultural Categories Rule**
+
+### **MANDATORY: Restricted Category List**
+
+- ✅ **ONLY** use these five agricultural categories in the entire project:
+  - `wheat` - Wheat products
+  - `rice` - Rice products
+  - `cotton` - Cotton products
+  - `corn` - Corn products
+  - `barley` - Barley products
+
+- ❌ **NEVER** add, use, or allow any other categories
+- ❌ **NEVER** use: pulses, vegetables, fruits, organic, livestock_feed, or any other category
+- ✅ All dropdowns, forms, and validations must use only these five categories
+- ✅ Backend and frontend must enforce this restriction
+
+## 🌐 **Internationalization (i18n) Rule**
+
+### **MANDATORY: No Hardcoded Text**
+
+- ✅ **ALWAYS** use translation keys for all user-facing text
+- ✅ Use `react-i18next` or equivalent i18n library for translations
+- ✅ Support multiple languages (English, Urdu.)
+- ❌ **NEVER** hardcode text directly in components
+- ❌ **NEVER** use plain strings for labels, messages, or UI text
+
+### **Translation Pattern**
+
 ## 🎨 **Theme & Styling Rules**
 
 ### **MANDATORY: Use Theme System**

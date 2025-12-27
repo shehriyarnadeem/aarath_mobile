@@ -46,25 +46,6 @@ const MarketplaceHeader = ({
               {productsCount} products available
             </Text>
           </View>
-
-          {/* Notification Bell */}
-          <TouchableOpacity
-            style={[
-              styles.notificationButton,
-              { backgroundColor: COLORS.gray50 },
-            ]}
-            activeOpacity={0.7}
-            onPress={() => {
-              navigation.navigate("Favorites");
-            }}
-          >
-            <Ionicons
-              name="heart-outline"
-              size={20}
-              color={COLORS.textPrimary}
-            />
-            {/* Optional notification badge */}
-          </TouchableOpacity>
         </View>
       </View>
     </SafeAreaView>

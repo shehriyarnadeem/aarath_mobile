@@ -12,6 +12,8 @@ import {
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useTheme } from "../../constants/Theme";
+import { useTranslation } from "react-i18next";
+import LanguageSwitcher from "../../components/LanguageSwitcher";
 
 // Import onboarding components
 import RoleSelection from "../onboarding/components/RoleSelection";
@@ -27,6 +29,7 @@ import { useAuth } from "../../context/AuthContext";
 import { set } from "firebase/database";
 const OnboardingFlow = ({ navigation }) => {
   const { COLORS, SIZES } = useTheme();
+  const { t } = useTranslation();
   const {
     updateUserProfile,
     user,
@@ -59,14 +62,13 @@ const OnboardingFlow = ({ navigation }) => {
     },
   });
 
-  const totalSteps = 4;
+  const totalSteps = 3;
   const progressPercentage = (currentStep / totalSteps) * 100;
 
   const stepTitles = {
-    1: "Select Your Role",
-    2: "Choose Location",
-    3: "Business Categories",
-    4: "Select Categories",
+    1: t("onboarding.selectYourRole"),
+    2: t("onboarding.chooseLocation"),
+    3: t("onboarding.businessProfile"),
   };
 
   const canProceedToNext = () => {
@@ -91,9 +93,6 @@ const OnboardingFlow = ({ navigation }) => {
       case 3:
         canProceed = formData.profileCompletion.businessName !== "";
         break;
-      case 4:
-        canProceed = formData.businessCategories.length > 0;
-        break;
       default:
         canProceed = false;
     }
@@ -103,7 +102,7 @@ const OnboardingFlow = ({ navigation }) => {
   const handleNext = () => {
     if (!canProceedToNext()) {
       Toast.show({
-        text1: "Please complete all required fields before proceeding.",
+        text1: t("auth.pleaseCompleteFields"),
         type: "error",
       });
       return;
@@ -137,7 +136,16 @@ const OnboardingFlow = ({ navigation }) => {
         businessCategories: formData.businessCategories,
         profileCompleted: true,
         userId: userId,
+        longitude: formData.location?.longitude
+          ? parseFloat(formData.location.longitude)
+          : null,
+        latitude: formData.location?.latitude
+          ? parseFloat(formData.location.latitude)
+          : null,
+        businessAddress: formData.location.address,
       };
+
+      console.log("Submitting onboarding data:", payload);
 
       const response = await apiClient.user.onboardingComplete(payload);
       if (response.success && response.user) {
@@ -145,11 +153,17 @@ const OnboardingFlow = ({ navigation }) => {
           type: "success",
           text1: "Registration successful!",
         });
+        console.log("✅ Onboarding complete, updating auth context...");
         setUser(response.user);
         setHasCompletedOnboarding(true);
-        await signInWithCustomToken(getAuth(), response?.token);
-        setIsSubmitting(false);
-        navigation.navigate("Dashboard");
+        // Force navigation to Dashboard now that onboarding is complete
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "Dashboard" }],
+        });
+        console.log(
+          "✅ Auth context updated and navigation reset to Dashboard"
+        );
       } else if (response?.error) {
         Toast.show({
           text1: response.error?.message,
@@ -158,7 +172,7 @@ const OnboardingFlow = ({ navigation }) => {
         setIsSubmitting(false);
       }
     } catch (err) {
-      console.log("Onboarding error responseq:", err);
+      console.log("Onboarding error:", err);
       Toast.show({
         text1:
           err?.error?.message ||
@@ -237,12 +251,15 @@ const OnboardingFlow = ({ navigation }) => {
     <SafeAreaView style={[styles.container, { backgroundColor: "#ffffff" }]}>
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
 
+      {/* Language Switcher */}
+
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerTop}>
           <View style={styles.stepCounterContainer}>
             <Text style={[styles.stepCounter, { color: COLORS.gray600 }]}>
-              Step {currentStep} of {totalSteps}
+              {t("onboarding.step")} {currentStep} {t("onboarding.of")}{" "}
+              {totalSteps}
             </Text>
 
             <View
@@ -264,8 +281,10 @@ const OnboardingFlow = ({ navigation }) => {
                       color={COLORS.primary}
                     />
                     <Text style={[styles.backText, { color: COLORS.primary }]}>
-                      Back
+                      {t("onboarding.back")}
                     </Text>
+
+                    <LanguageSwitcher backgroundColor="green" />
                   </View>
                 </TouchableOpacity>
               )}
@@ -349,7 +368,9 @@ const OnboardingFlow = ({ navigation }) => {
                   },
                 ]}
               >
-                {currentStep === totalSteps ? "Complete Profile" : "Next"}
+                {currentStep === totalSteps
+                  ? t("onboarding.submit")
+                  : t("onboarding.next")}
               </Text>
               <MaterialIcons
                 name={
@@ -371,10 +392,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  languageSwitcherContainer: {
+    paddingHorizontal: 24,
+    paddingTop: 30,
+    paddingBottom: 4,
+    alignItems: "flex-end",
+  },
   header: {
     paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 24,
+    paddingTop: 50,
+    paddingBottom: 2,
     backgroundColor: "#ffffff",
   },
   headerTop: {
@@ -384,7 +411,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 8,
+    marginBottom: 1,
   },
   backButton: {
     paddingHorizontal: 12,
@@ -405,6 +432,12 @@ const styles = StyleSheet.create({
   stepCounter: {
     fontSize: 16,
     fontWeight: "600",
+  },
+  languageSwitcherContainer: {
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    marginTop: 50,
+    alignItems: "flex-end",
   },
   progressContainer: {
     height: 6,
