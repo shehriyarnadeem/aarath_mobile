@@ -134,6 +134,7 @@ const LocationSelection = ({
       ? selectedLocation
       : null
   );
+  const [isLoadingMap, setIsLoadingMap] = useState(false);
 
   // Location utility functions
   const getCityCoordinates = (cityName) => {
@@ -190,21 +191,38 @@ const LocationSelection = ({
     }
   };
 
-  const handleCitySelect = (city) => {
-    const cityData = PAKISTANI_CITIES.find((c) => c.value === city.value);
-    setSelectedCityData(cityData);
+  const handleCitySelect = async (city) => {
+    try {
+      const cityData = PAKISTANI_CITIES.find((c) => c.value === city.value);
+      if (!cityData) {
+        console.error("City data not found for:", city);
+        Alert.alert("Error", "Failed to load city data. Please try again.");
+        return;
+      }
 
-    // Set map region to city coordinates
-    if (cityData) {
-      setTempMapRegion({
+      setSelectedCityData(cityData);
+      setIsLoadingMap(true);
+
+      // Set map region to city coordinates
+      const newRegion = {
         latitude: cityData.coordinates.lat,
         longitude: cityData.coordinates.lng,
         latitudeDelta: 0.0922,
         longitudeDelta: 0.0421,
-      });
-    }
+      };
 
-    setIsCityStep(false); // Move to map step
+      setTempMapRegion(newRegion);
+
+      // Use setTimeout to ensure state updates complete before transition
+      setTimeout(() => {
+        setIsLoadingMap(false);
+        setIsCityStep(false); // Move to map step
+      }, 100);
+    } catch (error) {
+      console.error("Error in handleCitySelect:", error);
+      setIsLoadingMap(false);
+      Alert.alert("Error", "Failed to select city. Please try again.");
+    }
   };
 
   const handleMapLocationSelect = async (coordinate) => {
@@ -244,20 +262,30 @@ const LocationSelection = ({
 
   const handleConfirmLocation = () => {
     if (selectedMarker && selectedMarker.latitude && selectedMarker.longitude) {
-      // Update the parent component with all location data
-      onLocationSelect(
-        selectedMarker?.state,
-        selectedMarker.city || selectedCityData?.value || "",
-        selectedMarker
-      );
-      setIsLocationModalVisible(false);
-      setIsCityStep(true); // Reset for next time
+      try {
+        // Update the parent component with all location data
+        onLocationSelect(
+          selectedMarker?.state,
+          selectedMarker.city || selectedCityData?.value || "",
+          selectedMarker
+        );
+        handleCloseModal();
+      } catch (error) {
+        console.error("Error confirming location:", error);
+        Alert.alert("Error", "Failed to save location. Please try again.");
+      }
     } else {
       Alert.alert(
         "Please select a location",
         "Tap on the map to select your exact location."
       );
     }
+  };
+
+  const handleCloseModal = () => {
+    setIsLocationModalVisible(false);
+    setIsCityStep(true);
+    setIsLoadingMap(false);
   };
 
   // Two-layer Location Selection Modal
@@ -267,10 +295,7 @@ const LocationSelection = ({
         visible={isLocationModalVisible}
         animationType="slide"
         presentationStyle="pageSheet"
-        onRequestClose={() => {
-          setIsLocationModalVisible(false);
-          setIsCityStep(true);
-        }}
+        onRequestClose={handleCloseModal}
       >
         <View
           style={[styles.locationModal, { backgroundColor: COLORS.background }]}
@@ -286,8 +311,9 @@ const LocationSelection = ({
               onPress={() => {
                 if (!isCityStep) {
                   setIsCityStep(true);
+                  setIsLoadingMap(false);
                 } else {
-                  setIsLocationModalVisible(false);
+                  handleCloseModal();
                 }
               }}
             >
@@ -296,7 +322,7 @@ const LocationSelection = ({
             <Text style={[styles.locationModalTitle, { color: COLORS.dark }]}>
               {isCityStep ? "Select City" : "Select Location"}
             </Text>
-            <TouchableOpacity onPress={() => setIsLocationModalVisible(false)}>
+            <TouchableOpacity onPress={handleCloseModal}>
               <Ionicons name="close" size={24} color={COLORS.dark} />
             </TouchableOpacity>
           </View>
@@ -308,66 +334,76 @@ const LocationSelection = ({
                 Choose your city to help us provide better local services
               </Text>
 
-              <ScrollView
-                style={styles.cityList}
-                showsVerticalScrollIndicator={false}
-              >
-                {PAKISTANI_CITIES.map((city) => (
-                  <TouchableOpacity
-                    key={city.value}
-                    style={[
-                      styles.cityItem,
-                      {
-                        backgroundColor:
-                          selectedCityData?.value === city.value
-                            ? COLORS.primary + "15"
-                            : COLORS.white,
-                        borderColor:
-                          selectedCityData?.value === city.value
-                            ? COLORS.primary
-                            : COLORS.lightGray,
-                      },
-                    ]}
-                    onPress={() => handleCitySelect(city)}
-                  >
-                    <View style={styles.cityItemContent}>
-                      <Ionicons
-                        name="location-outline"
-                        size={20}
-                        color={
-                          selectedCityData?.value === city.value
-                            ? COLORS.primary
-                            : COLORS.gray
-                        }
-                      />
-                      <Text
-                        style={[
-                          styles.cityItemText,
-                          {
-                            color:
-                              selectedCityData?.value === city.value
-                                ? COLORS.primary
-                                : COLORS.dark,
-                            fontWeight:
-                              selectedCityData?.value === city.value
-                                ? "600"
-                                : "500",
-                          },
-                        ]}
-                      >
-                        {city.label}
-                      </Text>
-                    </View>
-                    {selectedCityData?.value === city.value && (
-                      <Ionicons
-                        name="checkmark-circle"
-                        size={20}
-                        color={COLORS.primary}
-                      />
-                    )}
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
+              {isLoadingMap ? (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="large" color={COLORS.primary} />
+                  <Text style={[styles.loadingText, { color: COLORS.gray }]}>
+                    Loading map...
+                  </Text>
+                </View>
+              ) : (
+                <ScrollView
+                  style={styles.cityList}
+                  showsVerticalScrollIndicator={false}
+                >
+                  {PAKISTANI_CITIES.map((city) => (
+                    <TouchableOpacity
+                      key={city.value}
+                      style={[
+                        styles.cityItem,
+                        {
+                          backgroundColor:
+                            selectedCityData?.value === city.value
+                              ? COLORS.primary + "15"
+                              : COLORS.white,
+                          borderColor:
+                            selectedCityData?.value === city.value
+                              ? COLORS.primary
+                              : COLORS.lightGray,
+                        },
+                      ]}
+                      onPress={() => handleCitySelect(city)}
+                      disabled={isLoadingMap}
+                    >
+                      <View style={styles.cityItemContent}>
+                        <Ionicons
+                          name="location-outline"
+                          size={20}
+                          color={
+                            selectedCityData?.value === city.value
+                              ? COLORS.primary
+                              : COLORS.gray
+                          }
+                        />
+                        <Text
+                          style={[
+                            styles.cityItemText,
+                            {
+                              color:
+                                selectedCityData?.value === city.value
+                                  ? COLORS.primary
+                                  : COLORS.dark,
+                              fontWeight:
+                                selectedCityData?.value === city.value
+                                  ? "600"
+                                  : "500",
+                            },
+                          ]}
+                        >
+                          {city.label}
+                        </Text>
+                      </View>
+                      {selectedCityData?.value === city.value && (
+                        <Ionicons
+                          name="checkmark-circle"
+                          size={20}
+                          color={COLORS.primary}
+                        />
+                      )}
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              )}
             </View>
           ) : (
             /* Map Selection Step */
@@ -386,12 +422,27 @@ const LocationSelection = ({
                 <View style={styles.mapWrapper}>
                   <MapView
                     style={styles.map}
+                    initialRegion={tempMapRegion}
                     region={tempMapRegion}
-                    onPress={(event) =>
-                      handleMapLocationSelect(event.nativeEvent.coordinate)
-                    }
+                    onPress={(event) => {
+                      try {
+                        if (event?.nativeEvent?.coordinate) {
+                          handleMapLocationSelect(event.nativeEvent.coordinate);
+                        }
+                      } catch (error) {
+                        console.error(
+                          "Error selecting location on map:",
+                          error
+                        );
+                      }
+                    }}
+                    onError={(error) => {
+                      console.error("MapView error:", error);
+                    }}
                     showsUserLocation={true}
                     showsMyLocationButton={false}
+                    loadingEnabled={true}
+                    loadingIndicatorColor={COLORS.primary}
                   >
                     {selectedMarker && (
                       <Marker
@@ -755,6 +806,17 @@ const styles = StyleSheet.create({
   },
   cityList: {
     flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 40,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    fontWeight: "500",
   },
   cityItem: {
     flexDirection: "row",

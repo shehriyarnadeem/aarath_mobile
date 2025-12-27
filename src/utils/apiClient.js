@@ -6,9 +6,10 @@ import { auth } from "../firebase/firebaseConfig";
 export const getBaseURL = () => {
   console.log("Using development API URL");
   if (__DEV__) {
+    console.log("Using development API URL");
     // Your machine's IP address for mobile device to connect
     // Updated to match current host IPv4 (use env override if needed)
-    return "http://192.168.18.85:3000"; // Replace with your local IP
+    return "https://api.aarath.app"; // Replace with your local IP
   }
   return "https://api.aarath.app"; // Your production API URL
 };
