@@ -91,18 +91,55 @@ const FeaturedProducts = ({ products, loading, onProductPress, onSeeAll }) => {
   const renderEmpty = () => {
     if (loading) {
       return (
+        <View style={styles.emptyContainer}>
+          <Text
+            style={[
+              TYPOGRAPHY.body,
+              styles.emptyText,
+              { color: modernColors.textSecondary },
+            ]}
+          >
+            {t("common.loading")}
+          </Text>
+        </View>
+      );
+    }
+
+    // Show modern "No Products Found" message when empty
+    return (
+      <View style={styles.emptyContainer}>
+        <View
+          style={[
+            styles.emptyIconContainer,
+            { backgroundColor: modernColors.primary + "10" },
+          ]}
+        >
+          <Ionicons
+            name="cube-outline"
+            size={48}
+            color={modernColors.primary}
+          />
+        </View>
         <Text
           style={[
-            TYPOGRAPHY.body,
-            styles.emptyText,
+            TYPOGRAPHY.h3,
+            styles.emptyTitle,
+            { color: modernColors.textPrimary },
+          ]}
+        >
+          {t("home.noProducts")}
+        </Text>
+        <Text
+          style={[
+            TYPOGRAPHY.bodySmall,
+            styles.emptySubtitle,
             { color: modernColors.textSecondary },
           ]}
         >
-          {t("common.loading")}
+          {t("home.noProductsDescription")}
         </Text>
-      );
-    }
-    return null;
+      </View>
+    );
   };
 
   return (
@@ -205,6 +242,31 @@ const styles = StyleSheet.create({
   },
   locationText: {
     marginLeft: 4,
+  },
+  emptyContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 40,
+    paddingVertical: 32,
+    width: require("react-native").Dimensions.get("window").width - 40,
+    marginLeft: 0,
+  },
+  emptyIconContainer: {
+    width: 96,
+    height: 96,
+    borderRadius: 48,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  emptyTitle: {
+    fontWeight: "700",
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  emptySubtitle: {
+    textAlign: "center",
+    lineHeight: 20,
   },
   emptyText: {
     marginLeft: 20,
