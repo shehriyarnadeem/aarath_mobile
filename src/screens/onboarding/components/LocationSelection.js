@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import {
   View,
   Text,
@@ -6,38 +6,15 @@ import {
   StyleSheet,
   ScrollView,
   Modal,
-  Alert,
   Dimensions,
-  ActivityIndicator,
-  Platform,
+  SafeAreaView,
+  TextInput,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import * as Location from "expo-location";
 import { useTheme } from "../../../constants/Theme";
 import { useTranslation } from "react-i18next";
-const { height: screenHeight } = Dimensions.get("window");
-// Conditional import for react-native-maps (only works in native builds)
-let MapView, Marker;
-let HAS_NATIVE_MAP_SUPPORT = false;
-
-// For development and testing, we'll enable native maps
-// Set to false if you encounter compatibility issues in Expo Go
-const ENABLE_NATIVE_MAPS = true;
-
-if (ENABLE_NATIVE_MAPS && Platform.OS !== "web") {
-  try {
-    const mapModule = require("react-native-maps");
-    MapView = mapModule.default || mapModule.MapView || mapModule;
-    Marker = mapModule.Marker;
-    HAS_NATIVE_MAP_SUPPORT = true;
-    console.log("✅ Native maps successfully loaded");
-  } catch (error) {
-    console.warn("❌ Native maps not available:", error.message);
-    console.log("Using fallback interface instead");
-  }
-} else {
-  console.log("🔧 Native maps disabled or running on web platform");
-}
+import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import LocationDetailsBox from "./LocationDetailsBox";
 
 const { width, height } = Dimensions.get("window");
 
@@ -106,486 +83,182 @@ const PAKISTANI_CITIES = [
 ];
 
 const LocationSelection = ({
-  selectedState,
   selectedCity,
   selectedLocation,
   onLocationSelect,
 }) => {
-  const { COLORS, SIZES } = useTheme();
-
-  // Location selection states
-  const [isLocationModalVisible, setIsLocationModalVisible] = useState(false);
-  const [isCityStep, setIsCityStep] = useState(true);
-  const [selectedCityData, setSelectedCityData] = useState(
-    selectedLocation
-      ? PAKISTANI_CITIES.find((city) => city.value === selectedCity) || null
-      : null
-  );
+  const { COLORS } = useTheme();
   const { t } = useTranslation();
-  const [tempMapRegion, setTempMapRegion] = useState({
-    latitude: 31.5204,
-    longitude: 74.3587,
-    latitudeDelta: 0.0922,
-    longitudeDelta: 0.0421,
-  });
-  const [currentLocation, setCurrentLocation] = useState(null);
-  const [selectedMarker, setSelectedMarker] = useState(
-    selectedLocation && selectedLocation.latitude && selectedLocation.longitude
-      ? selectedLocation
-      : null
-  );
-  const [isLoadingMap, setIsLoadingMap] = useState(false);
 
-  // Location utility functions
-  const getCityCoordinates = (cityName) => {
-    const city = PAKISTANI_CITIES.find((c) => c.value === cityName);
-    return city?.coordinates || { lat: 31.5204, lng: 74.3587 };
+  // Modal and step states
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [step, setStep] = useState(1); // 1: City Selection, 2: Location Selection
+
+  // Selected data states
+  const [selectedCityData, setSelectedCityData] = useState(null);
+  const [selectedMarker, setSelectedMarker] = useState(null);
+
+  // Map states
+  const [mapReady, setMapReady] = useState(false);
+  const mapRef = useRef(null);
+  const [mapRegion, setMapRegion] = useState(null);
+
+  // Search states
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+
+  // Handle city selection
+  const handleCitySelect = (city) => {
+    setSelectedCityData(city);
+    setSelectedMarker(null); // Reset marker when city changes
+    setStep(2); // Move to map step
   };
 
-  const reverseGeocodeLocation = async (latitude, longitude) => {
+  // Reverse geocode to get address from coordinates
+  const reverseGeocode = async (latitude, longitude) => {
     try {
-      const response = await Location.reverseGeocodeAsync({
-        latitude,
-        longitude,
-      });
+      const API_KEY = "AIzaSyA6N_Zh_d4PWuUUZ9_5bczUMLntJH8FZHI";
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${API_KEY}`
+      );
+      const data = await response.json();
 
-      if (response && response.length > 0) {
-        return response[0];
+      if (data.results && data.results.length > 0) {
+        const result = data.results[0];
+        return result.formatted_address;
       }
+      return null;
     } catch (error) {
-      console.error("Error reverse geocoding:", error);
-    }
-    return null;
-  };
-
-  const requestLocationPermission = async () => {
-    try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      return status === "granted";
-    } catch (error) {
-      console.error("Error requesting location permission:", error);
-      return false;
-    }
-  };
-
-  const getCurrentLocation = async () => {
-    try {
-      const hasPermission = await requestLocationPermission();
-      if (!hasPermission) {
-        Alert.alert(
-          "Permission Required",
-          "Please enable location permissions to use this feature."
-        );
-        return null;
-      }
-
-      const location = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.Balanced,
-      });
-
-      return location.coords;
-    } catch (error) {
-      console.error("Error getting current location:", error);
-      Alert.alert("Error", "Failed to get your current location.");
+      console.error("Reverse geocoding error:", error);
       return null;
     }
   };
 
-  const handleCitySelect = async (city) => {
-    try {
-      const cityData = PAKISTANI_CITIES.find((c) => c.value === city.value);
-      if (!cityData) {
-        console.error("City data not found for:", city);
-        Alert.alert("Error", "Failed to load city data. Please try again.");
-        return;
-      }
+  // Handle map marker placement
+  const handleMapPress = async (event) => {
+    const { latitude, longitude } = event.nativeEvent.coordinate;
 
-      setSelectedCityData(cityData);
-      setIsLoadingMap(true);
+    // Get address from coordinates
+    const address = await reverseGeocode(latitude, longitude);
 
-      // Set map region to city coordinates
-      const newRegion = {
-        latitude: cityData.coordinates.lat,
-        longitude: cityData.coordinates.lng,
-        latitudeDelta: 0.0922,
-        longitudeDelta: 0.0421,
-      };
-
-      setTempMapRegion(newRegion);
-
-      // Use setTimeout to ensure state updates complete before transition
-      setTimeout(() => {
-        setIsLoadingMap(false);
-        setIsCityStep(false); // Move to map step
-      }, 100);
-    } catch (error) {
-      console.error("Error in handleCitySelect:", error);
-      setIsLoadingMap(false);
-      Alert.alert("Error", "Failed to select city. Please try again.");
-    }
+    setSelectedMarker({
+      latitude,
+      longitude,
+      city: selectedCityData.value,
+      cityLabel: selectedCityData.label,
+      address: address || "Location selected",
+    });
   };
 
-  const handleMapLocationSelect = async (coordinate) => {
-    const result = await reverseGeocodeLocation(
-      coordinate.latitude,
-      coordinate.longitude
-    );
-
-    const locationData = {
-      latitude: coordinate.latitude,
-      longitude: coordinate.longitude,
-      address: result
-        ? [
-            result.street,
-            result.district || result.subregion,
-            result.city || result.region,
-            result.country,
-          ]
-            .filter(Boolean)
-            .join(", ")
-        : "",
-      city: selectedCityData?.value || "",
-      state: result?.region || "",
-      country: result?.country || "Pakistan",
-    };
-
-    setSelectedMarker(locationData);
-  };
-
-  const handleCurrentLocation = async () => {
-    const coords = await getCurrentLocation();
-    if (coords) {
-      setCurrentLocation(coords);
-      await handleMapLocationSelect(coords);
-    }
-  };
-
-  const handleConfirmLocation = () => {
-    if (selectedMarker && selectedMarker.latitude && selectedMarker.longitude) {
-      try {
-        // Update the parent component with all location data
-        onLocationSelect(
-          selectedMarker?.state,
-          selectedMarker.city || selectedCityData?.value || "",
-          selectedMarker
-        );
-        handleCloseModal();
-      } catch (error) {
-        console.error("Error confirming location:", error);
-        Alert.alert("Error", "Failed to save location. Please try again.");
-      }
-    } else {
-      Alert.alert(
-        "Please select a location",
-        "Tap on the map to select your exact location."
+  // Confirm location selection
+  const handleConfirm = () => {
+    if (selectedMarker && selectedCityData) {
+      onLocationSelect(
+        "Pakistan", // state
+        selectedCityData.value, // city
+        selectedMarker // location object
       );
+      handleClose();
     }
   };
 
-  const handleCloseModal = () => {
-    setIsLocationModalVisible(false);
-    setIsCityStep(true);
-    setIsLoadingMap(false);
+  // Close modal and reset
+  const handleClose = () => {
+    setIsModalVisible(false);
+    setStep(1);
+    setMapReady(false);
   };
 
-  // Two-layer Location Selection Modal
-  const LocationPickerModal = () => {
-    return (
-      <Modal
-        visible={isLocationModalVisible}
-        animationType="slide"
-        presentationStyle="pageSheet"
-        onRequestClose={handleCloseModal}
-      >
-        <View
-          style={[styles.locationModal, { backgroundColor: COLORS.background }]}
-        >
-          {/* Header */}
-          <View
-            style={[
-              styles.locationModalHeader,
-              { backgroundColor: COLORS.white },
-            ]}
-          >
-            <TouchableOpacity
-              onPress={() => {
-                if (!isCityStep) {
-                  setIsCityStep(true);
-                  setIsLoadingMap(false);
-                } else {
-                  handleCloseModal();
-                }
-              }}
-            >
-              <Ionicons name="arrow-back" size={24} color={COLORS.dark} />
-            </TouchableOpacity>
-            <Text style={[styles.locationModalTitle, { color: COLORS.dark }]}>
-              {isCityStep ? "Select City" : "Select Location"}
-            </Text>
-            <TouchableOpacity onPress={handleCloseModal}>
-              <Ionicons name="close" size={24} color={COLORS.dark} />
-            </TouchableOpacity>
-          </View>
-
-          {isCityStep ? (
-            /* City Selection Step */
-            <View style={styles.citySelectionContainer}>
-              <Text style={[styles.stepDescription, { color: COLORS.gray }]}>
-                Choose your city to help us provide better local services
-              </Text>
-
-              {isLoadingMap ? (
-                <View style={styles.loadingContainer}>
-                  <ActivityIndicator size="large" color={COLORS.primary} />
-                  <Text style={[styles.loadingText, { color: COLORS.gray }]}>
-                    Loading map...
-                  </Text>
-                </View>
-              ) : (
-                <ScrollView
-                  style={styles.cityList}
-                  showsVerticalScrollIndicator={false}
-                >
-                  {PAKISTANI_CITIES.map((city) => (
-                    <TouchableOpacity
-                      key={city.value}
-                      style={[
-                        styles.cityItem,
-                        {
-                          backgroundColor:
-                            selectedCityData?.value === city.value
-                              ? COLORS.primary + "15"
-                              : COLORS.white,
-                          borderColor:
-                            selectedCityData?.value === city.value
-                              ? COLORS.primary
-                              : COLORS.lightGray,
-                        },
-                      ]}
-                      onPress={() => handleCitySelect(city)}
-                      disabled={isLoadingMap}
-                    >
-                      <View style={styles.cityItemContent}>
-                        <Ionicons
-                          name="location-outline"
-                          size={20}
-                          color={
-                            selectedCityData?.value === city.value
-                              ? COLORS.primary
-                              : COLORS.gray
-                          }
-                        />
-                        <Text
-                          style={[
-                            styles.cityItemText,
-                            {
-                              color:
-                                selectedCityData?.value === city.value
-                                  ? COLORS.primary
-                                  : COLORS.dark,
-                              fontWeight:
-                                selectedCityData?.value === city.value
-                                  ? "600"
-                                  : "500",
-                            },
-                          ]}
-                        >
-                          {city.label}
-                        </Text>
-                      </View>
-                      {selectedCityData?.value === city.value && (
-                        <Ionicons
-                          name="checkmark-circle"
-                          size={20}
-                          color={COLORS.primary}
-                        />
-                      )}
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              )}
-            </View>
-          ) : (
-            /* Map Selection Step */
-            <View style={styles.mapContainer}>
-              <Text
-                style={[
-                  styles.stepDescription,
-                  { color: COLORS.gray, padding: 20 },
-                ]}
-              >
-                Tap on the map to select your exact location in{" "}
-                {selectedCityData?.label}
-              </Text>
-
-              {HAS_NATIVE_MAP_SUPPORT ? (
-                <View style={styles.mapWrapper}>
-                  <MapView
-                    style={styles.map}
-                    initialRegion={tempMapRegion}
-                    region={tempMapRegion}
-                    onPress={(event) => {
-                      try {
-                        if (event?.nativeEvent?.coordinate) {
-                          handleMapLocationSelect(event.nativeEvent.coordinate);
-                        }
-                      } catch (error) {
-                        console.error(
-                          "Error selecting location on map:",
-                          error
-                        );
-                      }
-                    }}
-                    onError={(error) => {
-                      console.error("MapView error:", error);
-                    }}
-                    showsUserLocation={true}
-                    showsMyLocationButton={false}
-                    loadingEnabled={true}
-                    loadingIndicatorColor={COLORS.primary}
-                  >
-                    {selectedMarker && (
-                      <Marker
-                        coordinate={{
-                          latitude: selectedMarker.latitude,
-                          longitude: selectedMarker.longitude,
-                        }}
-                        title="Selected Location"
-                        description={selectedMarker.address}
-                      />
-                    )}
-                  </MapView>
-                </View>
-              ) : (
-                /* Fallback for when native maps aren't available */
-                <View
-                  style={[
-                    styles.mapFallback,
-                    { backgroundColor: COLORS.white },
-                  ]}
-                >
-                  <View style={styles.mapPlaceholderContainer}>
-                    <View
-                      style={[
-                        styles.mapIconContainer,
-                        { backgroundColor: COLORS.primary + "20" },
-                      ]}
-                    >
-                      <Ionicons
-                        name="map-outline"
-                        size={40}
-                        color={COLORS.primary}
-                      />
-                    </View>
-                    <Text
-                      style={[styles.mapFallbackTitle, { color: COLORS.dark }]}
-                    >
-                      Map View
-                    </Text>
-                    <Text
-                      style={[
-                        styles.mapFallbackSubtitle,
-                        { color: COLORS.gray },
-                      ]}
-                    >
-                      Interactive map will be available in the full app build
-                    </Text>
-                  </View>
-
-                  {selectedMarker && (
-                    <View style={styles.coordinatesContainer}>
-                      <Text
-                        style={[
-                          styles.coordinatesLabel,
-                          { color: COLORS.dark },
-                        ]}
-                      >
-                        Selected Coordinates:
-                      </Text>
-                      <Text
-                        style={[
-                          styles.coordinatesText,
-                          { color: COLORS.primary },
-                        ]}
-                      >
-                        {selectedMarker.latitude.toFixed(6)},{" "}
-                        {selectedMarker.longitude.toFixed(6)}
-                      </Text>
-                      <Text style={[styles.cityLabel, { color: COLORS.gray }]}>
-                        {selectedCityData?.label}
-                      </Text>
-                    </View>
-                  )}
-                </View>
-              )}
-
-              {/* Action Buttons */}
-              <View style={styles.locationActions}>
-                <TouchableOpacity
-                  style={[
-                    styles.currentLocationBtn,
-                    {
-                      backgroundColor: COLORS.white,
-                      borderColor: COLORS.lightGray,
-                    },
-                  ]}
-                  onPress={handleCurrentLocation}
-                >
-                  <Ionicons name="locate" size={20} color={COLORS.primary} />
-                  <Text
-                    style={[
-                      styles.currentLocationText,
-                      { color: COLORS.primary },
-                    ]}
-                  >
-                    Use Current Location
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[
-                    styles.confirmLocationBtn,
-                    {
-                      backgroundColor: selectedMarker
-                        ? COLORS.primary
-                        : COLORS.gray,
-                      opacity: selectedMarker ? 1 : 0.5,
-                    },
-                  ]}
-                  onPress={handleConfirmLocation}
-                  disabled={!selectedMarker}
-                >
-                  <Ionicons name="checkmark" size={20} color={COLORS.white} />
-                  <Text
-                    style={[
-                      styles.confirmLocationText,
-                      { color: COLORS.white },
-                    ]}
-                  >
-                    Confirm Location
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          )}
-        </View>
-      </Modal>
-    );
+  // Go back to city selection
+  const handleBack = () => {
+    setStep(1);
+    setMapReady(false);
+    setSearchQuery("");
+    setSearchResults([]);
   };
 
-  // Location Field Component
-  const LocationField = ({ label, location, cityData, onPress }) => (
-    <View style={styles.inputContainer}>
-      <Text style={[styles.inputLabel, { color: COLORS.dark }]}>{label}</Text>
+  // Search places using Google Places API
+  const searchPlaces = async (query) => {
+    if (!query || query.length < 3) {
+      setSearchResults([]);
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      const API_KEY = "AIzaSyA6N_Zh_d4PWuUUZ9_5bczUMLntJH8FZHI";
+      const cityBias = selectedCityData?.label || "";
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(
+          query + " " + cityBias
+        )}&key=${API_KEY}&components=country:pk`
+      );
+      const data = await response.json();
+      console.log("Search results data:", data);
+      if (data.predictions) {
+        setSearchResults(data.predictions);
+      }
+    } catch (error) {
+      console.error("Search error:", error);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  // Get place details and navigate map to location
+  const selectSearchResult = async (placeId, description) => {
+    try {
+      const API_KEY = "AIzaSyA6N_Zh_d4PWuUUZ9_5bczUMLntJH8FZHI";
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&key=${API_KEY}`
+      );
+      const data = await response.json();
+
+      if (data.result && data.result.geometry) {
+        const { lat, lng } = data.result.geometry.location;
+
+        // Animate map to the searched location
+        const newRegion = {
+          latitude: lat,
+          longitude: lng,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        };
+
+        if (mapRef.current) {
+          mapRef.current.animateToRegion(newRegion, 1000);
+        }
+
+        setMapRegion(newRegion);
+        setSearchQuery("");
+        setSearchResults([]);
+      }
+    } catch (error) {
+      console.error("Place details error:", error);
+    }
+  };
+
+  console.log("LocationSelection rendering...");
+
+  return (
+    <View style={styles.container}>
+      <Text style={[styles.subtitle, { color: COLORS.gray600 }]}>
+        {t("onboarding.selectLocationSubtitle")}
+      </Text>
+
+      {/* Location Button */}
       <TouchableOpacity
         style={[
           styles.locationButton,
           {
-            borderColor: location?.latitude ? COLORS.primary : COLORS.lightGray,
+            borderColor: selectedLocation?.latitude
+              ? COLORS.primary
+              : COLORS.lightGray,
             backgroundColor: COLORS.background,
           },
         ]}
-        onPress={onPress}
+        onPress={() => setIsModalVisible(true)}
       >
         <View style={styles.locationContent}>
           <View
@@ -596,26 +269,21 @@ const LocationSelection = ({
           >
             <Ionicons
               name="location-outline"
-              size={20}
+              size={24}
               color={COLORS.primary}
             />
           </View>
           <View style={styles.locationTextContainer}>
-            {location?.latitude && cityData ? (
+            {selectedLocation?.latitude ? (
               <>
                 <Text style={[styles.locationText, { color: COLORS.dark }]}>
-                  📍 {cityData.label}
-                </Text>
-                <Text style={[styles.locationSubtext, { color: COLORS.gray }]}>
-                  {location.address ||
-                    `${location.latitude.toFixed(
-                      4
-                    )}, ${location.longitude.toFixed(4)}`}
+                  📍 {selectedLocation.city}
                 </Text>
                 <Text
-                  style={[styles.locationChangeText, { color: COLORS.primary }]}
+                  style={[styles.locationSubtext, { color: COLORS.gray }]}
+                  numberOfLines={2}
                 >
-                  Tap to change location
+                  {selectedLocation.address || "Location selected"}
                 </Text>
               </>
             ) : (
@@ -629,114 +297,310 @@ const LocationSelection = ({
         </View>
         <Ionicons name="chevron-forward" size={20} color={COLORS.gray} />
       </TouchableOpacity>
-    </View>
-  );
 
-  return (
-    <View style={styles.container}>
-      <Text style={[styles.subtitle, { color: COLORS.gray600 }]}>
-        {t("onboarding.selectLocationSubtitle")}
-      </Text>
-
-      <View style={styles.formContainer}>
-        <LocationField
-          label={t("onboarding.location")}
-          location={selectedLocation}
-          cityData={selectedCityData}
-          onPress={() => setIsLocationModalVisible(true)}
-        />
-
-        {/* Selected Location Summary */}
-        {selectedLocation?.latitude && selectedCityData && (
+      {/* Location Selection Modal */}
+      <Modal
+        visible={isModalVisible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={handleClose}
+      >
+        <SafeAreaView
+          style={[styles.locationModal, { backgroundColor: COLORS.background }]}
+        >
+          {/* Header */}
           <View
             style={[
-              styles.locationSummary,
-              { backgroundColor: COLORS.primary + "10" },
+              styles.locationModalHeader,
+              { backgroundColor: COLORS.white },
             ]}
           >
-            <View style={styles.summaryHeader}>
-              <Ionicons
-                name="checkmark-circle"
-                size={20}
-                color={COLORS.primary}
-              />
-              <Text style={[styles.summaryTitle, { color: COLORS.primary }]}>
-                Location Selected
-              </Text>
-            </View>
-            <View style={styles.summaryDetails}>
-              <View style={styles.summaryItem}>
-                <Text style={[styles.summaryLabel, { color: COLORS.gray600 }]}>
-                  City:
-                </Text>
-                <Text style={[styles.summaryValue, { color: COLORS.dark }]}>
-                  {selectedCityData.label}
-                </Text>
-              </View>
-              <View style={styles.summaryItem}>
-                <Text style={[styles.summaryLabel, { color: COLORS.gray600 }]}>
-                  Address:
-                </Text>
-                <Text style={[styles.summaryValue, { color: COLORS.dark }]}>
-                  {selectedLocation.address || "Custom location"}
-                </Text>
-              </View>
-              <View style={styles.summaryItem}>
-                <Text style={[styles.summaryLabel, { color: COLORS.gray600 }]}>
-                  Coordinates:
-                </Text>
-                <Text
-                  style={[styles.summaryCoordinates, { color: COLORS.gray500 }]}
-                >
-                  {selectedLocation.latitude.toFixed(6)},{" "}
-                  {selectedLocation.longitude.toFixed(6)}
-                </Text>
-              </View>
-            </View>
+            <TouchableOpacity
+              onPress={() => {
+                if (step === 2) {
+                  handleBack();
+                } else {
+                  handleClose();
+                }
+              }}
+            >
+              <Ionicons name="arrow-back" size={24} color={COLORS.dark} />
+            </TouchableOpacity>
+            <Text style={[styles.locationModalTitle, { color: COLORS.dark }]}>
+              {step === 1 ? "Select City" : "Select Location"}
+            </Text>
+            <TouchableOpacity onPress={handleClose}>
+              <Ionicons name="close" size={24} color={COLORS.dark} />
+            </TouchableOpacity>
           </View>
-        )}
-      </View>
 
-      {/* Location Picker Modal */}
-      <LocationPickerModal />
+          {step === 1 ? (
+            /* City Selection Step */
+            <View style={styles.citySelectionContainer}>
+              <Text style={[styles.stepDescription, { color: COLORS.gray }]}>
+                Choose your city to help us provide better local services
+              </Text>
+
+              <ScrollView
+                style={styles.cityList}
+                showsVerticalScrollIndicator={false}
+              >
+                {PAKISTANI_CITIES.map((city) => (
+                  <TouchableOpacity
+                    key={city.value}
+                    style={[
+                      styles.cityItem,
+                      {
+                        backgroundColor:
+                          selectedCityData?.value === city.value
+                            ? COLORS.primary + "15"
+                            : COLORS.white,
+                        borderColor:
+                          selectedCityData?.value === city.value
+                            ? COLORS.primary
+                            : COLORS.lightGray,
+                      },
+                    ]}
+                    onPress={() => handleCitySelect(city)}
+                  >
+                    <View style={styles.cityItemContent}>
+                      <Ionicons
+                        name="location-outline"
+                        size={20}
+                        color={
+                          selectedCityData?.value === city.value
+                            ? COLORS.primary
+                            : COLORS.gray
+                        }
+                      />
+                      <Text
+                        style={[
+                          styles.cityItemText,
+                          {
+                            color:
+                              selectedCityData?.value === city.value
+                                ? COLORS.primary
+                                : COLORS.dark,
+                            fontWeight:
+                              selectedCityData?.value === city.value
+                                ? "600"
+                                : "500",
+                          },
+                        ]}
+                      >
+                        {city.label}
+                      </Text>
+                    </View>
+                    {selectedCityData?.value === city.value && (
+                      <Ionicons
+                        name="checkmark-circle"
+                        size={24}
+                        color={COLORS.primary}
+                      />
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          ) : (
+            /* Map Selection Step */
+            <View style={styles.mapContainer}>
+              <Text
+                style={[
+                  styles.stepDescription,
+                  { color: COLORS.gray, padding: 20 },
+                ]}
+              >
+                Search or tap on the map to select your exact location
+              </Text>
+
+              {/* Search Bar */}
+              <View
+                style={[
+                  styles.searchContainer,
+                  { backgroundColor: COLORS.white },
+                ]}
+              >
+                <View
+                  style={[
+                    styles.searchInputWrapper,
+                    {
+                      backgroundColor: COLORS.background,
+                      borderColor: COLORS.lightGray,
+                    },
+                  ]}
+                >
+                  <Ionicons name="search" size={20} color={COLORS.gray} />
+                  <TextInput
+                    style={[styles.searchInput, { color: COLORS.dark }]}
+                    placeholder="Search for a location..."
+                    placeholderTextColor={COLORS.gray}
+                    value={searchQuery}
+                    onChangeText={(text) => {
+                      setSearchQuery(text);
+                      searchPlaces(text);
+                    }}
+                  />
+                  {searchQuery.length > 0 && (
+                    <TouchableOpacity
+                      onPress={() => {
+                        setSearchQuery("");
+                        setSearchResults([]);
+                      }}
+                    >
+                      <Ionicons
+                        name="close-circle"
+                        size={20}
+                        color={COLORS.gray}
+                      />
+                    </TouchableOpacity>
+                  )}
+                </View>
+
+                {/* Search Results */}
+                {searchResults.length > 0 && (
+                  <ScrollView
+                    style={[
+                      styles.searchResults,
+                      { backgroundColor: COLORS.white },
+                    ]}
+                    keyboardShouldPersistTaps="handled"
+                  >
+                    {searchResults.map((result) => (
+                      <TouchableOpacity
+                        key={result.place_id}
+                        style={[
+                          styles.searchResultItem,
+                          { borderBottomColor: COLORS.lightGray },
+                        ]}
+                        onPress={() =>
+                          selectSearchResult(
+                            result.place_id,
+                            result.description
+                          )
+                        }
+                      >
+                        <Ionicons
+                          name="location"
+                          size={16}
+                          color={COLORS.primary}
+                        />
+                        <Text
+                          style={[
+                            styles.searchResultText,
+                            { color: COLORS.dark },
+                          ]}
+                          numberOfLines={2}
+                        >
+                          {result.description}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                )}
+              </View>
+
+              <View style={styles.mapWrapper}>
+                {!mapReady && (
+                  <View style={styles.mapLoadingOverlay}>
+                    <Text
+                      style={[styles.mapLoadingText, { color: COLORS.gray }]}
+                    >
+                      Loading map...
+                    </Text>
+                  </View>
+                )}
+                <MapView
+                  ref={mapRef}
+                  provider={PROVIDER_GOOGLE}
+                  style={styles.map}
+                  initialRegion={{
+                    latitude: selectedCityData?.coordinates.lat || 24.8607,
+                    longitude: selectedCityData?.coordinates.lng || 67.0011,
+                    latitudeDelta: 0.0922,
+                    longitudeDelta: 0.0421,
+                  }}
+                  region={mapRegion}
+                  onPress={handleMapPress}
+                  onMapReady={() => {
+                    console.log("✅ Map is ready!");
+                    setMapReady(true);
+                  }}
+                  onMapLoaded={() => {
+                    console.log("✅ Map tiles loaded!");
+                  }}
+                  onError={(error) => {
+                    console.error("❌ Map error:", error);
+                  }}
+                  showsUserLocation={false}
+                  showsMyLocationButton={false}
+                  loadingEnabled={true}
+                  loadingIndicatorColor={COLORS.primary}
+                  mapType="standard"
+                >
+                  {selectedMarker && (
+                    <Marker
+                      coordinate={{
+                        latitude: selectedMarker.latitude,
+                        longitude: selectedMarker.longitude,
+                      }}
+                      title="Selected Location"
+                      description={selectedMarker.cityLabel}
+                    />
+                  )}
+                </MapView>
+              </View>
+
+              {/* Selected Location Details Box */}
+              <LocationDetailsBox selectedMarker={selectedMarker} />
+
+              {/* Confirm Button */}
+              <View style={styles.confirmButtonContainer}>
+                <TouchableOpacity
+                  style={[
+                    styles.confirmButton,
+                    {
+                      backgroundColor: selectedMarker
+                        ? COLORS.primary
+                        : COLORS.gray,
+                      opacity: selectedMarker ? 1 : 0.5,
+                    },
+                  ]}
+                  onPress={handleConfirm}
+                  disabled={!selectedMarker}
+                >
+                  <Ionicons name="checkmark" size={24} color={COLORS.white} />
+                  <Text
+                    style={[styles.confirmButtonText, { color: COLORS.white }]}
+                  >
+                    Confirm Location
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+        </SafeAreaView>
+      </Modal>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    width: "100%",
   },
   subtitle: {
-    fontSize: 16,
-    marginBottom: 3,
+    fontSize: 14,
+    marginBottom: 20,
     textAlign: "center",
-    lineHeight: 22,
   },
-  formContainer: {
-    flex: 1,
-    marginTop: 4,
-  },
-  // Input Fields
-  inputContainer: {
-    marginBottom: 24,
-  },
-  inputLabel: {
-    fontSize: 20,
-    fontWeight: "700",
-    marginBottom: 10,
-    letterSpacing: 0.2,
-  },
-
-  // Location Field Styles
   locationButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 18,
-    borderWidth: 1.5,
+    padding: 16,
     borderRadius: 12,
+    borderWidth: 1,
     minHeight: 70,
   },
   locationContent: {
@@ -745,11 +609,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   locationIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: "center",
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     alignItems: "center",
+    justifyContent: "center",
     marginRight: 12,
   },
   locationTextContainer: {
@@ -757,22 +621,15 @@ const styles = StyleSheet.create({
   },
   locationText: {
     fontSize: 16,
-    fontWeight: "500",
-    marginBottom: 10,
+    fontWeight: "600",
+    marginBottom: 4,
   },
   locationSubtext: {
     fontSize: 12,
-    marginBottom: 10,
-  },
-  locationChangeText: {
-    fontSize: 11,
-    fontStyle: "italic",
   },
   locationPlaceholder: {
     fontSize: 16,
   },
-
-  // Location Modal Styles
   locationModal: {
     flex: 1,
   },
@@ -780,43 +637,25 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+    borderBottomColor: "#E5E7EB",
   },
   locationModalTitle: {
     fontSize: 18,
-    fontWeight: "700",
-    flex: 1,
-    textAlign: "center",
-    marginHorizontal: 16,
+    fontWeight: "600",
   },
-
-  // City Selection Styles
   citySelectionContainer: {
     flex: 1,
     padding: 20,
   },
   stepDescription: {
-    fontSize: 16,
-    textAlign: "center",
+    fontSize: 14,
     marginBottom: 20,
-    lineHeight: 22,
+    textAlign: "center",
   },
   cityList: {
     flex: 1,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 40,
-  },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    fontWeight: "500",
   },
   cityItem: {
     flexDirection: "row",
@@ -824,7 +663,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     padding: 16,
     borderRadius: 12,
-    borderWidth: 2,
+    borderWidth: 1,
     marginBottom: 12,
   },
   cityItemContent: {
@@ -833,159 +672,86 @@ const styles = StyleSheet.create({
   },
   cityItemText: {
     fontSize: 16,
-    fontWeight: "500",
     marginLeft: 12,
   },
-
-  // Map Styles
   mapContainer: {
     flex: 1,
-    padding: 20,
   },
   mapWrapper: {
     flex: 1,
-    borderRadius: 16,
-    overflow: "hidden",
-    marginVertical: 20,
+    position: "relative",
   },
   map: {
-    flex: 1,
-  },
-  locationActions: {
-    gap: 12,
-  },
-  currentLocationBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 14,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: "#e0e0e0",
-    gap: 8,
-  },
-  currentLocationText: {
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  confirmLocationBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 16,
-    borderRadius: 12,
-    gap: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
-  },
-  confirmLocationText: {
-    fontSize: 16,
-    fontWeight: "700",
-  },
-
-  // Fallback Map Styles
-  mapFallback: {
-    flex: 1,
-    borderRadius: 16,
-    padding: 20,
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 2,
-    borderColor: "#e0e0e0",
-    borderStyle: "dashed",
-  },
-  mapPlaceholderContainer: {
-    alignItems: "center",
-    padding: 30,
-    borderRadius: 16,
-    marginBottom: 20,
-  },
-  mapIconContainer: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  mapFallbackTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    marginTop: 12,
-    marginBottom: 4,
-  },
-  mapFallbackSubtitle: {
-    fontSize: 14,
-    textAlign: "center",
-    lineHeight: 18,
-  },
-  coordinatesContainer: {
-    alignItems: "center",
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#e0e0e0",
     width: "100%",
+    height: "100%",
   },
-  coordinatesLabel: {
-    fontSize: 14,
-    fontWeight: "600",
-    marginBottom: 4,
+  mapLoadingOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "white",
+    zIndex: 1,
   },
-  coordinatesText: {
+  mapLoadingText: {
     fontSize: 16,
-    fontWeight: "700",
-    fontFamily: "monospace",
-    marginBottom: 4,
   },
-  cityLabel: {
-    fontSize: 16,
-    fontWeight: "500",
+  confirmButtonContainer: {
+    padding: 20,
+    backgroundColor: "white",
+    borderTopWidth: 1,
+    borderTopColor: "#E5E7EB",
   },
-
-  // Location Summary Styles
-  locationSummary: {
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 16,
-    borderWidth: 1,
-    borderColor: "#e0e7ff",
-  },
-  summaryHeader: {
+  confirmButton: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 12,
+    justifyContent: "center",
+    padding: 16,
+    borderRadius: 12,
   },
-  summaryTitle: {
+  confirmButtonText: {
     fontSize: 16,
     fontWeight: "600",
     marginLeft: 8,
   },
-  summaryDetails: {
-    paddingLeft: 28,
+  searchContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: 10,
   },
-  summaryItem: {
+  searchInputWrapper: {
     flexDirection: "row",
-    alignItems: "flex-start",
-    marginBottom: 8,
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 8,
+    borderWidth: 1,
   },
-  summaryLabel: {
-    fontSize: 14,
-    fontWeight: "500",
-    minWidth: 80,
-  },
-  summaryValue: {
-    fontSize: 14,
+  searchInput: {
     flex: 1,
-    fontWeight: "500",
+    marginLeft: 8,
+    fontSize: 16,
+    padding: 0,
   },
-  summaryCoordinates: {
-    fontSize: 12,
-    fontFamily: "monospace",
+  searchResults: {
+    maxHeight: 200,
+    marginTop: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+  },
+  searchResultItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 12,
+    borderBottomWidth: 1,
+  },
+  searchResultText: {
     flex: 1,
+    marginLeft: 8,
+    fontSize: 14,
   },
 });
 

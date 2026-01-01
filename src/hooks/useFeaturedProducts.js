@@ -13,7 +13,7 @@ export const useFeaturedProducts = (limit = 10) => {
   /**
    * Fetch featured products from API
    */
-  const fetchFeaturedProducts = useCallback(async () => {
+  const fetchFeaturedProducts = async () => {
     try {
       setLoading(true);
       setError(null);
@@ -38,12 +38,12 @@ export const useFeaturedProducts = (limit = 10) => {
     } finally {
       setLoading(false);
     }
-  }, [limit]);
+  };
 
   // Fetch on mount
   useEffect(() => {
     fetchFeaturedProducts();
-  }, [fetchFeaturedProducts]);
+  }, []);
 
   return {
     products,

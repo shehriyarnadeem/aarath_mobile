@@ -288,6 +288,9 @@ const OnboardingFlow = ({ navigation }) => {
                   </View>
                 </TouchableOpacity>
               )}
+              {currentStep === 1 && (
+                <LanguageSwitcher backgroundColor="green" />
+              )}
             </View>
           </View>
         </View>
@@ -489,11 +492,11 @@ const styles = StyleSheet.create({
   },
   nextButton: {
     borderRadius: 16,
-    paddingVertical: 18,
     paddingHorizontal: 24,
     alignItems: "center",
     justifyContent: "center",
     minHeight: 56,
+    marginBottom: 20,
     width: "100%",
   },
   nextButtonText: {

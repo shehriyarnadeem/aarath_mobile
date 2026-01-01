@@ -4,14 +4,29 @@ import { auth } from "../firebase/firebaseConfig";
 
 // Get the correct base URL for development
 export const getBaseURL = () => {
-  console.log("Using development API URL");
-  if (__DEV__) {
-    console.log("Using development API URL");
-    // Your machine's IP address for mobile device to connect
-    // Updated to match current host IPv4 (use env override if needed)
-    return "https://api.aarath.app"; // Replace with your local IP
+  // Always use production API for release builds
+  const isProduction = !__DEV__ || process.env.NODE_ENV === "production";
+
+  if (isProduction) {
+    console.log("Using production API URL");
+    return "http://192.168.1.100:3000";
   }
-  return "https://api.aarath.app"; // Your production API URL
+
+  console.log("Using development API URL");
+  // For Android Studio Emulator, use 10.0.2.2 to access host machine's localhost
+  // For physical devices, use your machine's local IP address (192.168.x.x)
+  // For iOS Simulator - use localhost
+  // return "http://localhost:3000";
+
+  // For Android Emulator - use special alias to access host machine
+  // return "http://10.0.2.2:3000";
+
+  // For Physical Device (iOS or Android) - use your computer's local IP
+  // On Windows: Run 'ipconfig' in Command Prompt and find IPv4 Address
+  // On Mac/Linux: Run 'ifconfig' or 'ip addr' in Terminal
+  return "https://api.aarath.app"; // Replace X with your actual IP
+  // return "http://10.0.2.2:3000"; // Android Studio Emulator
+  //return "http://192.168.1.100:3000"; // Physical device - Replace with your local IP
 };
 
 // Create axios instance with base configuration

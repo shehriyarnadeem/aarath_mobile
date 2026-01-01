@@ -15,7 +15,7 @@ export const useProductsManagement = (userId, activeFilter = "all") => {
    * Load products from API
    * Filters by status if activeFilter is not "all"
    */
-  const loadProducts = useCallback(async () => {
+  const loadProducts = async () => {
     if (!userId) {
       setProducts([]);
       return;
@@ -47,7 +47,7 @@ export const useProductsManagement = (userId, activeFilter = "all") => {
     } finally {
       setLoading(false);
     }
-  }, [userId, activeFilter]);
+  };
 
   /**
    * Delete a product
@@ -104,7 +104,7 @@ export const useProductsManagement = (userId, activeFilter = "all") => {
   // Load products when userId or activeFilter changes
   useEffect(() => {
     loadProducts();
-  }, [loadProducts]);
+  }, []);
 
   return {
     products,

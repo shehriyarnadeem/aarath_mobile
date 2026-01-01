@@ -61,7 +61,7 @@ const AdBanner = ({ onPress }) => {
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingVertical: 30,
   },
   banner: {
     borderRadius: 12,

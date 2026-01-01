@@ -344,7 +344,7 @@ const ProductEdit = ({ navigation, route }) => {
   // Business logic for transitions
   const canTransitionToAuction = () => {
     return (
-      formData.environment === "MARKETPLACE" && formData.status === "active"
+      formData.environment === "MARKETPLACE" && formData.status === "ACTIVE"
     );
   };
 
@@ -460,7 +460,7 @@ const ProductEdit = ({ navigation, route }) => {
           text1: "Listing Completed",
           text2: `Your Ad status has been successfully listed.`,
         });
-        navigation.navigate("ProductsManagement");
+        navigation.navigate("My_Ads");
       } else {
         throw new Error(response.message || "Failed to update product status");
       }
@@ -516,7 +516,7 @@ const ProductEdit = ({ navigation, route }) => {
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: "images",
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.8,
@@ -537,6 +537,21 @@ const ProductEdit = ({ navigation, route }) => {
   };
 
   const removeImage = (index) => {
+    // Prevent deletion of existing images for active marketplace products
+    if (
+      formData.status === "ACTIVE" &&
+      formData.environment === "MARKETPLACE"
+    ) {
+      const imageToRemove = formData.images[index];
+      if (originalImages.includes(imageToRemove)) {
+        Alert.alert(
+          "Cannot Delete",
+          "You cannot delete existing images for active marketplace products. You can only add new images."
+        );
+        return;
+      }
+    }
+
     setFormData((prev) => {
       const imageToRemove = prev.images[index];
 
@@ -871,6 +886,64 @@ const ProductEdit = ({ navigation, route }) => {
         )}
       </View>
     );
+  };
+
+  const handleSaveNewImages = async () => {
+    if (newImages.length === 0) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const payload = {};
+
+      // Convert new images to base64
+      console.log(`Converting ${newImages.length} new images to base64...`);
+      setProcessingImages(true);
+
+      const newImagesBase64 = [];
+      for (let i = 0; i < newImages.length; i++) {
+        const imageUri = newImages[i];
+        console.log(`Converting image ${i + 1}/${newImages.length}:`, imageUri);
+        const base64Image = await convertImageToBase64(imageUri);
+        newImagesBase64.push(base64Image);
+      }
+
+      payload.newImages = newImagesBase64;
+      payload.images = formData.images.filter((img) =>
+        originalImages.includes(img)
+      );
+
+      console.log("Saving new images for product:", payload);
+
+      const response = await apiClient.products.update(
+        productId || product.id,
+        payload
+      );
+
+      if (response.success || response.status === "success") {
+        // Update original images to include the new ones
+        setOriginalImages([...formData.images]);
+        setNewImages([]);
+
+        Toast.show({
+          type: "success",
+          text1: "Success",
+          text2: "New images added successfully",
+        });
+      } else {
+        throw new Error(response.message || "Failed to save images");
+      }
+    } catch (error) {
+      console.error("Error saving images:", error);
+      Alert.alert(
+        "Save Failed",
+        error.message || "Failed to save new images. Please try again."
+      );
+    } finally {
+      setLoading(false);
+      setProcessingImages(false);
+    }
   };
 
   const handleListInMarketplace = async () => {
@@ -1359,7 +1432,7 @@ const ProductEdit = ({ navigation, route }) => {
     header: {
       flexDirection: "row",
       alignItems: "center",
-      justifyContent: "space-around",
+      justifyContent: "space-between",
       paddingHorizontal: 24,
       paddingTop: 50,
       paddingBottom: 20,
@@ -1367,8 +1440,9 @@ const ProductEdit = ({ navigation, route }) => {
     },
     backButton: {
       padding: 8,
-      flex: 1,
-      alignItems: "flex-start",
+    },
+    headerSpacer: {
+      width: 80,
     },
     backButtonText: {
       fontSize: 16,
@@ -1376,7 +1450,6 @@ const ProductEdit = ({ navigation, route }) => {
       fontWeight: "600",
     },
     headerTitleContainer: {
-      flex: 2,
       alignItems: "center",
     },
     headerTitle: {
@@ -2062,11 +2135,39 @@ const ProductEdit = ({ navigation, route }) => {
 
       {/* Header */}
       <View style={[styles.header, { backgroundColor: COLORS.primary800 }]}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.navigate("My_Ads")}
+        >
+          <Ionicons name="close" size={24} color="white" />
+        </TouchableOpacity>
+
         <View style={styles.headerTitleContainer}>
           <Text style={[styles.headerTitle, { color: "white" }]}>
             Manage Ad
           </Text>
         </View>
+
+        {/* Show save button only when new images are added for active marketplace products */}
+        {formData.status === "ACTIVE" &&
+          formData.environment === "MARKETPLACE" &&
+          newImages.length > 0 && (
+            <TouchableOpacity
+              style={[styles.saveButton, loading && styles.saveButtonDisabled]}
+              onPress={handleSaveNewImages}
+              disabled={loading}
+            >
+              <Ionicons name="checkmark" size={20} color={COLORS.white} />
+              <Text style={styles.saveButtonText}>Save</Text>
+            </TouchableOpacity>
+          )}
+
+        {/* Empty spacer when no save button */}
+        {!(
+          formData.status === "ACTIVE" &&
+          formData.environment === "MARKETPLACE" &&
+          newImages.length > 0
+        ) && <View style={styles.headerSpacer} />}
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
@@ -2419,17 +2520,28 @@ const ProductEdit = ({ navigation, route }) => {
         <View style={styles.imagesSection}>
           <Text style={styles.sectionTitle}>Pictures</Text>
           <View style={styles.imagesGrid}>
-            {formData.images.map((image, index) => (
-              <View key={index} style={styles.imageContainer}>
-                <Image source={{ uri: image }} style={styles.productImage} />
-                <TouchableOpacity
-                  style={styles.removeImageButton}
-                  onPress={() => removeImage(index)}
-                >
-                  <Ionicons name="close" size={14} color="white" />
-                </TouchableOpacity>
-              </View>
-            ))}
+            {formData.images.map((image, index) => {
+              // Check if this is an original image and product is active in marketplace
+              const isOriginalImage = originalImages.includes(image);
+              const cannotDelete =
+                formData.status === "ACTIVE" &&
+                formData.environment === "MARKETPLACE" &&
+                isOriginalImage;
+
+              return (
+                <View key={index} style={styles.imageContainer}>
+                  <Image source={{ uri: image }} style={styles.productImage} />
+                  {!cannotDelete && (
+                    <TouchableOpacity
+                      style={styles.removeImageButton}
+                      onPress={() => removeImage(index)}
+                    >
+                      <Ionicons name="close" size={14} color="white" />
+                    </TouchableOpacity>
+                  )}
+                </View>
+              );
+            })}
 
             {formData.images.length < 5 && (
               <TouchableOpacity

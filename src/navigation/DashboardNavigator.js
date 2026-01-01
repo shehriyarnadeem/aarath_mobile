@@ -41,7 +41,7 @@ const TabNavigator = () => {
         tabBarStyle: {
           backgroundColor: "transparent",
           borderTopWidth: 0,
-          paddingBottom: 40,
+          paddingBottom: 50,
           paddingTop: 15,
           paddingHorizontal: 10,
           height: 90,
@@ -101,7 +101,7 @@ const TabNavigator = () => {
               <Text
                 style={{
                   color: focused ? COLORS.primary : COLORS.gray + "80",
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: focused ? "600" : "400",
                   letterSpacing: 0.2,
                   textAlign: "center",
@@ -136,7 +136,7 @@ const TabNavigator = () => {
               <Text
                 style={{
                   color: focused ? COLORS.primary : COLORS.gray + "80",
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: focused ? "600" : "400",
                   letterSpacing: 0.2,
                   textAlign: "center",
@@ -227,23 +227,22 @@ const TabNavigator = () => {
               style={{
                 alignItems: "center",
                 justifyContent: "center",
-                width: 60,
+                width: 65,
                 height: 55,
-                paddingVertical: 4,
               }}
             >
               <Ionicons
                 name={focused ? "grid" : "grid-outline"}
-                size={24}
+                size={22}
                 color={focused ? COLORS.primary : COLORS.gray}
               />
               <Text
                 style={{
                   color: focused ? COLORS.primary : COLORS.gray + "80",
                   fontSize: 12,
-                  fontWeight: focused ? "600" : "400",
+                  fontWeight: focused ? "700" : "500",
                   marginTop: 4,
-                  letterSpacing: 0.2,
+                  letterSpacing: 0.3,
                   textAlign: "center",
                 }}
               >
@@ -263,8 +262,6 @@ const TabNavigator = () => {
                 alignItems: "center",
                 justifyContent: "center",
                 width: 60,
-                height: 55,
-                paddingVertical: 4,
               }}
             >
               <Ionicons
@@ -275,9 +272,8 @@ const TabNavigator = () => {
               <Text
                 style={{
                   color: focused ? COLORS.primary : COLORS.gray + "80",
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: focused ? "600" : "400",
-                  marginTop: 4,
                   letterSpacing: 0.2,
                   textAlign: "center",
                 }}

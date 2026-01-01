@@ -179,6 +179,13 @@
     "logoutFailed": "لاگ آؤٹ ناکام",
     "logoutFailedMessage": "لاگ آؤٹ ناکام ہوگیا۔ براہ کرم دوبارہ کوشش کریں۔"
   },
+  "location": {
+    "mapUnavailable": "نقشہ دستیاب نہیں",
+    "mapFallbackDescription": "گوگل میپس لوڈ کرنے میں ناکام۔ براہ کرم اپنا کنکشن چیک کریں اور دوبارہ کوشش کریں۔",
+    "selectedCity": "منتخب شہر",
+    "retryMap": "نقشہ دوبارہ لوڈ کریں",
+    "loadingMap": "نقشہ لوڈ ہو رہا ہے..."
+  },
   "tabs": {
     "home": "ہوم",
     "myAds": "میرے اشتہارات",

@@ -4,6 +4,15 @@
     "appVersionSource": "remote"
   },
   "build": {
+    "production": {
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease"
+      },
+      "env": {
+        "NODE_ENV": "production"
+      }
+    },
     "android-local": {
       "developmentClient": false,
       "distribution": "internal",

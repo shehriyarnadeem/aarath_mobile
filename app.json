@@ -1,39 +1,52 @@
 {
   "expo": {
-    "name": "aarath_mobile",
+    "name": "Aarath",
     "slug": "aarath_mobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
+    "icon": "./assets/logo.png",
     "splash": {
+      "image": "./assets/logo.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"],
+
+    "plugins": [
+      [
+        "react-native-maps",
+        {
+          "android": {
+            "apiKey": "AIzaSyA6N_Zh_d4PWuUUZ9_5bczUMLntJH8FZHI"
+          },
+          "ios": {
+            "apiKey": "AIzaSyA6N_Zh_d4PWuUUZ9_5bczUMLntJH8FZHI"
+          }
+        }
+      ]
+    ],
+
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.mycompany.myapp",
-      "config": {
-        "googleMapsApiKey": "AIzaSyA6N_Zh_d4PWuUUZ9_5bczUMLntJH8FZHI"
-      }
+      "bundleIdentifier": "com.mycompany.myapp"
     },
+
     "android": {
       "package": "com.mycompany.myapp",
+      "icon": "./assets/icon.png",
       "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      },
-      "config": {
-        "googleMaps": {
-          "apiKey": "AIzaSyA6N_Zh_d4PWuUUZ9_5bczUMLntJH8FZHI"
-        }
       }
     },
-    "web": {},
+
     "extra": {
       "eas": {
         "projectId": "fb8ae90d-3bcc-43db-adf4-bcfe47f8488e"
       }
     },
+
     "owner": "sherryvohra"
   }
 }

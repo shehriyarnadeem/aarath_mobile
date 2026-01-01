@@ -1,5 +1,11 @@
 import React from "react";
-import { StyleSheet, ScrollView, SafeAreaView, StatusBar } from "react-native";
+import {
+  StyleSheet,
+  ScrollView,
+  SafeAreaView,
+  StatusBar,
+  RefreshControl,
+} from "react-native";
 import { useTheme } from "../../constants/Theme";
 import {
   HomeHeader,
@@ -23,7 +29,7 @@ const HomeScreen = ({ navigation }) => {
   const { modernColors } = useTheme();
 
   // Custom hooks for data management
-  const { products, loading } = useFeaturedProducts(10);
+  const { products, loading, refetch } = useFeaturedProducts(10);
   const categories = useHomeCategories();
 
   /**
@@ -80,6 +86,9 @@ const HomeScreen = ({ navigation }) => {
         style={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl refreshing={loading} onRefresh={refetch} />
+        }
       >
         {/* Header with Logo and Welcome */}
         <HomeHeader />

@@ -56,14 +56,6 @@ const ProductsManagement = ({ navigation }) => {
     },
   ];
 
-  // Reload products when screen gains focus
-  useEffect(() => {
-    const unsubscribe = navigation.addListener("focus", () => {
-      loadProducts();
-    });
-    return unsubscribe;
-  }, [navigation, loadProducts]);
-
   /**
    * Handle edit product action
    */

@@ -20,33 +20,15 @@ import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import { Dropdown } from "react-native-element-dropdown";
 
-// Conditional import for react-native-maps (only works in native builds)
-let MapView, Marker;
-let HAS_NATIVE_MAP_SUPPORT = false;
-
-// For development and testing, we'll enable native maps
-// Set to false if you encounter compatibility issues in Expo Go
-const ENABLE_NATIVE_MAPS = true;
-
-if (ENABLE_NATIVE_MAPS && Platform.OS !== "web") {
-  try {
-    const mapModule = require("react-native-maps");
-    MapView = mapModule.default || mapModule.MapView || mapModule;
-    Marker = mapModule.Marker;
-    HAS_NATIVE_MAP_SUPPORT = true;
-    console.log("✅ Native maps successfully loaded");
-  } catch (error) {
-    console.warn("❌ Native maps not available:", error.message);
-    console.log("Using fallback interface instead");
-  }
-} else {
-  console.log("🔧 Native maps disabled or running on web platform");
-}
+// Import react-native-maps directly
+import MapView, { Marker } from "react-native-maps";
+const HAS_NATIVE_MAP_SUPPORT = true;
 import { useTheme } from "../../constants/Theme";
 import { useAuth } from "../../context/AuthContext";
 import { set } from "firebase/database";
 import Toast from "react-native-toast-message";
 import apiClient from "../../utils/apiClient";
+import LocationSelection from "../onboarding/components/LocationSelection";
 
 // Google Places API configuration
 const GOOGLE_API_KEY = "AIzaSyA6N_Zh_d4PWuUUZ9_5bczUMLntJH8FZHI";
@@ -162,59 +144,12 @@ const InputField = React.memo(
   )
 );
 
-const LocationField = React.memo(({ label, location, onPress, COLORS }) => {
-  console.log("🗺️ LocationField - location prop:", location);
-  return (
-    <View style={styles.inputContainer}>
-      <Text style={[styles.inputLabel, { color: COLORS.textPrimary }]}>
-        {label}
-      </Text>
-      <TouchableOpacity style={styles.locationButton} onPress={onPress}>
-        <View style={styles.locationContent}>
-          <View
-            style={[
-              styles.locationIconContainer,
-              { backgroundColor: COLORS.primary + "10" },
-            ]}
-          >
-            <Ionicons name="location" size={18} color={COLORS.primary} />
-          </View>
-          <View style={styles.locationTextContainer}>
-            {location?.address ? (
-              <>
-                <Text
-                  style={[styles.locationText, { color: COLORS.textPrimary }]}
-                >
-                  {location.address}
-                </Text>
-                <Text
-                  style={[
-                    styles.locationSubtext,
-                    { color: COLORS.textSecondary, opacity: 0.6 },
-                  ]}
-                >
-                  Tap to change
-                </Text>
-              </>
-            ) : (
-              <Text
-                style={[styles.locationPlaceholder, { color: COLORS.gray400 }]}
-              >
-                Select your location
-              </Text>
-            )}
-          </View>
-        </View>
-        <Ionicons name="chevron-forward" size={18} color={COLORS.gray400} />
-      </TouchableOpacity>
-    </View>
-  );
-});
-
 const EditProfile = ({ navigation, route }) => {
   const { COLORS, SIZES } = useTheme();
   const { refreshUserProfile } = useAuth();
   const userInfo = route?.params || {};
+
+  console.log("📝 EditProfile - userInfo from route params:", userInfo);
   // Business roles options
   const businessRoles = [
     { id: 1, label: "FARMER", value: "FARMER", icon: "business" },
@@ -249,6 +184,29 @@ const EditProfile = ({ navigation, route }) => {
     longitudeDelta: 0.0421,
   });
 
+  // Handler for location selection from LocationSelection component
+  const handleLocationSelect = useCallback((state, city, locationData) => {
+    console.log("📍 Location selected:", { state, city, locationData });
+
+    const newLocation = {
+      latitude: locationData.latitude,
+      longitude: locationData.longitude,
+      businessAddress: locationData.address || `${city}, ${state}`,
+      city: city,
+      state: state,
+      address: locationData.address || `${city}, ${state}`,
+    };
+
+    setSelectedLocation(newLocation);
+    setSelectedCity(city);
+    setUserData((prev) => ({
+      ...prev,
+      location: newLocation,
+      city: city,
+      state: state,
+    }));
+  }, []);
+
   useEffect(() => {
     setUserData((prevData) => ({
       ...prevData,
@@ -265,7 +223,20 @@ const EditProfile = ({ navigation, route }) => {
         "https://ui-avatars.com/api/?name=John+Farmer&background=6366f1&color=fff&size=200",
     }));
 
-    setSelectedLocation(userInfo?.location || {});
+    // Set initial location from userInfo
+    if (userInfo?.location || (userInfo?.latitude && userInfo?.longitude)) {
+      const initialLocation = {
+        latitude: userInfo?.latitude || userInfo?.location?.latitude,
+        longitude: userInfo?.longitude || userInfo?.location?.longitude,
+        city: userInfo?.city,
+        state: userInfo?.state || "Pakistan",
+        businessAddress:
+          userInfo?.businessAddress || userInfo?.location?.businessAddress,
+        address: userInfo?.businessAddress || userInfo?.location?.address,
+      };
+      setSelectedLocation(initialLocation);
+      setSelectedCity(userInfo?.city || "");
+    }
   }, []);
 
   console.log("📝 EditProfile - userData state:", selectedLocation);
@@ -283,7 +254,7 @@ const EditProfile = ({ navigation, route }) => {
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ImagePicker.MediaType.Images,
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.8,
@@ -371,7 +342,7 @@ const EditProfile = ({ navigation, route }) => {
         });
 
         // Navigate back after successful update
-        navigation.navigate("My_Ads");
+        navigation.navigate("EditProfile");
       } else {
         Alert.alert(
           "Update Failed",
@@ -983,19 +954,16 @@ const EditProfile = ({ navigation, route }) => {
 
         {/* Location Information */}
         <FormSection title="Location" COLORS={COLORS}>
-          <LocationField
-            COLORS={COLORS}
-            location={userData.location}
-            onPress={() => setIsLocationModalVisible(true)}
+          <LocationSelection
+            selectedCity={selectedCity}
+            selectedLocation={selectedLocation}
+            onLocationSelect={handleLocationSelect}
           />
         </FormSection>
 
         {/* Footer spacing for proper scrolling */}
         <View style={styles.footerSpacer} />
       </ScrollView>
-
-      {/* Location Picker Modal */}
-      <LocationPickerModal />
     </SafeAreaView>
   );
 };

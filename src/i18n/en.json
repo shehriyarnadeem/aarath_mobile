@@ -12,8 +12,8 @@
   },
   "home": {
     "greeting": "Hello",
-    "welcomeBack": "Welcome back",
-    "marketplace": "Marketplace",
+    "marketplace": "Pakistan's Agricultural Marketplace",
+    "welcomeBack": "Welcome back ",
     "myListings": "My Listings",
     "categories": "Categories",
     "harvested": "Harvested",
@@ -179,6 +179,13 @@
     "logoutFailed": "Logout Failed",
     "logoutFailedMessage": "Failed to logout. Please try again."
   },
+  "location": {
+    "mapUnavailable": "Map Unavailable",
+    "mapFallbackDescription": "Unable to load Google Maps. Please check your connection and try again.",
+    "selectedCity": "Selected City",
+    "retryMap": "Retry Loading Map",
+    "loadingMap": "Loading map..."
+  },
   "tabs": {
     "home": "Home",
     "myAds": "My Ads",
@@ -214,7 +221,7 @@
     "cancel": "Cancel",
     "category": "Category",
     "categoryRequired": "Category *",
-    "productTitle": "Product Title *",
+    "productTitle": "Ad Title *",
     "productTitlePlaceholder": "e.g. Premium Basmati Rice",
     "addProductPhotos": "Add Product Photos",
     "addMorePhotos": "Add More Photos",

@@ -1,5 +1,4 @@
 // Import the functions you need from the SDKs you need
-import { getAnalytics } from "firebase/analytics";
 import { initializeApp } from "firebase/app";
 import {
   getAuth,
@@ -20,7 +19,6 @@ const firebaseConfig = {
   messagingSenderId: "750871633058",
   appId: "1:750871633058:web:59371c533c7a2348954bfb",
   measurementId: "G-VEFWY4H3BV",
-  // Realtime Database URL - This is required for Realtime Database
   databaseURL: "https://aarath-72ec4-default-rtdb.firebaseio.com/",
 };
 
@@ -38,14 +36,3 @@ export const googleProvider = new GoogleAuthProvider();
 
 // Auth functions
 export { onAuthStateChanged, signOut };
-
-// Analytics (optional for mobile)
-let analytics = null;
-try {
-  analytics = getAnalytics(app);
-} catch (error) {
-  console.log("Analytics not available in this environment");
-}
-
-export { analytics };
-export default app;

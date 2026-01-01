@@ -125,18 +125,18 @@ const AddProductScreen = ({ navigation }) => {
 
   const [formData, setFormData] = useState({
     category: "",
-    title: "New",
+    title: "",
     description: "",
-    quantity: "200",
-    unit: "Kgs",
-    pricePerUnit: "200",
-    pricingType: "FIXED",
+    quantity: "",
+    unit: "",
+    pricePerUnit: "",
+    pricingType: "",
     environment: null, // Marketplace or Auction
-    status: "DRAFT", // draft or active
+    status: "", // draft or active
     // Quantity Management
-    available: "200",
-    minOrderQty: "200",
-    maxOrderQty: "200",
+    available: "",
+    minOrderQty: "",
+    maxOrderQty: "",
 
     // Quality Parameters
     grade: "",
@@ -233,41 +233,46 @@ const AddProductScreen = ({ navigation }) => {
   const shelfLifeOptions = ["6 months", "12 months", "18 months", "24 months"];
 
   const pickImages = async () => {
-    if (images.length >= MAX_IMAGES) {
-      Alert.alert(
-        t("addProduct.alerts.maxImagesTitle"),
-        t("addProduct.alerts.maxImagesMessage", { max: MAX_IMAGES })
-      );
-      return;
-    }
+    try {
+      if (images.length >= MAX_IMAGES) {
+        Alert.alert(
+          t("addProduct.alerts.maxImagesTitle"),
+          t("addProduct.alerts.maxImagesMessage", { max: MAX_IMAGES })
+        );
+        return;
+      }
 
-    const permissionResult =
-      await ImagePicker.requestMediaLibraryPermissionsAsync();
+      const permissionResult =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-    if (permissionResult.granted === false) {
-      Alert.alert(
-        t("addProduct.alerts.permissionRequired"),
-        t("addProduct.alerts.permissionMessage")
-      );
-      return;
-    }
+      if (permissionResult.granted === false) {
+        Alert.alert(
+          t("addProduct.alerts.permissionRequired"),
+          t("addProduct.alerts.permissionMessage")
+        );
+        return;
+      }
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsMultipleSelection: true,
-      quality: 0.8,
-      aspect: [1, 1],
-    });
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: "images",
+        allowsMultipleSelection: true,
+        quality: 0.8,
+        selectionLimit: MAX_IMAGES - images.length,
+      });
 
-    if (!result.canceled && result.assets) {
-      const newImages = result.assets.slice(0, MAX_IMAGES - images.length);
-      const imageObjects = newImages.map((asset, index) => ({
-        id: Date.now() + index,
-        uri: asset.uri,
-        type: asset.type,
-        fileName: asset.fileName || `image_${Date.now()}.jpg`,
-      }));
-      setImages((prev) => [...prev, ...imageObjects]);
+      if (!result.canceled && result.assets) {
+        const newImages = result.assets.slice(0, MAX_IMAGES - images.length);
+        const imageObjects = newImages.map((asset, index) => ({
+          id: Date.now() + index,
+          uri: asset.uri,
+          type: asset.type || "image",
+          fileName: asset.fileName || `image_${Date.now()}_${index}.jpg`,
+        }));
+        setImages((prev) => [...prev, ...imageObjects]);
+      }
+    } catch (error) {
+      console.error("Error picking images:", error);
+      Alert.alert("Error", "Failed to pick images. Please try again.");
     }
   };
 

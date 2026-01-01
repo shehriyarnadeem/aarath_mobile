@@ -28,20 +28,20 @@ const HomeHeader = () => {
             <Text
               style={[
                 TYPOGRAPHY.h1,
-                styles.title,
-                { color: modernColors.white },
-              ]}
-            >
-              {t("home.marketplace")}
-            </Text>
-            <Text
-              style={[
-                TYPOGRAPHY.body,
                 styles.subtitle,
                 { color: modernColors.white },
               ]}
             >
               {t("home.welcomeBack")}
+            </Text>
+            <Text
+              style={[
+                TYPOGRAPHY.body,
+                styles.title,
+                { color: modernColors.white },
+              ]}
+            >
+              {t("home.marketplace")}
             </Text>
           </View>
         </View>
@@ -53,7 +53,7 @@ const HomeHeader = () => {
 const styles = StyleSheet.create({
   header: {
     paddingHorizontal: 20,
-    paddingVertical: 50,
+    paddingVertical: 60,
     paddingBottom: 10,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -67,8 +67,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 16,
-    width: "80%",
   },
   logoContainer: {
     flexDirection: "row",

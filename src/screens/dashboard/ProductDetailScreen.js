@@ -381,7 +381,7 @@ const ProductDetailScreen = ({ navigation, route }) => {
         <View style={styles.originItem}>
           <Ionicons name="calendar-outline" size={16} color={COLORS.success} />
           <Text style={[styles.originText, { color: COLORS.dark }]}>
-            {t("productDetail.harvest")}: {formatDate(product.harvestDate)}
+            {t("productDetail.harvest")}: {product.harvestSeason || "N/A"}
           </Text>
         </View>
         <View style={styles.originItem}>
@@ -544,7 +544,11 @@ const ProductDetailScreen = ({ navigation, route }) => {
       <View style={[styles.bottomActionBar, { backgroundColor: COLORS.white }]}>
         <View style={styles.actionButtonsContainer}>
           <TouchableOpacity
-            style={[styles.chatButton, { backgroundColor: COLORS.primary }]}
+            disabled
+            style={[
+              styles.chatButton,
+              { backgroundColor: COLORS.primary, disabled: true },
+            ]}
           >
             <Ionicons
               name="chatbubble-outline"

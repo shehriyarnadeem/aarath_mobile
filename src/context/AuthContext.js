@@ -26,15 +26,6 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
 
-  // Debug current state
-  console.log("📱 AuthProvider State:", {
-    initializing,
-    isAuthenticated,
-    hasUser: !!user,
-    userUid: user?.id || user?.uid || "none",
-    hasCompletedOnboarding,
-  });
-
   // Handle user state changes
   function handleAuthStateChanged(firebaseUser) {
     console.log("🔄 Auth state changed:", firebaseUser?.uid || "signed out");

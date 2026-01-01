@@ -252,7 +252,7 @@ const ProfileTab = ({ navigation }) => {
         <View style={[styles.section, { backgroundColor: COLORS.white }]}>
           <TouchableOpacity
             style={styles.menuItem}
-            onPress={() => navigation.navigate("ProductsManagement")}
+            onPress={() => navigation.navigate("My_Ads")}
           >
             <View style={[styles.iconContainer]}>
               <Ionicons

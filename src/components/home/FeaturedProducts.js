@@ -187,7 +187,7 @@ const FeaturedProducts = ({ products, loading, onProductPress, onSeeAll }) => {
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 20,
+    paddingVertical: 70,
   },
   header: {
     flexDirection: "row",
