@@ -16,11 +16,7 @@ const ProductCard = ({ product, onPress, onContact, onFavoriteToggle }) => {
 
   return (
     <TouchableOpacity
-      style={[
-        styles.productCard,
-        SHADOWS.md,
-        { backgroundColor: COLORS.white },
-      ]}
+      style={[styles.productCard, { backgroundColor: "transparent" }]}
       activeOpacity={0.97}
       onPress={() => onPress?.(product)}
     >
@@ -272,7 +268,7 @@ const styles = StyleSheet.create({
     position: "relative",
   },
   productImage: {
-    width: 120,
+    width: 150,
     height: 150,
   },
   favoriteButton: {

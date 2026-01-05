@@ -12,6 +12,7 @@ import {
   StatusBar,
   ActivityIndicator,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../../constants/Theme";
 import { useAuth } from "../../context/AuthContext";
 import CountryCodePicker from "../../components/CountryCodePicker";
@@ -136,6 +137,20 @@ const RegisterScreen = ({ navigation }) => {
 
   const renderChooseStep = () => (
     <View style={styles.content}>
+      {/* Back Button */}
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => navigation.goBack()}
+        activeOpacity={0.7}
+      >
+        <View style={styles.backButtonContent}>
+          <Ionicons name="arrow-back" size={20} color={COLORS.primary} />
+          <Text style={[styles.backText, { color: COLORS.primary }]}>
+            {t("auth.back")}
+          </Text>
+        </View>
+      </TouchableOpacity>
+
       <View style={styles.header}>
         <Text
           style={StyleSheet.flatten([styles.title, { color: COLORS.dark }])}
@@ -223,15 +238,17 @@ const RegisterScreen = ({ navigation }) => {
 
   const renderPhoneStep = () => (
     <View style={styles.content}>
-      <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-        <Text
-          style={StyleSheet.flatten([
-            styles.backText,
-            { color: COLORS.primary },
-          ])}
-        >
-          ← Back
-        </Text>
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={handleBack}
+        activeOpacity={0.7}
+      >
+        <View style={styles.backButtonContent}>
+          <Ionicons name="arrow-back" size={20} color={COLORS.primary} />
+          <Text style={[styles.backText, { color: COLORS.primary }]}>
+            {t("auth.back")}
+          </Text>
+        </View>
       </TouchableOpacity>
 
       <View style={styles.header}>
@@ -452,9 +469,7 @@ const RegisterScreen = ({ navigation }) => {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
-      <View style={styles.languageSwitcherContainer}>
-        <LanguageSwitcher backgroundColor="green" />
-      </View>
+      <LanguageSwitcher />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {step === "choose" && renderChooseStep()}
         {step === "phone" && renderPhoneStep()}
@@ -467,12 +482,6 @@ const RegisterScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  languageSwitcherContainer: {
-    paddingHorizontal: 24,
-    paddingTop: 20,
-    marginTop: 50,
-    alignItems: "flex-end",
   },
   scrollContent: {
     flexGrow: 1,
@@ -487,6 +496,12 @@ const styles = StyleSheet.create({
   backButton: {
     alignSelf: "flex-start",
     marginBottom: 20,
+    padding: 8,
+  },
+  backButtonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
   },
   backText: {
     fontSize: 16,

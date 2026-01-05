@@ -26,7 +26,7 @@ const FeaturedProducts = ({ products, loading, onProductPress, onSeeAll }) => {
    */
   const renderProduct = ({ item }) => (
     <TouchableOpacity
-      style={[styles.productCard, { backgroundColor: modernColors.white }]}
+      style={[styles.productCard, { backgroundColor: "transparent" }]}
       onPress={() => onProductPress(item)}
       activeOpacity={0.9}
     >
@@ -212,11 +212,6 @@ const styles = StyleSheet.create({
     marginRight: 16,
     borderRadius: 12,
     overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 3,
   },
   productImage: {
     width: "100%",

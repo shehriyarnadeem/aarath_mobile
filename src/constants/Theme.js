@@ -6,6 +6,7 @@ import { TYPOGRAPHY } from "./Typography";
 // Modern Clean Agricultural Marketplace Theme
 const COLORS = {
   // Primary Dark Green System (Trust, Agriculture, Brand Identity)
+  primaryNew: "#3e664dff", // Dark Forest Green
   primary: "#166534", // Dark Forest Green
   primaryLight: "#16a34a", // Medium Green
   primaryDark: "#14532d", // Deepest Green
@@ -184,6 +185,7 @@ const GRADIENTS = {
 // Modern Colors - Complete theme palette for consistent usage
 export const modernColors = {
   // Primary colors (Dark Green System)
+  primaryNew: COLORS.primaryNew,
   primary: COLORS.primary,
   primaryLight: COLORS.primaryLight,
   primaryDark: COLORS.primaryDark,

@@ -16,7 +16,7 @@ export default function App() {
             <AppNavigator />
           </AuthProvider>
         </LanguageProvider>
-        <Toast position="bottom" bottomOffset={20} />
+        <Toast position="bottom" bottomOffset={50} />
       </ThemeProvider>
     </>
   );

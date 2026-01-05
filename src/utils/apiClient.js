@@ -9,7 +9,7 @@ export const getBaseURL = () => {
 
   if (isProduction) {
     console.log("Using production API URL");
-    return "http://192.168.1.100:3000";
+    return "https://api.aarath.app";
   }
 
   console.log("Using development API URL");

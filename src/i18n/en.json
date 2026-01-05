@@ -10,10 +10,25 @@
     "error": "Error",
     "success": "Success"
   },
+  "welcome": {
+    "title": "Welcome to Aarath",
+    "subtitle": "Choose your journey: explore as a guest, shop as an individual, or trade as a B2B buyer.",
+    "marketplaceTitle": "Pakistan's Agricultural\nMarketplace",
+    "marketplaceDescription": "Connect with farmers and traders across Pakistan",
+    "b2bTitle": "Powering Pakistan's\nB2B Trade Ecosystem",
+    "b2bDescription": "Bulk orders and direct trade for agricultural businesses",
+    "shopNow": "Shop Now",
+    "accessB2B": "Access B2B",
+    "continueAsGuest": "Continue as Guest",
+    "termsPrefix": "By signing up you acknowledge and agree to",
+    "termsOfUse": "General Terms of Use",
+    "and": "and",
+    "privacyPolicy": "Privacy Policy"
+  },
   "home": {
     "greeting": "Hello",
     "marketplace": "Pakistan's Agricultural Marketplace",
-    "welcomeBack": "Welcome back ",
+    "welcomeBack": "Welcome, ",
     "myListings": "My Listings",
     "categories": "Categories",
     "harvested": "Harvested",

@@ -3,6 +3,7 @@ import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import SplashScreen from "../screens/SplashScreen";
+import WelcomeScreen from "../screens/WelcomeScreen";
 import LoginScreen from "../screens/auth/LoginScreen";
 import RegisterScreen from "../screens/auth/RegisterScreen";
 import OnboardingFlow from "../screens/onboarding/OnboardingFlow";
@@ -48,8 +49,9 @@ const AppNavigator = () => {
         <Stack.Navigator
           key="auth-stack"
           screenOptions={{ headerShown: false }}
-          initialRouteName="Dashboard"
+          initialRouteName="Welcome"
         >
+          <Stack.Screen name="Welcome" component={WelcomeScreen} />
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Signup" component={RegisterScreen} />
           <Stack.Screen name="Dashboard" component={DashboardNavigator} />

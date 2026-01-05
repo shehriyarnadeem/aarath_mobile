@@ -174,6 +174,20 @@ const LoginScreen = ({ navigation }) => {
           },
         ]}
       >
+        {/* Back Button */}
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+          activeOpacity={0.7}
+        >
+          <View style={styles.backButtonContent}>
+            <Ionicons name="arrow-back" size={20} color={COLORS.primary} />
+            <Text style={[styles.backText, { color: COLORS.primary }]}>
+              {t("auth.back")}
+            </Text>
+          </View>
+        </TouchableOpacity>
+
         {/* Decorative Background Elements */}
         <View style={styles.backgroundDecor}>
           <View
@@ -349,14 +363,6 @@ const LoginScreen = ({ navigation }) => {
       </TouchableOpacity>
 
       <View style={styles.header}>
-        <View
-          style={[
-            styles.stepIndicator,
-            { backgroundColor: COLORS.primary + "20" },
-          ]}
-        >
-          <MaterialIcons name="phone" size={32} color={COLORS.primary} />
-        </View>
         <Text style={[styles.title, { color: COLORS.dark }]}>
           {t("auth.signIn")}
         </Text>
@@ -368,37 +374,37 @@ const LoginScreen = ({ navigation }) => {
       <View style={styles.form}>
         <View style={styles.inputContainer}>
           <Text style={[styles.inputLabel, { color: COLORS.dark }]}>
-            <MaterialIcons name="phone" size={16} color={COLORS.primary} />{" "}
             {t("auth.phoneNumber")}
           </Text>
-          <View
-            style={[
-              styles.phoneInputContainer,
-              {
-                borderColor: error ? COLORS.error : COLORS.gray300,
-                backgroundColor: COLORS.gray50,
-              },
-            ]}
-          >
+          <View style={styles.phoneInputRow}>
             <CountryCodePicker
               selectedCode={countryCode}
               onSelectCode={(country) => setCountryCode(country.code)}
               style={styles.countryPicker}
             />
-            <View style={styles.inputDivider} />
-            <TextInput
-              style={[styles.phoneInput, { color: COLORS.dark }]}
-              placeholder={t("auth.enterPhoneNumber")}
-              placeholderTextColor={COLORS.gray400}
-              value={phoneNumber}
-              onChangeText={(text) => {
-                const cleanedText = text.replace(/[^0-9]/g, "");
-                setPhoneNumber(cleanedText);
-                setError("");
-              }}
-              keyboardType="phone-pad"
-              maxLength={10}
-            />
+            <View
+              style={[
+                styles.phoneInputContainer,
+                {
+                  borderColor: error ? COLORS.error : COLORS.gray300,
+                  backgroundColor: COLORS.gray50,
+                },
+              ]}
+            >
+              <TextInput
+                style={[styles.phoneInput, { color: COLORS.dark }]}
+                placeholder={t("auth.enterPhoneNumber")}
+                placeholderTextColor={COLORS.gray400}
+                value={phoneNumber}
+                onChangeText={(text) => {
+                  const cleanedText = text.replace(/[^0-9]/g, "");
+                  setPhoneNumber(cleanedText);
+                  setError("");
+                }}
+                keyboardType="phone-pad"
+                maxLength={11}
+              />
+            </View>
           </View>
         </View>
 
@@ -595,9 +601,7 @@ const LoginScreen = ({ navigation }) => {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.white} />
-      <View style={styles.languageSwitcherContainer}>
-        <LanguageSwitcher backgroundColor="green" />
-      </View>
+      <LanguageSwitcher />
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -616,17 +620,9 @@ const styles = StyleSheet.create({
     scrollHorizontal: false,
     marginHorizontal: 0,
   },
-  languageSwitcherContainer: {
-    paddingHorizontal: 24,
-    paddingTop: 20,
-    marginTop: 50,
-    alignItems: "flex-end",
-  },
   scrollContent: {
     flexGrow: 1,
-    justifyContent: "center",
     paddingHorizontal: 24,
-    paddingVertical: 40,
   },
   content: {
     flex: 1,
@@ -718,7 +714,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 32,
-    fontWeight: "bold",
+    fontWeight: "400",
     marginBottom: 8,
     textAlign: "center",
   },
@@ -763,7 +759,11 @@ const styles = StyleSheet.create({
   optionSubtitle: {
     fontSize: 14,
   },
-
+  phoneInputRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
   // Divider
   divider: {
     flexDirection: "row",
@@ -844,6 +844,8 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderRadius: 16,
     paddingVertical: 4,
+    padding: 12,
+    width: "70%",
     gap: 12,
   },
   countryPicker: {
@@ -857,8 +859,8 @@ const styles = StyleSheet.create({
   phoneInput: {
     flex: 1,
     paddingVertical: 12,
-    fontSize: 17,
-    letterSpacing: 1,
+    fontSize: 20,
+    letterSpacing: 2,
   },
   otpInputContainer: {
     flexDirection: "row",

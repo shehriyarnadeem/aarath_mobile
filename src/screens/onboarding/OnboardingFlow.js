@@ -252,6 +252,7 @@ const OnboardingFlow = ({ navigation }) => {
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
 
       {/* Language Switcher */}
+      <LanguageSwitcher />
 
       {/* Header */}
       <View style={styles.header}>
@@ -283,13 +284,8 @@ const OnboardingFlow = ({ navigation }) => {
                     <Text style={[styles.backText, { color: COLORS.primary }]}>
                       {t("onboarding.back")}
                     </Text>
-
-                    <LanguageSwitcher backgroundColor="green" />
                   </View>
                 </TouchableOpacity>
-              )}
-              {currentStep === 1 && (
-                <LanguageSwitcher backgroundColor="green" />
               )}
             </View>
           </View>
@@ -395,12 +391,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  languageSwitcherContainer: {
-    paddingHorizontal: 24,
-    paddingTop: 30,
-    paddingBottom: 4,
-    alignItems: "flex-end",
-  },
   header: {
     paddingHorizontal: 24,
     paddingTop: 50,
@@ -435,12 +425,6 @@ const styles = StyleSheet.create({
   stepCounter: {
     fontSize: 16,
     fontWeight: "600",
-  },
-  languageSwitcherContainer: {
-    paddingHorizontal: 24,
-    paddingTop: 20,
-    marginTop: 50,
-    alignItems: "flex-end",
   },
   progressContainer: {
     height: 6,

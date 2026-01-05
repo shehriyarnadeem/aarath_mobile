@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Aarath",
+    "name": "Aarath Marketplace",
     "slug": "aarath_mobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
-    "icon": "./assets/logo.png",
+    "icon": "./assets/AppIcons/playstore.png",
     "splash": {
       "image": "./assets/logo.png",
       "resizeMode": "contain",
@@ -33,12 +33,7 @@
     },
 
     "android": {
-      "package": "com.mycompany.myapp",
-      "icon": "./assets/icon.png",
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
+      "package": "com.mycompany.myapp"
     },
 
     "extra": {

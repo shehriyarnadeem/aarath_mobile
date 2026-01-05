@@ -19,6 +19,27 @@
 
 ---
 
+## ♻️ **Component Reusability Rule**
+
+### **MANDATORY: Design for Reuse**
+
+- ✅ **ALWAYS** create reusable components when a pattern appears more than once
+- ✅ Extract common UI patterns into `/components/common/` directory
+- ✅ Use props to make components flexible and configurable
+- ✅ Separate business logic from UI presentation
+- ✅ Create generic components that work across multiple screens
+
+### **Reusability Checklist**
+
+Before creating a new component, ask:
+
+1. ✅ Does this pattern exist elsewhere in the app?
+2. ✅ Could this be used in other screens with minor modifications?
+3. ✅ Can I make this generic by accepting props?
+4. ✅ Should this be split into smaller, reusable pieces?
+
+### **Component Types**
+
 ## 🌾 **Agricultural Categories Rule**
 
 ### **MANDATORY: Restricted Category List**

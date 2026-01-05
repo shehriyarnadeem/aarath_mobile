@@ -55,7 +55,7 @@ export const LanguageProvider = ({ children }) => {
   };
 
   const value = {
-    currentLanguage,
+    currentLanguage: currentLanguage || "en",
     changeLanguage,
     isRTL,
     t: i18n.t.bind(i18n),

@@ -80,6 +80,11 @@ const PAKISTANI_CITIES = [
     value: "Bahawalpur",
     coordinates: { lat: 29.4, lng: 71.6833 },
   },
+  {
+    label: "Okara",
+    value: "Okara",
+    coordinates: { lat: 29.4, lng: 71.6833 },
+  },
 ];
 
 const LocationSelection = ({
@@ -126,7 +131,17 @@ const LocationSelection = ({
 
       if (data.results && data.results.length > 0) {
         const result = data.results[0];
-        return result.formatted_address;
+        console.log("Reverse geocoding result:", result);
+
+        // Remove Plus Code from formatted address
+        let formattedAddress = result.formatted_address;
+        // Plus Codes typically follow pattern like "M2HR+295," or "M2HR+295 "
+        formattedAddress = formattedAddress.replace(
+          /^[A-Z0-9]{4}\+[A-Z0-9]{2,3},?\s*/i,
+          ""
+        );
+
+        return formattedAddress;
       }
       return null;
     } catch (error) {
@@ -231,6 +246,16 @@ const LocationSelection = ({
         }
 
         setMapRegion(newRegion);
+
+        // Automatically set the marker at the selected location
+        setSelectedMarker({
+          latitude: lat,
+          longitude: lng,
+          city: selectedCityData.value,
+          cityLabel: selectedCityData.label,
+          address: description,
+        });
+
         setSearchQuery("");
         setSearchResults([]);
       }
@@ -521,7 +546,6 @@ const LocationSelection = ({
                     longitudeDelta: 0.0421,
                   }}
                   region={mapRegion}
-                  onPress={handleMapPress}
                   onMapReady={() => {
                     console.log("✅ Map is ready!");
                     setMapReady(true);
